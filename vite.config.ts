@@ -10,8 +10,10 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
-  test: {
-    globals: true,
-    environment: 'jsdom'
-  }
+  server: {
+    proxy: {
+      "/aaa/api": "http://127.0.0.1:5000",
+      "/tms/api": "http://127.0.0.1:5001",
+    }
+  },
 })

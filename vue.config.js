@@ -1,0 +1,18 @@
+module.exports = {
+    lintOnSave: false,
+    runtimeCompiler: true,
+    devServer: {
+        clientLogLevel: "info",
+        disableHostCheck: true,
+        host: "localhost",
+        port: process.env.VUE_APP_LISTENER_PORT,
+        proxy: {
+            "/aaa/api": {
+                target: "http://127.0.0.1:5000"
+            },
+            "/tms/api": {
+                target: "http://127.0.0.1:5001"
+            }
+        },
+    },
+};
