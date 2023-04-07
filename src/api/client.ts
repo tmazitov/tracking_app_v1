@@ -1,16 +1,15 @@
-import axios from 'axios'
+import axios, { AxiosError } from 'axios'
+import Auth, { AccessTokenPairAPI } from './auth/auth';
 import router from '../router/index'
-import Auth from './auth/auth';
-
 
 const client = axios.create({
-    baseURL: "",
+    baseURL: "/tms/api",
     timeout: 3000,
 });
 
 client.interceptors.request.use(
     (request) => {
-        let access = Auth.AccessTokenPair.getAccess()
+        let access = AccessTokenPairAPI.getAccess()
         if (access)
             request.headers.Authorization = access
 
@@ -19,10 +18,15 @@ client.interceptors.request.use(
     (error) => Promise.reject(error)
 )
 
-let isRefreshing = false;
-let failedQueue = [];
+interface FailedRequest {
+    reject:Function;
+    resolve:Function;
+}
 
-const processQueue = (error, token = null) => {
+let isRefreshing = false;
+let failedQueue:Array<FailedRequest> = [];
+
+const processQueue = (error:AxiosError|null, token = null) => {
     failedQueue.forEach((prom) => {
         if (error) {
             prom.reject(error);
@@ -67,27 +71,31 @@ client.interceptors.response.use(
             originalRequest._retry = true;
             isRefreshing = true;
 
-            const refreshToken = TokenService.getRefresh()
+            const refresh = AccessTokenPairAPI.getRefresh()
             return new Promise(function(resolve, reject) {
                 axios
-                    .post("/aaa/api/refresh", { refreshToken })
+                    .post("/aaa/api/refresh", { refresh },{
+                        headers: {
+                            "Authorization" : AccessTokenPairAPI.getAccess()
+                        }
+                    })
                     .then((response) => {
                         let access = response.data['access']
                         let refresh = response.data['refresh']
-						Auth.AccessTokenPair.save(access, refresh)
+						AccessTokenPairAPI.save(access, refresh)
 
                         originalRequest.headers.Authorization = access
-                        processQueue(null, tokenPair.accessToken);
+                        processQueue(null, access);
                         resolve(axios(originalRequest));
                     })
                     .catch((err) => {
                         console.error("refresh token failed!");
                         processQueue(err, null);
                         reject(err);
-
-                        if (router.currentRoute.path != "/auth") {
+                        
+                        if (router.currentRoute.value.name != 'auth') {
                             console.log("router to /auth");
-                            router.push("/auth");
+                            router.push({name:'auth'});
                         }
                     })
                     .finally(() => {
@@ -101,24 +109,4 @@ client.interceptors.response.use(
     }
 )
 
-function errorView(messageTemplate, err){
-    console.log('err', err)
-    let result = {err}
-    let message = `${messageTemplate} : ${err.message}`
-
-    let isHttpError = err.reposnse !== undefined
-    if (isHttpError){
-        if (err.response.status !== 401 && err.response.status !== 403){
-            Alert.fire(message)
-        }
-        result['status'] = err.response.status
-    } 
-    else {
-        Alert.fire(message)
-    }
-
-    return result 
-}
-
-export {errorView}
 export default client

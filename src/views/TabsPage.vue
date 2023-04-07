@@ -1,5 +1,5 @@
 <template>
-  <ion-page v-if="isAuthorized">
+  <ion-page>
     <ion-tabs>
       <ion-router-outlet></ion-router-outlet>
       <ion-tab-bar slot="bottom" >
@@ -40,17 +40,9 @@ export default {
     IonRouterOutlet,
   },
   setup(){
-    let isAuthorized:boolean = true
-    const route = useRoute()
-    if (route.name != 'auth' && AccessTokenPairAPI.getAccess() == null){
-      const router = useIonRouter()
-      sessionStorage.setItem("origin_path", route.fullPath)
-      router.replace({name:'auth'}) 
-      isAuthorized = false     
-    }
+
 
     return {
-      isAuthorized,
       home,
       ellipse,
       square
