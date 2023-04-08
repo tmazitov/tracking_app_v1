@@ -1,4 +1,5 @@
-import client from './client'
+import client from '../client'
+import Order from './order'
 
 class TMS {
 	static getUserInfo(){
@@ -9,6 +10,8 @@ class TMS {
 			shortName: shortName
 		})
 	}
+
+	static order = () => Order
 }
 
 export default TMS
