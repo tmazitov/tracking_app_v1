@@ -23,11 +23,18 @@ import '@ionic/vue/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import { LMap, LMarker, LTileLayer } from '@vue-leaflet/vue-leaflet';
+
+
 
 const app = createApp(App)
   .use(IonicVue)
   .use(router)
   .use(store);
+
+app.component('l-map', LMap);
+app.component('l-tile-layer', LTileLayer);
+app.component('l-marker', LMarker);
   
 router.isReady().then(() => {
   app.mount('#app');

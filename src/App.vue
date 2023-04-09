@@ -27,4 +27,15 @@ export default {
   }
 }
 
-</script>
+</script>ы
+
+<style>
+ion-backdrop {
+	opacity: 0.7;
+	background: #242424;
+	z-index: 11;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+</style>

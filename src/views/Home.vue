@@ -1,5 +1,7 @@
 <template>
 	<ion-page>
+		<ion-backdrop v-if="data.createOrderFormIsOpen"></ion-backdrop>
+		<OrderCreateForm v-if="data.createOrderFormIsOpen" :closer="close"/>
 		<ion-header>
 			<ion-toolbar>
 				<ion-title>Главная</ion-title>
@@ -19,6 +21,7 @@
 							fill="solid">
 						</ion-input>
 					</div>
+					<ion-button @click="open">Добавить</ion-button>
 				</div>
 				<div class="order_card_container">
 					<OrderCard v-for="(order, index) in searchOrder(orders, data.searchField)" :key="`order_card_${index}`"
@@ -26,6 +29,7 @@
 				</div>
 			</div>
 		</ion-content>
+
 	</ion-page>
 </template>
 
@@ -37,9 +41,12 @@ import {
 	IonTitle,
 	IonInput,
 	IonContent,
+	IonBackdrop,
+	IonButton,
 } from "@ionic/vue";
 import DateViewer from "@/components/DateViewer.vue";
 import OrderCard from "@/components/OrderCard.vue";
+import OrderCreateForm from "@/components/OrderCreateForm.vue";
 import { reactive, computed } from "vue";
 import { useStore } from "vuex";
 import Order from "@/assets/order";
@@ -69,12 +76,19 @@ export default {
 		IonContent,
 		DateViewer,
 		OrderCard,
+		IonBackdrop,
+		OrderCreateForm,
+		IonButton,
 	},
 	setup() {
 		const store = useStore();
 		const data = reactive({
 			searchField: "",
+			createOrderFormIsOpen: false,
 		});
+
+		const open = () => data.createOrderFormIsOpen = true
+		const close = () => data.createOrderFormIsOpen = false
 		const user = computed(() => store.getters.userMainInfo);
 
 		store.dispatch("setup-order-list");
@@ -83,6 +97,10 @@ export default {
 		return {
 			user,
 			data,
+		
+			open,
+			close,
+
 			searchOrder,
 			orders,
 		};
