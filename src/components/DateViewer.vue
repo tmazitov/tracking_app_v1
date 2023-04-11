@@ -49,7 +49,11 @@ export default {
 		setInterval(() => {
 			let date:Date = new Date()
 			dateString.value = getDateString(date)
-			timeString.value = `${date.getHours()}:${date.getMinutes()}`
+			if (date.getMinutes() > 9){
+				timeString.value = `${date.getHours()}:${date.getMinutes()}`
+			} else {
+				timeString.value = `${date.getHours()}:0${date.getMinutes()}`
+			}
 		}, 1000)
 
 
@@ -66,6 +70,6 @@ export default {
 	font-size: 24px;
 	font-weight: 500;
 	margin: 20px;
-	width: 264px;
+	width: 280px;
 }
 </style>

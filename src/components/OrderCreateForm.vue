@@ -12,8 +12,8 @@
 
 			</div>
 			<div class="form__map-way-values">
-				<div v-if="data.map.totalDistance" >{{toKM(data.map.totalDistance)}}</div>
-				<div v-if="data.map.totalTime">{{toTimeString(data.map.totalTime)}}</div>
+				<div v-if="map.totalDistance" >{{toKM(map.totalDistance.value)}}</div>
+				<div v-if="map.totalTime">{{toTimeString(map.totalTime.value)}}</div>
 			</div>
 			<div class="form__search-field">
 				<ion-input 
@@ -45,7 +45,7 @@
 
 			<div class="form__points">
 				<ion-reorder-group  :disabled="false" @ionItemReorder="reorderPoints">
-					<ion-item v-for="point,key in data.map.points" :key="`order_point_${key}`">
+					<ion-item v-for="point,key in map.points.value" :key="`order_point_${key}`">
 						<ion-label>{{point.title}}</ion-label>
 						<ion-reorder slot="end"></ion-reorder>
 					</ion-item>
@@ -56,8 +56,8 @@
 </template>
 
 <script lang="ts">
-import { IonBackdrop, IonButton, IonInput, IonTitle, IonIcon, IonReorderGroup, IonReorder, IonItem, IonLabel } from '@ionic/vue';
-import { Transition } from 'vue';
+import { IonBackdrop, IonButton, IonInput, IonTitle, IonIcon, IonReorderGroup, IonReorder, IonItem, IonLabel, ItemReorderEventDetail } from '@ionic/vue';
+import { computed, Transition } from 'vue';
 import { arrowBackOutline } from 'ionicons/icons';
 import { onMounted, reactive } from 'vue';
 
@@ -90,9 +90,10 @@ export default {
 		}
 	},
 	setup(props) {
+
+		const map = new OrderPointsMap()
 		const data = reactive<{
 			isOpen: boolean,
-			map: OrderPointsMap,
 
 			searchLastDate: Date|null,
 			searchField: string,
@@ -100,7 +101,6 @@ export default {
 			searchResultsIsOpen: boolean,
 		}>({
 			isOpen: false,
-			map: new OrderPointsMap(),
 
 			searchLastDate: null,
 			searchField: "",
@@ -109,7 +109,7 @@ export default {
 		})
 
 		onMounted(() => {
-			data.map.setup([55.7887, 49.1221], 5)
+			map.setup([55.7887, 49.1221], 5)
 		})
 
 		const provider = new GeoSearch.OpenStreetMapProvider();
@@ -138,20 +138,23 @@ export default {
 		}
 
 		const createPoint = (point: Point) => {
-			data.map.addPoint(point)
+			if (point.title == "") return
+			map.addPoint(point)
 			data.searchField = ""
 		}
 
-		const reorderPointsHandler = (ev:CustomEvent) => {
-			data.map.points = ev.detail.complete(data.map.points);
-			data.map.replacePoints(ev.detail.from, ev.detail.to)
+		const reorderPointsHandler = (ev:CustomEvent<ItemReorderEventDetail>) => {
+			map.points.value = ev.detail.complete(map.points.value)
+			map.replacePoints(ev.detail.from, ev.detail.to)
 		}
+
 
 		return {
 			toKM, toTimeString,
 			reorderPoints: reorderPointsHandler,
 			searchLocation: searchLocationHandler,
 			close: props.closer,
+			map: map,
 			data,
 			open,
 			createPoint,
