@@ -1,17 +1,27 @@
+import L from 'leaflet'
+
 class Point {
-	id:bigint
+	id:bigint|undefined
 	stepId:number
 	title:string
-	floor:number
+	floor:number|undefined
 	lat:number
 	lon:number
 	constructor(pointInfo:any) {
 		this.id = pointInfo["id"]
 		this.stepId = pointInfo["stepId"]
-		this.title = pointInfo["title"]
+		this.title = pointInfo["title"] ?? pointInfo["label"]
 		this.floor = pointInfo["floor"]
-		this.lat = pointInfo["lat"]
-		this.lon = pointInfo["lon"]
+		this.lat = pointInfo["lat"] ?? pointInfo["y"]
+		this.lon = pointInfo["lon"] ?? pointInfo["x"]
+ 	}
+
+	toLatLng(){
+		return L.latLng(this.lat, this.lon)
+	}
+
+	toWaypoint(){
+		return new L.Routing.Waypoint(this.toLatLng(), this.title, {})
 	}
 }
 

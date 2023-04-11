@@ -16,12 +16,14 @@
 			<div class="content__container">
 				<div class="tools__container">
 					<DateViewer />
-					<div class="search__container">
-						<ion-input type="text" v-model="data.searchField" label="Поиск заказа" label-placement="floating"
-							fill="solid">
-						</ion-input>
+					<div class="tools__fields">
+						<div class="search__container">
+							<ion-input type="text" v-model="data.searchField" label="Поиск заказа" label-placement="floating"
+								fill="solid">
+							</ion-input>
+						</div>
+						<ion-button @click="open">Добавить</ion-button>
 					</div>
-					<ion-button @click="open">Добавить</ion-button>
 				</div>
 				<div class="order_card_container">
 					<OrderCard v-for="(order, index) in searchOrder(orders, data.searchField)" :key="`order_card_${index}`"
@@ -116,6 +118,20 @@ export default {
 
 .tools__container {
 	display: flex;
+	align-items: center;
+}
+
+@media (max-width: 700px) {
+	.tools__container {
+		display: block;
+	}
+}
+
+.tools__fields{
+	display: inline-flex;
+	gap: 16px;
+	align-items: center;
+	width: fit-content;
 }
 
 .search__container {

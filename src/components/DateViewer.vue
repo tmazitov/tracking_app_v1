@@ -1,6 +1,7 @@
 <template>
 	<div class="date__viewer">
 		{{ dateString }}
+		<a style="color:grey">{{timeString}}</a>
 	</div>
 </template>
 
@@ -8,13 +9,13 @@
 import { ref } from 'vue';
 
 const namesOfWeekDays = [
+	'Вс.',
 	'Пн.',
 	'Вт.',
 	'Ср.',
 	'Чт.',
 	'Пт.',
 	'Сб.',
-	'Вс.',
 ]
 
 const namesOfMonths = [
@@ -44,13 +45,17 @@ export default {
 	name: 'TrackingAppV1DateViewer',
 	setup(){		
 		const dateString = ref("")
+		const timeString = ref("")
 		setInterval(() => {
-			dateString.value = getDateString(new Date())
-			console.log('dateString.value :>> ', dateString.value);
+			let date:Date = new Date()
+			dateString.value = getDateString(date)
+			timeString.value = `${date.getHours()}:${date.getMinutes()}`
 		}, 1000)
 
+
 		return {
-			dateString : dateString
+			dateString,
+			timeString,
 		}
 	}
 };
@@ -58,8 +63,9 @@ export default {
 
 <style scoped>
 .date__viewer{
-	font-size: 28px;
+	font-size: 24px;
 	font-weight: 500;
 	margin: 20px;
+	width: 264px;
 }
 </style>
