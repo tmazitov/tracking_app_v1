@@ -123,6 +123,7 @@ export default {
 			data.searchLastDate = new Date()
 			setTimeout(async () => {
 				if (!data.searchLastDate) return
+				// Delay before sending request 
 				if ((new Date()).getTime() - data.searchLastDate.getTime() < 500) return
 
 				const results = await provider.search({ query: data.searchField });
@@ -133,11 +134,10 @@ export default {
 					let label: string = point.label
 					data.searchResults.push(new Point({ x, y, label }))
 				})
-			},1000)
-			
+			},1000)	
 		}
 
-		const createPoint = (point: Point) => {
+		const createPointHandler = (point: Point) => {
 			if (point.title == "") return
 			map.addPoint(point)
 			data.searchField = ""
@@ -151,13 +151,13 @@ export default {
 
 		return {
 			toKM, toTimeString,
+			createPoint: createPointHandler,
 			reorderPoints: reorderPointsHandler,
 			searchLocation: searchLocationHandler,
 			close: props.closer,
-			map: map,
+			map,
 			data,
 			open,
-			createPoint,
 			arrowBackOutline,
 		}
 	}

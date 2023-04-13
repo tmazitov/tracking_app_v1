@@ -1,7 +1,7 @@
 import L from 'leaflet'
-import {geocoders, Geocoder} from 'leaflet-control-geocoder'
+import {geocoders} from 'leaflet-control-geocoder' // for geocoding of new points
 import 'leaflet-routing-machine' // for create the roads between the points
-import { reactive, Ref, ref } from 'vue';
+import {Ref, ref } from 'vue'; 
 import Point from '../point';
 
 interface OrderPointsMapMods {
@@ -36,37 +36,15 @@ class OrderPointsMap {
 			addWaypoints: true,
 			draggableWaypoints: true,   
 			geocoder: new geocoders.Nominatim({}),  
+			createMarker: this.createMarker,
+			dragStyles: [
+				{color: 'black', opacity: 0.15, weight: 7},
+				{color: 'white', opacity: 0.8, weight: 4},
+				{color: '#3880ff', opacity: 1, weight: 2, dashArray: '7,12'}
+			]
 		})
-		plan.on('waypointschanged', (e:any) => {
-			console.log('this.mods.isAddNewPoint :>> ', this.mods.isAddNewPoint);
-			if (e.waypoints.length > this.points.value.length && e.waypoints.length != 2){
-				this.mods.isAddNewPoint = true
-			}
-			console.log('waypoint changed!!! :>> ', e);
-		})
-		plan.on('waypointgeocoded', (e:any) => {
-			console.log('waypoint geocoded!!! :>> ', e);
-			// Add waypoint on the map
-			if (this.mods.isAddNewPoint){
-				this.mods.isAddNewPoint = false
-				let newWaypointIndex:number|undefined = this.checkNewWaypoint(e.waypoint)
-				if (newWaypointIndex){
-					let point:Point = new Point({
-						label: e.waypoint.name,
-						x: e.waypoint.latLng.lng,
-						y: e.waypoint.latLng.lat,
-					})
-					this.addPoint(point, e.waypointIndex)
-					return
-				}
-			}
-
-			// Change of position or location name of waypoint
-			let replacedPointIndex = e.waypointIndex
-			this.points.value[replacedPointIndex].title = e.waypoint.name
-			this.points.value[replacedPointIndex].lat = e.waypoint.latLng.lat
-			this.points.value[replacedPointIndex].lon = e.waypoint.latLng.lng
-		})
+		plan.on('waypointschanged', (e:any) => {this.waypointChangedEventHandler(e)})
+		plan.on('waypointgeocoded', (e:any) => {this.waypointGeocodedEventHandler(e)})
 
 		// Init the routing machine control
 
@@ -74,7 +52,15 @@ class OrderPointsMap {
 			plan: plan,
 			routeWhileDragging: true,
 			geocoder: new geocoders.Nominatim({}),
-		
+			lineOptions: {
+				styles:[
+					{color: 'black', opacity: 0.15, weight: 7},
+					{color: 'white', opacity: 0.8, weight: 4},
+					{color: '#3880ff', opacity: 1, weight: 2}
+				],
+				extendToWaypoints: false,
+				missingRouteTolerance: 0,
+			}
 		})
 		.addTo(this.instance)
 		this.control.on('routesfound',  (e:any) => {
@@ -122,12 +108,63 @@ class OrderPointsMap {
 	updateZoom(zoomLvl:number){
 		this.instance?.setZoom(zoomLvl)
 	}
-	updatePlan(){
+	private updatePlan(){
 		if (!this.control) return
 		let current:Array<L.Routing.Waypoint> = this.points.value.map(p => p.toWaypoint())
 		this.control.setWaypoints(current)
 	}
 
+	private createMarker(waypointIndex: number, waypoint: L.Routing.Waypoint, waypointsCount: number):L.Marker{
+		let iconSetting:L.IconOptions = {
+			iconUrl: "",
+			iconSize: [24, 24],
+			iconAnchor: undefined,			
+		}
+		if (waypointIndex == 0){ // start point marker 
+			iconSetting.iconUrl = "ellipse-outline.svg"
+		} else if (waypointIndex == waypointsCount - 1) { // end point marker
+			iconSetting.iconUrl = "square-outline.svg"
+		} else { // other points
+			iconSetting.iconUrl = "flag-outline.svg"
+			iconSetting.iconAnchor = [0, 24]
+		}
+		let icon:L.Icon = new L.Icon(iconSetting)
+		return new L.Marker(waypoint.latLng, {
+			draggable: true,
+			autoPanOnFocus: true,
+			title: waypoint.name,
+			icon: icon,
+		})
+	}
+
+	private waypointGeocodedEventHandler(e:L.Routing.GeocodingEvent){
+		// Add waypoint on the map
+		if (this.mods.isAddNewPoint){
+			this.mods.isAddNewPoint = false
+			let newWaypointIndex:number|undefined = this.checkNewWaypoint(e.waypoint)
+			if (newWaypointIndex){
+				let point:Point = new Point({
+					label: e.waypoint.name,
+					x: e.waypoint.latLng.lng,
+					y: e.waypoint.latLng.lat,
+				})
+				this.addPoint(point, e.waypointIndex)
+				return
+			}
+		}
+
+		// Change of position or location name of waypoint
+		let replacedPointIndex = e.waypointIndex
+		this.points.value[replacedPointIndex].title = e.waypoint.name ?? ""
+		this.points.value[replacedPointIndex].lat = e.waypoint.latLng.lat
+		this.points.value[replacedPointIndex].lon = e.waypoint.latLng.lng
+	}
+
+	private waypointChangedEventHandler(e:L.Routing.RoutingEvent){
+		if (e.waypoints.length > this.points.value.length && e.waypoints.length != 2){
+			this.mods.isAddNewPoint = true
+		}
+	}
 	private checkNewWaypoint(waypoint:L.Routing.Waypoint):number|undefined{
 
 		let pointIsFound:number|undefined
