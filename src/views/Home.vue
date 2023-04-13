@@ -89,8 +89,14 @@ export default {
 			createOrderFormIsOpen: false,
 		});
 
-		const open = () => data.createOrderFormIsOpen = true
-		const close = () => data.createOrderFormIsOpen = false
+		const open = () => {
+			store.dispatch('toggle-tabs')
+			setTimeout(() => data.createOrderFormIsOpen = true, 250)
+		}
+		const close = () => {
+			store.dispatch('toggle-tabs')
+			data.createOrderFormIsOpen = false
+		}
 		const user = computed(() => store.getters.userMainInfo);
 
 		store.dispatch("setup-order-list");

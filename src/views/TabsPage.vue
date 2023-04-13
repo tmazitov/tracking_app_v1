@@ -1,52 +1,79 @@
 <template>
-  <ion-page>
-    <ion-tabs>
-      <ion-router-outlet></ion-router-outlet>
-      <ion-tab-bar slot="bottom" >
-        <ion-tab-button tab="home" href="/home">
-          <ion-icon aria-hidden="true" :icon="home" />
-          <ion-label>Главная</ion-label>
-        </ion-tab-button>
-
-        <ion-tab-button tab="tab2" href="/tab2">
-          <ion-icon aria-hidden="true" :icon="ellipse" />
-          <ion-label>Tab 2</ion-label>
-        </ion-tab-button>
-
-        <ion-tab-button tab="tab3" href="/tab3">
-          <ion-icon aria-hidden="true" :icon="square" />
-          <ion-label>Tab 3</ion-label>
-        </ion-tab-button>
-      </ion-tab-bar>
-    </ion-tabs>
-  </ion-page>
+    <ion-page>
+        <ion-tabs class="tabs">
+            <ion-router-outlet></ion-router-outlet>
+            <transition name="go-up">
+                <ion-tab-bar slot="bottom" v-if="isShowTabs">
+                    <ion-tab-button tab="home" href="/home">
+                        <ion-icon aria-hidden="true" :icon="home" />
+                        <ion-label>Главная</ion-label>
+                    </ion-tab-button>
+    
+                    <ion-tab-button tab="tab2" href="/tab2">
+                        <ion-icon aria-hidden="true" :icon="ellipse" />
+                        <ion-label>Tab 2</ion-label>
+                    </ion-tab-button>
+    
+                    <ion-tab-button tab="tab3" href="/tab3">
+                        <ion-icon aria-hidden="true" :icon="square" />
+                        <ion-label>Tab 3</ion-label>
+                    </ion-tab-button>
+                </ion-tab-bar>
+            </transition>
+        </ion-tabs>
+    </ion-page>
 </template>
 
 <script lang="ts">
-import { AccessTokenPairAPI } from '@/api/auth/auth';
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet, useIonRouter } from '@ionic/vue';
 import { ellipse, square, home } from 'ionicons/icons';
-import { useRoute } from 'vue-router';
+import { computed } from 'vue';
+import { useStore } from 'vuex';
 
 export default {
-  name:'TabsPage',
-  components: {
-    IonTabBar,
-    IonTabButton,
-    IonTabs,
-    IonLabel,
-    IonIcon,
-    IonPage,
-    IonRouterOutlet,
-  },
-  setup(){
+    name: 'TabsPage',
+    components: {
+        IonTabBar,
+        IonTabButton,
+        IonTabs,
+        IonLabel,
+        IonIcon,
+        IonPage,
+        IonRouterOutlet,
+    },
+    setup() {
+        const store = useStore()
+        let isShowTabs = computed(() => store.getters.isShowTabs)
 
-
-    return {
-      home,
-      ellipse,
-      square
+        return {
+            isShowTabs,
+            home,
+            ellipse,
+            square
+        }
     }
-  }
 }
+
 </script>
+
+<style scoped>
+.tabs{
+    position: relative;
+}
+.go-up-enter-active{
+    animation: go-up .35s;
+}
+.go-up-leave-active{
+    animation: go-up .35s reverse;
+}
+
+@keyframes go-up {
+    from {
+        transform: translateY(100%)
+    }
+    to {
+        transform: translateY(0%)
+    }
+}
+
+</style>

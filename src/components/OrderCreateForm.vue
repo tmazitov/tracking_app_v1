@@ -44,16 +44,19 @@ export default {
 @import url(../theme/variables.css);
 .order_create_form {
 	width: 100vw;
+	height: calc(100vh - 56px);
 	z-index: 12;
 	display: flex;
 	justify-content: center;
 	position: relative;
+	animation: open-form .25s;
 }
 
 
 .form__container {
 	margin: 10px;
-	height: calc(100vh - 113px);
+	height: 100%;
+	
 	position: absolute;
 	width: 450px;
 	background: #323232;
@@ -65,6 +68,26 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+}
+
+@keyframes open-form {
+	from {
+		opacity: 0;
+		height: calc(100vh - 112px);
+	}
+	to {
+		height: calc(100vh - 56px);
+		opacity: 1;
+	}
+}
+
+@keyframes close-form {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 
 ion-title.large {

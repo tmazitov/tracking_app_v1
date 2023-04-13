@@ -4,7 +4,8 @@ import order from './order'
 
 const store = new Vuex.Store({
 	state: {
-		user: null
+		user: null,
+		isShowTabs: true,
 	},
 	modules:{
 		order,
@@ -12,11 +13,17 @@ const store = new Vuex.Store({
 	mutations: {
 		'save-user': (state, payload) => {
 			state.user = payload
+		},
+		'toggle-tabs': (state) => {
+			state.isShowTabs = !state.isShowTabs
 		}
 	},
 	getters: {
 		userMainInfo(state){
 			return state.user
+		},
+		isShowTabs(state){
+			return state.isShowTabs
 		}
 	},
 	actions: {
@@ -28,6 +35,9 @@ const store = new Vuex.Store({
 				
 				store.commit('save-user', userInfo.data)
 			})
+		},
+		'toggle-tabs': (store) => {
+			store.commit('toggle-tabs')
 		}
 	}
 })
