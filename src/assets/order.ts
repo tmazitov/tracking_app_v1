@@ -15,20 +15,25 @@ const ORDER_STATUS_MESSAGES:Array<StatusMessage> = [
 
 class Order {
 	details:Object|null
+	title:string
 	orderId:bigint
 	startAt:Date
 	endAt:Date|null
 	statusId:number
 	points:Array<Point>
 	ownerId:bigint
+	orderType:number
 	workerId:bigint|null
 	managerId:bigint|null
 	helpers: number|null
 	comment: string|null
 	isFragileCargo: boolean|null
+	isRegularCustomer: boolean|undefined
 	constructor(details:any) {
 		this.details = details
 		this.orderId = details["orderId"]
+		this.title = details["title"]
+		this.orderType = details["orderType"]
 		this.startAt = new Date(details["startAt"])
 		this.endAt = new Date(details["endAt"])
 		this.statusId = details["statusId"]
@@ -38,6 +43,7 @@ class Order {
 		this.helpers = details["helpers"]
 		this.comment = details["comment"]
 		this.isFragileCargo = details["isFragileCargo"]
+		this.isRegularCustomer = details["isFragileCargo"]
 		
 		this.points = []
 		let pointsData:Array<any> = details["points"]
@@ -51,19 +57,19 @@ class Order {
 	}
 
 	getTitle(){
-		return this.points[0].title
+		return this.title
 	}
 
 	getTime(){
 		let hour = this.startAt.getHours()
-		let minute = this.startAt.getHours()
+		let minute = this.startAt.getMinutes()
 		let minuteString 
 		if (minute < 10){
 			minuteString = '0' + minute
 		} else {
 			minuteString = '' + minute
 		}
-		return `${hour}:${minute}`
+		return `${hour}:${minuteString}`
 	}
 }
 

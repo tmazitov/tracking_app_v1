@@ -9,9 +9,9 @@
                         <ion-label>Главная</ion-label>
                     </ion-tab-button>
     
-                    <ion-tab-button tab="tab2" href="/tab2">
-                        <ion-icon aria-hidden="true" :icon="ellipse" />
-                        <ion-label>Tab 2</ion-label>
+                    <ion-tab-button tab="create-order" href="/order/create">
+                        <ion-icon aria-hidden="true" :icon="addCircleOutline" />
+                        <ion-label>Новый заказ</ion-label>
                     </ion-tab-button>
     
                     <ion-tab-button tab="tab3" href="/tab3">
@@ -26,7 +26,7 @@
 
 <script lang="ts">
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet, useIonRouter } from '@ionic/vue';
-import { ellipse, square, home } from 'ionicons/icons';
+import { square, home, addCircleOutline } from 'ionicons/icons';
 import { computed } from 'vue';
 import { useStore } from 'vuex';
 
@@ -48,7 +48,7 @@ export default {
         return {
             isShowTabs,
             home,
-            ellipse,
+            addCircleOutline,
             square
         }
     }

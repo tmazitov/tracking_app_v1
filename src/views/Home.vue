@@ -1,28 +1,25 @@
 <template>
 	<ion-page>
-		<ion-backdrop v-if="data.createOrderFormIsOpen"></ion-backdrop>
-		<OrderCreateForm v-if="data.createOrderFormIsOpen" :closer="close"/>
 		<ion-header>
 			<ion-toolbar>
-				<ion-title>Главная</ion-title>
+				<ion-title><DateViewer /></ion-title>
 			</ion-toolbar>
 		</ion-header>
 		<ion-content :fullscreen="true">
 			<ion-header collapse="condense">
 				<ion-toolbar>
-					<ion-title size="large">Главная</ion-title>
+					<ion-title size="large"><DateViewer /></ion-title>
 				</ion-toolbar>
 			</ion-header>
 			<div class="content__container">
 				<div class="tools__container">
-					<DateViewer />
+
 					<div class="tools__fields">
 						<div class="search__container">
 							<ion-input type="text" v-model="data.searchField" label="Поиск заказа" label-placement="floating"
 								fill="solid">
 							</ion-input>
 						</div>
-						<ion-button @click="open">Добавить</ion-button>
 					</div>
 				</div>
 				<div class="order_card_container">
@@ -48,7 +45,6 @@ import {
 } from "@ionic/vue";
 import DateViewer from "@/components/DateViewer.vue";
 import OrderCard from "@/components/OrderCard.vue";
-import OrderCreateForm from "@/components/OrderCreateForm.vue";
 import { reactive, computed } from "vue";
 import { useStore } from "vuex";
 import Order from "@/assets/order";
@@ -79,24 +75,14 @@ export default {
 		DateViewer,
 		OrderCard,
 		IonBackdrop,
-		OrderCreateForm,
 		IonButton,
 	},
 	setup() {
 		const store = useStore();
 		const data = reactive({
 			searchField: "",
-			createOrderFormIsOpen: false,
 		});
 
-		const open = () => {
-			store.dispatch('toggle-tabs')
-			setTimeout(() => data.createOrderFormIsOpen = true, 250)
-		}
-		const close = () => {
-			store.dispatch('toggle-tabs')
-			data.createOrderFormIsOpen = false
-		}
 		const user = computed(() => store.getters.userMainInfo);
 
 		store.dispatch("setup-order-list");
@@ -106,8 +92,6 @@ export default {
 			user,
 			data,
 		
-			open,
-			close,
 
 			searchOrder,
 			orders,

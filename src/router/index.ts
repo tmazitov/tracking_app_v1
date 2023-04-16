@@ -18,8 +18,9 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/Home.vue')
       },
       {
-        path: 'tab2',
-        component: () => import('../views/Tab2Page.vue')
+        name: 'create-order',
+        path: '/order/create',
+        component: () => import('../views/CreateOrder.vue')
       },
       {
         path: 'tab3',

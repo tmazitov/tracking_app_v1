@@ -38,4 +38,7 @@ ion-backdrop {
 	justify-content: center;
 	align-items: center;
 }
+.alert-wrapper.sc-ion-alert-md{
+  z-index: 12;
+}
 </style>

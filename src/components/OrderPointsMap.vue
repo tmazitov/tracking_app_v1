@@ -3,28 +3,17 @@
 		<div class="order-map__map-container">
 			<div id="map"></div>
 		</div>
-		<div class="order-map__map-way-values">
+		<div class="order-map__way-values">
 			<div v-if="map.totalDistance">{{ toKM(map.totalDistance.value) }}</div>
 			<div v-if="map.totalTime">{{ toTimeString(map.totalTime.value) }}</div>
 		</div>
 		<div class="order-map__search-field">
-			<ion-input v-model="data.searchField" label-placement="floating" fill="solid" :clear-input="true"
-				label="Введите адрес" @ion-input="searchLocation" @ion-focus="() => { data.searchResultsIsOpen = true }"
-				@ion-blur="() => { data.searchResultsIsOpen = false }">
-			</ion-input>
-			<transition name="search">
-				<div class="search-field__items" v-if="data.searchField != '' && data.searchResultsIsOpen">
-					<div v-if="data.searchResults.length != 0">
-						<div class="search-field__item" v-for="searchedPoint, index in data.searchResults"
-							:key="`searched_point_${index}`" @click="() => createPoint(searchedPoint)">
-							{{ searchedPoint.title }}
-						</div>
-					</div>
-					<div v-else class="search-field__empty">
-						Подходящие адресса не найдены
-					</div>
-				</div>
-			</transition>
+			<SearchSelector
+				:label="'Введите адресс'"
+				:items="data.searchResults"
+				:selector="createPoint"
+				:searchFunction="searchLocation"
+			/>
 		</div>
 
 		<div class="order-map__points">
@@ -44,6 +33,7 @@ import { IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput } from '@ionic
 import { Transition } from 'vue'
 import { toKM, toTimeString } from '@/assets/standardDimensions'
 import { ItemReorderEventDetail } from '@ionic/core'
+import SearchSelector from './inputs/RSearchSelector.vue'
 import { reactive, onMounted } from 'vue'
 import Point from '@/assets/point'
 
@@ -53,33 +43,39 @@ import * as GeoSearch from 'leaflet-geosearch';
 export default {
 	name: 'OrderPointsMap',
 	components: {
-		IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, Transition
+		IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, Transition, SearchSelector,
 	},
-	setup() {
-		const map = new OrderPointsMap()
+	props:{
+		points: {
+			type: Array<Point>,
+			required: true,
+		}
+	},
+	setup(props) {
+		let map = new OrderPointsMap()
 		const data = reactive<{
 			isOpen: boolean,
 
-			searchLastDate: Date | null,
 			searchField: string,
+			searchLastDate: Date | null,
 			searchResults: Point[],
-			searchResultsIsOpen: boolean,
 		}>({
 			isOpen: false,
 
-			searchLastDate: null,
 			searchField: "",
+			searchLastDate: null,
 			searchResults: [],
-			searchResultsIsOpen: false,
 		})
 
 		onMounted(() => {
-			map.setup([55.7887, 49.1221], 5)
+			setTimeout(() => {
+				map.setup([55.7887, 49.1221], 5, props.points)
+			},100)
 		})
 
 		const provider = new GeoSearch.OpenStreetMapProvider();
 		const searchLocationHandler = async (ev: CustomEvent) => {
-			data.searchResultsIsOpen = true
+			data.searchField = ev.detail.value
 			if (ev.detail["value"] == "") {
 				data.searchResults = []
 				return
@@ -106,6 +102,7 @@ export default {
 			if (point.title == "") return
 			map.addPoint(point)
 			data.searchField = ""
+			// props.points.push(point)
 		}
 
 		const reorderPointsHandler = (ev: CustomEvent<ItemReorderEventDetail>) => {
@@ -145,7 +142,7 @@ export default {
 		display: none;
 	}
 	.order-map__map-container {
-		height: 300px;
+		height: 400px;
 	}
 
 	#map {
@@ -157,56 +154,17 @@ export default {
 		position: relative;
 	}
 
-	.search-field__items{
-		z-index: 4;
-		position: absolute;
-		bottom: -200px;
-		height: 200px;
-		width: 100%;
+	.order-map__points{
+		height: fit-content;
+		max-height: 240px;
 		overflow-y: auto;
-		border-top: none;
-		border-radius: 0 0 4px 4px;
-		background: var(--ion-color-step-150);
+		border: 1px solid var(--ion-color-step-100);
 	}
 
-	.search-field__item{
-		padding: 16px;
-		cursor: pointer;
-	}
-
-	.search-field__item:hover{
-		background: var(--ion-color-step-50);
-	}
-
-	.search-field__item:not(:last-child){
-		border-bottom: 1px solid var(--ion-color-step-200);
-	}
-
-	.search-field__empty{
-		width: 100%;
-		height: 100%;
+	.order-map__way-values{
 		display: flex;
-		justify-content: center;
-		align-items: center;
-		color: var(--ion-color-step-500);
+		flex-direction: row;
+		gap: 16px;
 	}
 
-	.search-enter-active{
-		animation: search-items .2s;
-	}
-
-	.search-leave-active{
-		animation: search-items .2s reverse;
-	}
-
-	@keyframes search-items{
-		from {
-			bottom: 0;
-			height: 0;
-		}
-		to {
-			bottom: -200px;
-			height: 200px;
-		}
-	}
 </style>

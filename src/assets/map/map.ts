@@ -15,7 +15,7 @@ class OrderPointsMap {
 	totalDistance: Ref<number>
 	points:Ref<Array<Point>>
 	control:L.Routing.Control|undefined
-	constructor(points:Array<Point>=[]){
+	constructor(){
 		this.mods = {
 			isAddNewPoint: false
 		}
@@ -23,7 +23,8 @@ class OrderPointsMap {
 		this.totalTime = ref(0)
 		this.totalDistance = ref(0)
 	}
-	setup(center:L.LatLngExpression, zoom:number){
+	setup(center:L.LatLngExpression, zoom:number, points:Array<Point>=[]){
+		this.points.value = points
 		this.instance = L.map("map").setView(center, zoom);
 		L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
 			attribution:
@@ -32,7 +33,7 @@ class OrderPointsMap {
 
 		// Init the plan
 
-		const plan = new L.Routing.Plan([], {       
+		const plan = new L.Routing.Plan(this.points.value.map(point => point.toWaypoint()), {       
 			addWaypoints: true,
 			draggableWaypoints: true,   
 			geocoder: new geocoders.Nominatim({}),  

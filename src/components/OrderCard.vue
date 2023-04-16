@@ -18,7 +18,7 @@
 					</ion-text>
 					<ion-text>
 						Грузчики:
-						<ion-text color="primary">{{order.helpers}}</ion-text> 
+						<ion-text color="primary">{{order.helpers ?? 0}}</ion-text> 
 					</ion-text>
 				</div>
 				<div>{{order.comment}}</div>

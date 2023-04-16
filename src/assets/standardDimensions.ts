@@ -24,7 +24,11 @@ function toTimeString(seconds: number){
 	return totalString
 }
 
+let vw:number = Number((Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) / 100).toFixed(3))
+var vh:number = Number((Math.max(document.documentElement.clientHeight || 0, window.innerHeight || 0) / 100).toFixed(3))
+
 export {
 	toKM,
-	toTimeString
+	toTimeString,
+	vh as cssVh, vw as cssVw
 }
