@@ -1,5 +1,6 @@
 import client from '../client'
 import Order from './order'
+import User from './user'
 
 class TMS {
 	static getUserInfo(){
@@ -10,6 +11,8 @@ class TMS {
 			shortName: shortName
 		})
 	}
+
+	static user = () => User
 
 	static order = () => Order
 }

@@ -4,6 +4,12 @@ import TabsPage from '../views/TabsPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
+    path: '',
+    redirect: {
+      name: 'home'
+    }
+  },
+  {
     name: 'auth',
     path: '/auth',
     component: () => import('../views/Auth.vue')
@@ -23,8 +29,9 @@ const routes: Array<RouteRecordRaw> = [
         component: () => import('../views/CreateOrder.vue')
       },
       {
-        path: 'tab3',
-        component: () => import('../views/Tab3Page.vue')
+        name: 'profile',
+        path: 'profile',
+        component: () => import('../views/Profile.vue')
       }
     ]
   }

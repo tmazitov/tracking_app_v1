@@ -1,10 +1,5 @@
 <template>
 	<ion-page>
-		<ion-header>
-			<ion-toolbar>
-				<ion-title><DateViewer /></ion-title>
-			</ion-toolbar>
-		</ion-header>
 		<ion-content :fullscreen="true">
 			<ion-header collapse="condense">
 				<ion-toolbar>
@@ -13,7 +8,6 @@
 			</ion-header>
 			<div class="content__container">
 				<div class="tools__container">
-
 					<div class="tools__fields">
 						<div class="search__container">
 							<ion-input type="text" v-model="data.searchField" label="Поиск заказа" label-placement="floating"
@@ -104,6 +98,17 @@ export default {
 .content__container {
 	max-width: 800px;
 	margin: auto;
+	padding: 0 20px;
+	height: 100%;
+}
+
+.order_card_container{
+	overflow-y: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding-bottom: 30px;
+	padding-right: 20px;
 }
 
 .tools__container {
@@ -111,7 +116,17 @@ export default {
 	align-items: center;
 }
 
+@media (min-width: 700px) {
+	.order_card_container{
+		height: calc(100% - 56px);
+	}
+}
+
 @media (max-width: 700px) {
+	.content__container
+	.order_card_container{
+		height: calc(100% - 85px);
+	}
 	.tools__container {
 		display: block;
 	}
@@ -126,6 +141,7 @@ export default {
 
 .search__container {
 	width: 230px;
-	margin: 10px;
+	margin: 10px 0;
+	position: sticky;
 }
 </style>

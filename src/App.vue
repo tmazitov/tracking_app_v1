@@ -15,15 +15,16 @@ export default {
     IonApp, IonRouterOutlet
   },
   setup(){
+    const store = useStore()
+    store.dispatch('setup-user')
+
     const route = useRoute()
+    
     if (route.name != 'auth' && AccessTokenPairAPI.getAccess() == null){
       const router = useIonRouter()
       sessionStorage.setItem("origin_path", route.fullPath)
       router.replace({name:'auth'}) 
     }
-
-    const store = useStore()
-    store.dispatch('setup-user')
   }
 }
 
@@ -40,5 +41,9 @@ ion-backdrop {
 }
 .alert-wrapper.sc-ion-alert-md{
   z-index: 12;
+}
+
+body{
+  overflow-y: auto;
 }
 </style>

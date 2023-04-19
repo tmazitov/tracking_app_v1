@@ -1,14 +1,7 @@
 <template>
 	<ion-page>
-		<ion-header>
-			<ion-toolbar>
-				<ion-title>Новый заказ</ion-title>
-			</ion-toolbar>
-		</ion-header>
 		<ion-content :fullscreen="true">
-			<div class="form-container">
-				<OrderCreateForm/>
-			</div>
+			<OrderCreateForm/>
 		</ion-content>
 	</ion-page>
 </template>
@@ -24,14 +17,3 @@ export default {
 	}
 }
 </script>
-
-<style scoped>
-.form-container{
-	display: flex;
-	justify-content: center;
-
-	height: 100%;
-	width: 100%;
-}
-
-</style>

@@ -69,6 +69,9 @@ export default {
 </script>
 
 <style scoped>
+ion-card{
+	margin: 0;
+}
 .content__container{
 	display: flex;
 	flex-direction: column;

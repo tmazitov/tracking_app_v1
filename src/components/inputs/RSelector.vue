@@ -7,9 +7,10 @@
 					v-model="data.currentValue"
 					@ion-change="changeHandler"
 					interface="popover">
-					<ion-select-option v-for="item in data.items" :value="item.value">
+					<ion-select-option v-for="item, index in getItems()" :key="`ion_selector_${index}`" :value="item.value">
 						{{ item.title == "" ? "Clear" : item.title }}
 					</ion-select-option>
+					
 				</ion-select>
 			</ion-item>
 		</ion-list>
@@ -23,7 +24,7 @@
 import SelectableItem from '@/assets/selectableItem';
 import { IonSelectCustomEvent } from '@ionic/core';
 import { IonItem, IonLabel, IonList, IonRadio, IonSelect, IonSelectOption, IonIcon, SelectChangeEventDetail } from '@ionic/vue';
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 
 export default {
 	name: "RSelector",
@@ -50,17 +51,19 @@ export default {
 			default: false,
 		},
 	},
-	setup(props, ctx) {
+	setup(props) {
 		const data = reactive({
 			...props,
 			currentValue: props.currentItem,
 		})
-
 		const changeHandler = (ev:IonSelectCustomEvent<SelectChangeEventDetail<any>>) => {
 			data.selector(data.currentValue)
 		}
 
+		const getItems = () => props.items
+
 		return {
+			getItems,
 			changeHandler,
 			data,
 		}

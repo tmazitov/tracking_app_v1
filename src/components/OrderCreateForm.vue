@@ -43,13 +43,27 @@
 						<ion-textarea label="Комментарий заказа" labelPlacement="floating" fill="solid" v-model="form.comment">
 						</ion-textarea>
 					</div>
+
+					<div class="form__helpers">
+						<ion-input type="text" v-model="form.helpers" label="Грузчики" fill="solid" label-placement="floating">
+						</ion-input>
+
+						<div class="ion-activatable ripple-parent form__helpers-button"  @click="addHelper">
+							<ion-icon :icon="add"></ion-icon>
+							<ion-ripple-effect></ion-ripple-effect>
+						</div>
+						<div class="ion-activatable ripple-parent form__helpers-button" @click="removeHelper">
+							<ion-icon :icon="remove" ></ion-icon>
+							<ion-ripple-effect></ion-ripple-effect>
+						</div>
+					</div>
 	
 					<div class="from__order-type-worker">
 						<!-- Worker -->
 					
 						<RSelector 
 							v-model:current-item="form.currentWorkerId"
-							:items="selectorsData.workers.map(w => w.toSelectableItem())" 
+							:items="workers" 
 							:selector="selectWorker"
 							:label="'Водитель'"
 						/>
@@ -58,13 +72,15 @@
 
 						<RSelector
 							v-model:current-item="form.currentOrderType"
-							:items="selectorsData.orderTypes" 
+							:items="orderTypes" 
 							:selector="selectOrderType"
 							:label="'Тип заказа'"
 							:multiple="true"
 						/>
+					
 					</div>
 					
+
 
 
 					<!-- Is Fragile cargo -->
@@ -92,8 +108,8 @@
 <script lang="ts">
 import OrderPointsMap from "./OrderPointsMap.vue";
 import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, useIonRouter } from "@ionic/vue";
-import { arrowBackOutline } from "ionicons/icons";
-import { reactive } from "vue";
+import { add, arrowBackOutline, remove } from "ionicons/icons";
+import { ComputedRef, computed, reactive, toRaw, toRef } from "vue";
 import User from "@/assets/user";
 import RSelector from './inputs/RSelector.vue'
 import { IonSelectCustomEvent } from "@ionic/core";
@@ -103,12 +119,14 @@ import TMS from "@/api/tms";
 import { UTCString } from "@/assets/data";
 import { cssVw } from "@/assets/standardDimensions";
 import { useRouter } from "vue-router";
+import { useStore } from "vuex";
 
 interface CreateForm {
 	title: string
 	date: string
 	time: string
 
+	helpers: number
 	comment: string
 
 	points: Array<Point>
@@ -121,7 +139,7 @@ interface CreateForm {
 }
 
 interface SelectorsData {
-	workers: Array<User>
+	workers: ComputedRef<Array<User>>
 	orderTypes: Array<SelectableItem>
 }
 
@@ -140,11 +158,13 @@ export default {
 	},
 
 	setup(props) {
+		const store = useStore()
 		const router = useRouter()
 		const form = reactive<CreateForm>({
 			title: "",
 			date: "",
 			time: "",
+			helpers: 0,
 			comment: "",
 			points: [],
 			selectedTab: 0,
@@ -158,21 +178,8 @@ export default {
 			isNeededTabs: cssVw*100 <= 480,
 		})
 
-		const selectorsData = reactive<SelectorsData>({
-			workers: [
-				new User(0, "Нет", 1),
-				new User(1, "Тимур", 1),
-				new User(2, "Саша", 1),
-				new User(3, "Матвей", 1),
-				new User(4, "Эдик", 1)
-			],
-			orderTypes: [
-				{value: 1, title: "Город"},
-				{value: 2, title: "Пригород"},
-				{value: 3, title: "Меж. город"},
-			]
-		})
 
+		const workers = computed(() => store.getters.staffWorkers)
 		const selectWorker = (workerId:number) => {
 			form.currentWorkerId = workerId
 		}
@@ -180,10 +187,13 @@ export default {
 		const selectOrderType = (orderType:Array<number>) => {
 			form.currentOrderType = orderType
 		}
-		
-		const compareWith = (o1:User, o2:User) => {
-			return o1 && o2 ? o1.id === o2.id : o1 === o2;
-		}
+
+		const orderTypes =  [
+			{value: 1, title: "Город"},
+			{value: 2, title: "Пригород"},
+			{value: 3, title: "Меж. город"},
+		]
+	
 
 		const orderSubmit = () => {
 
@@ -192,8 +202,8 @@ export default {
 				title: form.title,
 				startAt: UTCString(date),
 				points: form.points,
-				workerId: 7,
-				helpers: 0,
+				workerId: form.currentWorkerId,
+				helpers: form.helpers,
 				orderType: form.currentOrderType.reduce((a, b) => a + b),
 				comment: form.comment,
 				isFragileCargo: form.isFragileCargo,
@@ -209,12 +219,19 @@ export default {
 
 		const selectTab = (index: number) => (form.selectedTab = index);
 
+		const addHelper = () => form.helpers += 1
+		const removeHelper = () => {if (form.helpers > 0) { form.helpers -= 1}}
+
 		return {
+			addHelper,
+			removeHelper,
 			data,
+			remove,
+			add,
 			form,
-			selectorsData,
+			workers,
+			orderTypes,
 			selectTab,
-			compareWith,
 			orderSubmit,
 			selectWorker,
 			selectOrderType,
@@ -228,23 +245,24 @@ export default {
 @import url(../theme/variables.css);
 
 .form {
-	height: calc(100vh - 112px);
-	width: 45vw;
+	height: 100%;
+	width: 100%;
 	min-width: 350px;
 	max-width: 640px;
 
 	border-radius: 8px;
-	padding: 20px;
 
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+
+	padding: 10px 20px;
 }
 
-@media (max-width: 480px){
+@media (max-width: 768px){
 	.form {
 		width: 100vw;
-		height: calc(100vh - 56px);
+		height: calc(100vh - 113px);
 		border-radius: 0;
 		padding: 10px;
 	}
@@ -265,8 +283,9 @@ export default {
 	}	
 }
 
-@media (min-width: 480px) {
+@media (min-width: 768px) {
 	.form {
+		height: calc(100vh - 56px);
 		width: 60vw;
 	}
 	.form__tabs-content{
@@ -331,7 +350,7 @@ export default {
 
 .form__tabs {
 	display: grid;
-	grid-template-columns: auto auto;
+	grid-template-columns: 50% 50%;
 	height: 32px;
 	width: 100%;
 
@@ -384,4 +403,34 @@ ion-checkbox{
 .form__submit-container > ion-button{
 	width: 100%;
 }
+
+.form__helpers{
+	display: grid;
+	grid-template-columns: calc(100% - 16px - 56px - 16px - 56px) 56px 56px; 
+	grid-column-gap: 16px; 
+}
+
+.form__helpers-button {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+
+	background: var(--ion-color-step-50, #f2f2f2);
+	border-radius: 4px;
+
+	width: 56px;
+	height: 56px;
+	cursor: pointer;
+}
+
+.ripple-parent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    position: relative;
+    overflow: hidden;
+
+    user-select: none;
+  }
 </style>
