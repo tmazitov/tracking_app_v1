@@ -57,7 +57,6 @@ export default {
 		const orderTitle = order.getTitle()
 		const orderTime = order.getTime()
 		const orderStatus = order.getStatusMessage()
-		console.log('orderTitle :>> ', orderTitle);
 		return {
 			order,
 			orderTime,

@@ -1,5 +1,7 @@
 <template>
+	
 	<ion-page>
+		
 		<ion-content :fullscreen="true">
 			<ion-header collapse="condense">
 				<ion-toolbar>
@@ -10,15 +12,12 @@
 				<div class="tools__container">
 					<div class="tools__fields">
 						<div class="search__container">
-							<ion-input type="text" v-model="data.searchField" label="Поиск заказа" label-placement="floating"
-								fill="solid">
-							</ion-input>
+							<ion-searchbar v-model="data.searchField" :debounce="1000"></ion-searchbar>
 						</div>
 					</div>
 				</div>
 				<div class="order_card_container">
-					<OrderCard v-for="(order, index) in searchOrder(orders, data.searchField)" :key="`order_card_${index}`"
-						:order="order" />
+					<OrderCard v-for="order in searchedOrders" :key="`order__${order.orderId}`" :order="order" />
 				</div>
 			</div>
 		</ion-content>
@@ -36,23 +35,20 @@ import {
 	IonContent,
 	IonBackdrop,
 	IonButton,
+	IonSearchbar,
+IonItem,
+IonList,
 } from "@ionic/vue";
 import DateViewer from "@/components/DateViewer.vue";
 import OrderCard from "@/components/OrderCard.vue";
-import { reactive, computed } from "vue";
+import { reactive, computed, ref, ComputedRef, Ref } from "vue";
 import { useStore } from "vuex";
 import Order from "@/assets/order";
 
 const searchOrder = (orders: Array<Order>, searchString: string) => {
 	let low = searchString.toLowerCase();
 	return orders.filter((order: Order) => {
-		let littleTitle = order.points[0].title.toLowerCase();
-		console.log(
-			"littleTitle :>> ",
-			littleTitle,
-			littleTitle.includes(low),
-			order.orderId
-		);
+		let littleTitle = order.title.toLowerCase();
 		return littleTitle.includes(low);
 	});
 };
@@ -60,6 +56,8 @@ const searchOrder = (orders: Array<Order>, searchString: string) => {
 export default {
 	name: "HomePage",
 	components: {
+
+		IonSearchbar,
 		IonInput,
 		IonPage,
 		IonHeader,
@@ -70,24 +68,32 @@ export default {
 		OrderCard,
 		IonBackdrop,
 		IonButton,
+		IonList,
+		IonItem,
 	},
 	setup() {
 		const store = useStore();
-		const data = reactive({
+		const data = reactive<{
+			searchField:string
+		}>({
 			searchField: "",
 		});
 
 		const user = computed(() => store.getters.userMainInfo);
 
 		store.dispatch("setup-order-list");
-		const orders = computed(() => store.getters.orderList);
+		const orders = computed(() => {
+			return store.getters.orderList
+		})
+
+		const searchedOrders = computed(() => {
+			return searchOrder(orders.value, data.searchField)
+		})
 
 		return {
 			user,
 			data,
-		
-
-			searchOrder,
+			searchedOrders,
 			orders,
 		};
 	},
