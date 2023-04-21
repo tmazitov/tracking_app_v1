@@ -26,8 +26,8 @@ const module:Module<OrderState,any> = {
 	},
 	
 	actions:{
-		'setup-order-list': ({commit}) => {
-			TMS.order().list().then((response) => {
+		'setup-order-list': ({commit}, filters) => {
+			TMS.order().list(filters).then((response) => {
 				if (response.data && response.data["err"] != null){
 					throw response.data["err"]
 				}

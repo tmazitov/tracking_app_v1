@@ -5,10 +5,11 @@
 		<ion-content :fullscreen="true">
 			<ion-header collapse="condense">
 				<ion-toolbar>
-					<ion-title size="large"><DateViewer /></ion-title>
+					<ion-title size="large"></ion-title>
 				</ion-toolbar>
 			</ion-header>
 			<div class="content__container">
+				<DateViewer :date="filters.date" />
 				<div class="tools__container">
 					<div class="tools__fields">
 						<div class="search__container">
@@ -52,7 +53,14 @@ const searchOrder = (orders: Array<Order>, searchString: string) => {
 		return littleTitle.includes(low);
 	});
 };
-
+interface OrderListFilters{
+	date: Date,
+	page: number|undefined,
+	workerId: number|undefined,	
+	statusId: number|undefined,
+	typeId:   number|undefined,
+	isRegularCustomer: boolean|undefined,
+}
 export default {
 	name: "HomePage",
 	components: {
@@ -74,14 +82,18 @@ export default {
 	setup() {
 		const store = useStore();
 		const data = reactive<{
-			searchField:string
+			searchField: string
 		}>({
 			searchField: "",
 		});
+		
+		const filters = reactive({
+			date: new Date(),
+		})
 
 		const user = computed(() => store.getters.userMainInfo);
 
-		store.dispatch("setup-order-list");
+		store.dispatch("setup-order-list", filters)
 		const orders = computed(() => {
 			return store.getters.orderList
 		})
@@ -93,6 +105,7 @@ export default {
 		return {
 			user,
 			data,
+			filters,
 			searchedOrders,
 			orders,
 		};
@@ -104,8 +117,13 @@ export default {
 .content__container {
 	max-width: 800px;
 	margin: auto;
-	padding: 0 20px;
 	height: 100%;
+}
+
+@media (max-width:768px) {
+	.content__container{
+		padding: 0 10px;
+	}
 }
 
 .order_card_container{
@@ -147,7 +165,5 @@ export default {
 
 .search__container {
 	width: 230px;
-	margin: 10px 0;
-	position: sticky;
 }
 </style>
