@@ -107,7 +107,7 @@
 
 <script lang="ts">
 import OrderPointsMap from "./OrderPointsMap.vue";
-import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, useIonRouter } from "@ionic/vue";
+import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect } from "@ionic/vue";
 import { add, arrowBackOutline, remove } from "ionicons/icons";
 import { ComputedRef, computed, reactive, toRaw, toRef } from "vue";
 import User from "@/assets/user";
@@ -138,6 +138,22 @@ interface CreateForm {
 	isRegularCustomer:boolean
 }
 
+function getDefaultForm():CreateForm{
+	return {
+		title: "",
+		date: "",
+		time: "",
+		helpers: 0,
+		comment: "",
+		points: [],
+		selectedTab: 0,
+		currentWorkerId: 0,
+		currentOrderType: [1],
+		isFragileCargo: false,
+		isRegularCustomer:false
+	}
+}
+
 interface SelectorsData {
 	workers: ComputedRef<Array<User>>
 	orderTypes: Array<SelectableItem>
@@ -154,25 +170,14 @@ export default {
 		IonCheckbox,
 		RSelector,
 		IonButton,
-		IonSelect, IonSelectOption
+		IonSelect, IonSelectOption,
+		IonRippleEffect
 	},
 
 	setup(props) {
 		const store = useStore()
 		const router = useRouter()
-		const form = reactive<CreateForm>({
-			title: "",
-			date: "",
-			time: "",
-			helpers: 0,
-			comment: "",
-			points: [],
-			selectedTab: 0,
-			currentWorkerId: 0,
-			currentOrderType: [1],
-			isFragileCargo: false,
-			isRegularCustomer:false
-		});
+		const form = reactive<CreateForm>(getDefaultForm());
 
 		const data = reactive({
 			isNeededTabs: cssVw*100 <= 480,
@@ -213,6 +218,7 @@ export default {
 				if (response.data["err"]){
 					throw new Error(response.data["err"])
 				}
+				Object.assign(form, getDefaultForm())
 				router.push({name:"home"})
 			})
 		}
@@ -256,18 +262,27 @@ export default {
 	flex-direction: column;
 	gap: 16px;
 
-	padding: 10px 20px;
+	padding: 10px 0;
 }
 
 @media (max-width: 768px){
 	.form {
 		width: 100vw;
-		height: calc(100vh - 113px);
 		border-radius: 0;
-		padding: 10px;
+
+	}
+
+	.form__page-1{
+		height: calc(100% - 98px);
+	}
+
+	.form__page-2{
+		height: calc(100vh - 113px - 32px - 57px);
+		overflow: auto;
 	}
 	.form__tabs-content{
-		height: calc(100% - 98px);
+		height: calc(100vh - 98px - 32px - 16px - 36px);
+		padding: 10px;
 	}
 
 	.form__datetime-title{
@@ -290,6 +305,7 @@ export default {
 	}
 	.form__tabs-content{
 		height: 100%;
+		padding-right: 20px;
 	}
 
 	.form__datetime-title{

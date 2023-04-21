@@ -141,8 +141,17 @@ export default {
 	.leaflet-control{
 		display: none;
 	}
-	.order-map__map-container {
-		height: 400px;
+
+
+	@media (max-width: 768px) {
+		.order-map__map-container {
+			height: 250px;
+		}
+	}
+	@media (min-width: 768px) {
+		.order-map__map-container {
+			height: 400px;
+		}
 	}
 
 	#map {
