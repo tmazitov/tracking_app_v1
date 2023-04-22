@@ -86,6 +86,7 @@ ion-card-title{
 	display: flex;
 	flex-direction: row;
 	gap: 10px;
+	font-size: 18px;
 }
 
 .time{

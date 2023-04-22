@@ -368,8 +368,9 @@ export default {
 	display: grid;
 	grid-template-columns: 50% 50%;
 	height: 32px;
-	width: 100%;
+	width: calc(100% - 20px);
 
+	margin: 0 10px;
 	border: 1px solid var(--ion-color-step-300);
 	border-radius: 4px;
 }
