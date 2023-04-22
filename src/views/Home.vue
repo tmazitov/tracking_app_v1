@@ -1,15 +1,8 @@
 <template>
-	
 	<ion-page>
-		
 		<ion-content :fullscreen="true">
-			<ion-header collapse="condense">
-				<ion-toolbar>
-					<ion-title size="large"></ion-title>
-				</ion-toolbar>
-			</ion-header>
 			<div class="content__container">
-				<DateViewer :date="filters.date" />
+				<DateViewer v-model:date="filters.date" />
 				<div class="tools__container">
 					<div class="tools__fields">
 						<div class="search__container">
@@ -17,12 +10,14 @@
 						</div>
 					</div>
 				</div>
-				<div class="order_card_container">
+				<div class="order_card_container" v-if="searchedOrders.length > 0">
 					<OrderCard v-for="order in searchedOrders" :key="`order__${order.orderId}`" :order="order" />
+				</div>
+				<div class="order_card_container empty" v-else>
+					Заказы не найдены
 				</div>
 			</div>
 		</ion-content>
-
 	</ion-page>
 </template>
 
@@ -37,14 +32,16 @@ import {
 	IonBackdrop,
 	IonButton,
 	IonSearchbar,
-IonItem,
-IonList,
+	IonItem,
+	IonList,
 } from "@ionic/vue";
 import DateViewer from "@/components/DateViewer.vue";
 import OrderCard from "@/components/OrderCard.vue";
-import { reactive, computed, ref, ComputedRef, Ref } from "vue";
+import { reactive, computed, watch } from "vue";
 import { useStore } from "vuex";
 import Order from "@/assets/order";
+import { useRoute, useRouter } from "vue-router";
+import { yyyymmdd } from "@/assets/date";
 
 const searchOrder = (orders: Array<Order>, searchString: string) => {
 	let low = searchString.toLowerCase();
@@ -53,14 +50,7 @@ const searchOrder = (orders: Array<Order>, searchString: string) => {
 		return littleTitle.includes(low);
 	});
 };
-interface OrderListFilters{
-	date: Date,
-	page: number|undefined,
-	workerId: number|undefined,	
-	statusId: number|undefined,
-	typeId:   number|undefined,
-	isRegularCustomer: boolean|undefined,
-}
+
 export default {
 	name: "HomePage",
 	components: {
@@ -80,15 +70,40 @@ export default {
 		IonItem,
 	},
 	setup() {
+		const route = useRoute();
 		const store = useStore();
+		const router = useRouter();
 		const data = reactive<{
 			searchField: string
 		}>({
 			searchField: "",
-		});
-		
+		});	
+
+
+		let queryDate = route.query["d"]
+		let initDate:Date 
+		if (queryDate){
+			initDate = new Date(queryDate.toString())
+		} else {
+			initDate = new Date()
+		}
 		const filters = reactive({
-			date: new Date(),
+			date: initDate,
+		})
+
+		watch(()=>filters.date, (date:Date,oldDate:Date) => {
+			let dateIsChanged = date.getDate() != oldDate.getDate() || 
+				date.getMonth() != oldDate.getMonth() || 
+				date.getFullYear() != oldDate.getFullYear()
+			
+			if (dateIsChanged){
+				store.dispatch("setup-order-list", filters)
+				let currentParams = {...route.query}
+				currentParams["d"] = yyyymmdd(date)
+
+				if (!route.name) return
+				router.push({name:route.name, query:currentParams})
+			} 
 		})
 
 		const user = computed(() => store.getters.userMainInfo);
@@ -114,6 +129,7 @@ export default {
 </script>
 
 <style scoped>
+@import url(../theme/variables.css);
 .content__container {
 	max-width: 800px;
 	margin: auto;
@@ -131,8 +147,13 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	padding-bottom: 30px;
 	padding-right: 20px;
+}
+
+.order_card_container.empty{
+	justify-content: center;
+	align-items: center;
+	color: var(--ion-color-step-400)
 }
 
 .tools__container {
@@ -140,16 +161,16 @@ export default {
 	align-items: center;
 }
 
-@media (min-width: 700px) {
+@media (min-width: 768px) {
 	.order_card_container{
-		height: calc(100% - 56px);
+		height: calc(100% - 112px - 40px);
 	}
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
 	.content__container
 	.order_card_container{
-		height: calc(100% - 85px);
+		height: calc(100% - 55px);
 	}
 	.tools__container {
 		display: block;
@@ -165,5 +186,9 @@ export default {
 
 .search__container {
 	width: 230px;
+}
+
+.footer{
+	height: 40px;
 }
 </style>
