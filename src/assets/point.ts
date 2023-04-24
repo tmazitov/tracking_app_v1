@@ -7,6 +7,9 @@ class Point {
 	floor:number|undefined
 	lat:number
 	lon:number
+
+	detailsIsOpen:boolean
+	detailsEvent:null|Event
 	constructor(pointInfo:any) {
 		this.id = pointInfo["id"]
 		this.stepId = pointInfo["stepId"]
@@ -14,7 +17,19 @@ class Point {
 		this.floor = pointInfo["floor"]
 		this.lat = pointInfo["lat"] ?? pointInfo["y"]
 		this.lon = pointInfo["lon"] ?? pointInfo["x"]
+		this.detailsIsOpen = false
+		this.detailsEvent = null
  	}
+
+	copy(){
+		return new Point({
+			id:this.id,
+			title:this.title,
+			floor:this.floor,
+			lat: this.lat,
+			lon: this.lon,
+		})
+	}
 
 	toLatLng(){
 		return L.latLng(this.lat, this.lon)

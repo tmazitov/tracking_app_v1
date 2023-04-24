@@ -106,6 +106,12 @@ class OrderPointsMap {
 
 		this.updatePlan()
 	}
+
+	removePoint(point:Point) {
+		this.points.value = this.points.value.filter((p:Point) => point !== p)
+		this.updatePlan()
+	}
+
 	updateZoom(zoomLvl:number){
 		this.instance?.setZoom(zoomLvl)
 	}
