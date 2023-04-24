@@ -11,7 +11,9 @@
 					</div>
 				</div>
 				<div class="order_card_container" v-if="searchedOrders.length > 0">
-					<OrderCard v-for="order in searchedOrders" :key="`order__${order.orderId}`" :order="order" />
+					<transition-group name="order-item">
+						<OrderCard v-for="order in searchedOrders" :key="`order__${order.orderId}`" :order="order" />
+					</transition-group>
 				</div>
 				<div class="order_card_container empty" v-else>
 					Заказы не найдены
@@ -148,6 +150,7 @@ export default {
 	flex-direction: column;
 	gap: 16px;
 	padding-right: 20px;
+	animation: .3s order-item;
 }
 
 .order_card_container.empty{
@@ -190,5 +193,22 @@ export default {
 
 .footer{
 	height: 40px;
+}
+
+.order-item-enter-active{
+	animation: .3s order-item;
+}
+
+.order-item-leave-active{
+	animation: .3s order-item reverse;
+}
+
+@keyframes order-item {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
 }
 </style>
