@@ -5,7 +5,9 @@
 		<div class="calendar-container">
 			<ion-icon :icon="calendarOutline" size="large" color="primary" @click="openDatePicker"></ion-icon>
 		</div>
-		<ion-datetime presentation="date" :value="date" v-show="datePickerIsOpen" @ionChange="selectDate"></ion-datetime>
+		<transition name="datetime">
+			<ion-datetime presentation="date" :value="date" v-if="datePickerIsOpen" @ionChange="selectDate"></ion-datetime>
+		</transition>
 	</div>
 </template>
 
@@ -175,10 +177,34 @@ export default {
 	.date__viewer{
 		padding-top: 30px;
 	}
+	.date__viewer > ion-datetime{
+		top: 80px;
+		left: 10px;
+		width: calc(100% - 40px);
+	}
 }
 
 ion-icon{
 	height: 20px;
 	width: 20px;
+}
+
+
+.datetime-enter-active{
+	animation: datetime .4s;	
+}
+.datetime-leave-active{
+	animation: datetime .4s reverse;
+}
+
+@keyframes datetime {
+	from{
+		max-height: 0;
+		opacity: 0.4;
+	}
+	to{
+		max-height: 344px;
+		opacity: 1;
+	}
 }
 </style>
