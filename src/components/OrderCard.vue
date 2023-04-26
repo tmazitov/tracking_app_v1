@@ -4,6 +4,7 @@
 			<ion-card-header>
 				<ion-card-subtitle>
 					<ion-chip :color="orderStatus.colorName">{{orderStatus.message}}</ion-chip>
+					<ion-chip v-if="order.isRegularCustomer" color="success">Постоянный клиент</ion-chip>
 				</ion-card-subtitle> 	
 				<ion-card-title>
 					<div>{{orderTitle}}</div>
@@ -16,14 +17,14 @@
 						Точек:
 						<ion-text color="primary">{{order.points.length}}</ion-text>
 					</ion-text>
-					<ion-text>
+					<ion-text v-if="order.helpers">
 						Грузчики:
 						<ion-text color="primary">{{order.helpers ?? 0}}</ion-text> 
 					</ion-text>
 				</div>
 				<div>{{order.comment}}</div>
 				<div>
-					<ion-button fill="clear">Подробнее</ion-button>
+					<ion-button @click="() => openDetails(order)" fill="clear">Подробнее</ion-button>
 				</div>
 			  </ion-card-content>
 		</ion-card>
@@ -51,6 +52,10 @@ export default {
 			type: Order,
 			required: true,
 		},
+		openDetails: {
+			type: Function,
+			required: true,
+		}
 	},
 	setup(props, ctx) {
 		const order:Order = props.order
@@ -62,6 +67,7 @@ export default {
 			orderTime,
 			orderTitle,
 			orderStatus,
+			openDetails: props.openDetails,
 		}
 	},
 }

@@ -24,7 +24,7 @@
                 </ion-tab-bar>
             </div>
 
-            <div>
+            <div v-if="isShowTabs">
                 <ion-tab-bar class="tab-wrapper-smartphone" slot="bottom">
                     <ion-tab-button v-for="t in tabs" :tab="t.name" :href="t.href">
                         <ion-icon aria-hidden="true" :icon="t.icon" />

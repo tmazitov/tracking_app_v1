@@ -71,4 +71,9 @@ ion-backdrop {
 body {
     overflow-y: auto;
 }
+ion-chip.gold{
+    --background: rgb(255, 215, 0, 0.1);
+    --color: rgb(255, 215, 0, 0.8);
+}
+
 </style>

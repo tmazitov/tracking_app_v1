@@ -12,61 +12,11 @@
 </template>
 
 <script lang="ts">
-import { yyyymmdd } from '@/assets/date';
+import { checkDate, getDateString, namesOfMonths, namesOfWeekDays, yyyymmdd } from '@/assets/date';
 import { IonDatetime, IonIcon } from '@ionic/vue';
 import { calendarOutline } from 'ionicons/icons';
 import { computed, ref } from 'vue';
 
-const namesOfWeekDays = [
-	'вс.',
-	'пн.',
-	'вт.',
-	'ср.',
-	'чт.',
-	'пт.',
-	'сб.',
-]
-
-function checkDate(date:Date) {
-	const today = new Date();
-	const tomorrow = new Date(today);
-	tomorrow.setDate(tomorrow.getDate() + 1);
-	const yesterday = new Date(today);
-	yesterday.setDate(yesterday.getDate() - 1);
-
-	if (date.toDateString() === today.toDateString()) {
-		return "Сегодня";
-	} else if (date.toDateString() === tomorrow.toDateString()) {
-		return "Завтра";
-	} else if (date.toDateString() === yesterday.toDateString()) {
-		return "Вчера";
-	} else {
-		return -1;
-	}
-}
-
-const namesOfMonths = [
-	'января',
-	'февраля',
-	'марта',
-	'апреля',
-	'мая',
-	'июня',
-	'июля',
-	'августа',
-	'сентября',
-	'октября',
-	'ноября',
-	'декабря',
-]
-
-const getDateString: Function = (date: Date) => {
-
-	let month: String = namesOfMonths[date.getMonth()]
-	let dayOfWeek: String = namesOfWeekDays[date.getDay()]
-
-	return [dayOfWeek, date.getDate(), month, date.getFullYear()].join(" ")
-}
 
 export default {
 	name: 'TrackingAppV1DateViewer',

@@ -37,7 +37,7 @@ class Order {
 		this.startAt = new Date(details["startAt"])
 		this.endAt = new Date(details["endAt"])
 		this.statusId = details["statusId"]
-		this.ownerId = details["ownerId"]
+		this.ownerId = details["owner_id"]
 		this.workerId = details["workerId"]
 		this.managerId = details["managerId"]
 		this.helpers = details["helpers"]

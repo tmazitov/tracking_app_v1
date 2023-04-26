@@ -1,5 +1,10 @@
 <template>
 	<ion-page>
+		<OrderDetails
+			:isOpen="data.detailsIsOpen"
+			:closer="closeDetails"
+			:order="data.orderDetails"
+		/>
 		<ion-content :fullscreen="true">
 			<div class="content__container">
 				<DateViewer v-model:date="filters.date" />
@@ -12,7 +17,11 @@
 				</div>
 				<div class="order_card_container" v-if="searchedOrders.length > 0">
 					<transition-group name="order-item">
-						<OrderCard v-for="order in searchedOrders" :key="`order__${order.orderId}`" :order="order" />
+						<OrderCard v-for="order in searchedOrders" 
+						:key="`order__${order.orderId}`" 
+						:order="order"
+						:openDetails="openDetails"
+						/>
 					</transition-group>
 				</div>
 				<div class="order_card_container empty" v-else>
@@ -42,6 +51,7 @@ import OrderCard from "@/components/OrderCard.vue";
 import { reactive, computed, watch } from "vue";
 import { useStore } from "vuex";
 import Order from "@/assets/order";
+import OrderDetails from "@/components/OrderDetails.vue";
 import { useRoute, useRouter } from "vue-router";
 import { yyyymmdd } from "@/assets/date";
 
@@ -66,6 +76,7 @@ export default {
 		IonContent,
 		DateViewer,
 		OrderCard,
+		OrderDetails,
 		IonBackdrop,
 		IonButton,
 		IonList,
@@ -76,9 +87,13 @@ export default {
 		const store = useStore();
 		const router = useRouter();
 		const data = reactive<{
-			searchField: string
+			searchField: string,
+			detailsIsOpen: boolean,
+			orderDetails: Order|undefined,
 		}>({
 			searchField: "",
+			detailsIsOpen: false,
+			orderDetails: undefined,
 		});	
 
 
@@ -112,12 +127,26 @@ export default {
 
 		store.dispatch("setup-order-list", filters)
 		const orders = computed(() => {
-			return store.getters.orderList
+			return store.getters.orderList.sort((a:Order, b:Order) => {
+				return a.startAt.getTime() - b.startAt.getTime();
+			})
 		})
 
 		const searchedOrders = computed(() => {
 			return searchOrder(orders.value, data.searchField)
 		})
+
+		const openDetails = (order:Order) => {
+			data.orderDetails = order
+			data.detailsIsOpen = true
+			store.dispatch('toggle-tabs')
+		}
+
+		const closeDetails = () => {
+			data.orderDetails = undefined
+			data.detailsIsOpen = false
+			store.dispatch('toggle-tabs')
+		}
 
 		return {
 			user,
@@ -125,6 +154,8 @@ export default {
 			filters,
 			searchedOrders,
 			orders,
+			openDetails,
+			closeDetails,
 		};
 	},
 };
@@ -173,7 +204,8 @@ export default {
 @media (max-width: 768px) {
 	.content__container
 	.order_card_container{
-		height: calc(100% - 55px);
+		height: calc(100% - 124px);
+		padding-bottom: 30px;
 	}
 	.tools__container {
 		display: block;
