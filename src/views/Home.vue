@@ -7,6 +7,7 @@
 		/>
 		<ion-content :fullscreen="true">
 			<div class="content__container">
+
 				<DateViewer v-model:date="filters.date" />
 				<div class="tools__container">
 					<div class="tools__fields">

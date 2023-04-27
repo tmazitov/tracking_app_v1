@@ -16,11 +16,22 @@
 			<div class="order-details__date">
 				{{ getTimeString(order?.startAt)}} {{getDateString(order?.startAt)}} 
 			</div>
-			<div class="order-details__description">
+			<div class="order-details__description" v-if="order?.comment">
 				{{ order?.comment }}
 			</div>
 			<div v-if="order?.helpers">Количество грузчиков: {{order?.helpers}}</div>
-			<div v-if="order?.workerId">Водитель: {{order?.workerId}}</div>
+			<div class="order-details__peoples" v-if="order?.owner && user.id != order?.owner.id">
+				<div class="label">Заказчик</div> 
+				<div class="value">{{order?.owner.shortName}}</div>
+			</div>
+			<div class="order-details__peoples" v-if="order?.worker && user.id != order?.worker.id">
+				<div class="label">Водитель</div>
+				<div class="value">{{order?.worker.shortName}}</div>
+			</div>
+			<div class="order-details__peoples" v-if="order?.manager && user.id != order?.manager.id">
+				<div class="label">Оператор</div>
+				<div class="value">{{order?.manager.shortName}}</div>
+			</div>
 		</div>
 	</transition>
 </template>
@@ -31,6 +42,7 @@ import Order from '@/assets/order';
 import { IonBackdrop, IonChip, IonIcon, IonTitle } from '@ionic/vue';
 import { arrowBackOutline } from 'ionicons/icons';
 import { ComputedRef, Transition, computed, reactive, ref } from 'vue';
+import { useStore } from 'vuex';
 
 interface StatusMessage {
 	message:string
@@ -59,8 +71,8 @@ export default {
 			required: true,
 		}
 	},
-	setup(props, ctx){
-
+	setup(props){
+		const store = useStore()
 		const data = reactive({})
 
 		const orderData:ComputedRef<Order|undefined> = computed(() => {
@@ -74,10 +86,12 @@ export default {
 			return order.getStatusMessage()
 		})
 		const isOpen = computed(() => props.isOpen)
+		const user = computed(() => store.getters.userMainInfo)
 
 		return {
 			data,
 			status,
+			user,
 			order: orderData,
 			isOpen: isOpen,
 			getDateString,
@@ -159,5 +173,11 @@ export default {
 ion-icon{
 	height: 20px;
 	width: 20px;
+}
+
+.order-details__peoples{
+	display: grid;
+	grid-template-columns: 120px calc(100% - 120px - 16px);
+	grid-column-gap: 16px;
 }
 </style>

@@ -1,4 +1,5 @@
 import Point from "./point"
+import User from "./user"
 
 interface StatusMessage {
 	message:string
@@ -6,6 +7,7 @@ interface StatusMessage {
 }
 
 const ORDER_STATUS_MESSAGES:Array<StatusMessage> = [
+	{message:"",						colorName:""},
 	{message:"Отменён",					colorName:"danger"},
 	{message:"Ожидает подтверждения",	colorName:"primary"},
 	{message:"Подтверждён",				colorName:"secondary"},
@@ -21,10 +23,10 @@ class Order {
 	endAt:Date|null
 	statusId:number
 	points:Array<Point>
-	ownerId:bigint
+	owner:User
 	orderType:number
-	workerId:bigint|null
-	managerId:bigint|null
+	worker:User|undefined
+	manager:User|undefined
 	helpers: number|null
 	comment: string|null
 	isFragileCargo: boolean|null
@@ -37,9 +39,13 @@ class Order {
 		this.startAt = new Date(details["startAt"])
 		this.endAt = new Date(details["endAt"])
 		this.statusId = details["statusId"]
-		this.ownerId = details["owner_id"]
-		this.workerId = details["workerId"]
-		this.managerId = details["managerId"]
+		this.owner = new User(details["owner"])
+		if (details["worker"]){
+			this.worker = new User(details["worker"])
+		}
+		if (details["manager"]){
+			this.manager = new User(details["manager"])
+		}
 		this.helpers = details["helpers"]
 		this.comment = details["comment"]
 		this.isFragileCargo = details["isFragileCargo"]

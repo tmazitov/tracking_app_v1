@@ -1,22 +1,28 @@
 <template>
 	<div class="date__viewer">
-		<div>{{ dateString }}</div>
-		<div style="color:grey" v-if="dateType == 'Сегодня'">{{ timeString }}</div>
-		<div class="calendar-container">
-			<ion-icon :icon="calendarOutline" size="large" color="primary" @click="openDatePicker"></ion-icon>
+		<div class="date__arrow-back" @click="()=>plusDate(-1)">
+			<ion-icon :icon="chevronBackOutline" ></ion-icon>
 		</div>
-		<transition name="datetime">
-			<ion-datetime presentation="date" :value="date" v-if="datePickerIsOpen" @ionChange="selectDate"></ion-datetime>
-		</transition>
+		<div class="date__datetime">
+			<div>{{ dateViewString }}</div>
+			<div class="calendar-container">
+				<ion-icon :icon="calendarOutline" size="large" color="primary" @click="openDatePicker"></ion-icon>
+			</div>
+			<transition name="datetime">
+				<ion-datetime presentation="date" :value="dateFormatString" v-if="datePickerIsOpen" @ionChange="selectDate"></ion-datetime>
+			</transition>
+		</div>
+		<div class="date__arrow-next" @click="()=>plusDate(1)">
+			<ion-icon :icon="chevronForwardOutline" ></ion-icon>
+		</div>
 	</div>
 </template>
 
 <script lang="ts">
 import { checkDate, getDateString, namesOfMonths, namesOfWeekDays, yyyymmdd } from '@/assets/date';
 import { IonDatetime, IonIcon } from '@ionic/vue';
-import { calendarOutline } from 'ionicons/icons';
+import { calendarOutline, chevronBackOutline, chevronForwardOutline } from 'ionicons/icons';
 import { computed, ref } from 'vue';
-
 
 export default {
 	name: 'TrackingAppV1DateViewer',
@@ -32,32 +38,8 @@ export default {
 		}
 	},
 	setup(props, ctx) {
-		const dateString = ref("")
 		const datePickerIsOpen = ref(false)
-		const timeString = ref("")
 		const dateType = ref<string|number>("Сегодня")
-
-		setInterval(() => {
-			let date: Date = props.date
-
-			dateType.value = checkDate(date)
-			if (dateType.value != -1){
-				dateString.value = dateType.value + " " + getDateString(date)
-			} else {
-				dateString.value = getDateString(date)
-			}
-
-			if (dateType.value.toString() == "Сегодня"){
-				console.log('date is updated :>> ')
-				ctx.emit("update:date", new Date())
-			}
-
-			if (date.getMinutes() > 9) {
-				timeString.value = `${date.getHours()}:${date.getMinutes()}`
-			} else {
-				timeString.value = `${date.getHours()}:0${date.getMinutes()}`
-			}
-		}, 1000)
 
 		const openDatePicker = () => {
 			datePickerIsOpen.value = !datePickerIsOpen.value
@@ -72,18 +54,36 @@ export default {
 			datePickerIsOpen.value = false
 		}
 
-		const date = computed(() => yyyymmdd(props.date))
+		const dateFormatString = computed(() => yyyymmdd(props.date))
+		const dateViewString = computed(() => {
+			let date: Date = props.date
 
+			dateType.value = checkDate(date)
+			if (dateType.value != -1){
+				return dateType.value + " " + getDateString(date)
+			} else {
+				return getDateString(date)
+			}
+		})
+
+		const plusDate = (plus:number) => {
+			let date: Date = new Date(props.date.getTime())
+			date.setDate(date.getDate() + plus)
+			ctx.emit('update:date', date)
+		}
+  
 		return {
 			openDatePicker,
 			closeDatePicker,
-			dateString,
 			selectDate,
 			dateType,
-			date,
-			timeString,
+			dateFormatString,
 			datePickerIsOpen,
-			calendarOutline
+			calendarOutline,
+			chevronBackOutline,
+			chevronForwardOutline,
+			plusDate,
+			dateViewString,
 		}
 	}
 };
@@ -91,13 +91,20 @@ export default {
 
 <style scoped>
 .date__viewer {
+	display: grid;
+	grid-template-columns: 20px calc(100% - 16px - 20px - 16px - 20px) 16px;
+	grid-column-gap: 16px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid grey;
+}
+
+.date__datetime{
 	font-size: 18px;
 	font-weight: 500;
-	padding: 10px;
-	width: calc(100% - 20px);
 
 	display: flex;
 	flex-direction: row;
+	justify-content: center;
 	gap: 16px;
 }
 
@@ -105,7 +112,7 @@ export default {
 	position: relative;
 }
 
-.date__viewer > ion-datetime {
+.date__datetime > ion-datetime {
 	position: absolute;
 	top: 40px;
 	left: 10px;
@@ -117,7 +124,7 @@ export default {
 		padding-top: 40px;
 	}
 
-	.date__viewer > ion-datetime{
+	.date__datetime > ion-datetime{
 		top: 80px;
 		left: 0;
 	}
@@ -125,9 +132,9 @@ export default {
 
 @media (max-width: 768px) {
 	.date__viewer{
-		padding-top: 30px;
+		padding-top: 24px;
 	}
-	.date__viewer > ion-datetime{
+	.date__datetime > ion-datetime{
 		top: 80px;
 		left: 10px;
 		width: calc(100% - 40px);
