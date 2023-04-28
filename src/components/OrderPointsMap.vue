@@ -13,7 +13,7 @@
 		</div>
 
 		<div class="order-map__points">
-			<ion-reorder-group :disabled="false" @ionItemReorder="pointsManager.reorderPoints">
+			<ion-reorder-group :disabled="false" @ionItemReorder="(ev) => pointsManager.reorderPoints(ev)">
 				<ion-item class="order-map__point-item " v-for="point, index in map.points.value"
 					:key="`order_point_${index}`">
 					<ion-reorder slot="start"></ion-reorder>
@@ -195,7 +195,7 @@ div.leaflet-top.leaflet-right {
 
 .order-map__points {
 	height: fit-content;
-	max-height: 240px;
+	max-height: 192px;
 	overflow-y: auto;
 	border: 1px solid var(--ion-color-step-100);
 }

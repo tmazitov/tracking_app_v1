@@ -1,18 +1,21 @@
 <template>
 	<div class="order_create_form">
 		<div class="form">
-			<div class="form__tabs" v-if="data.isNeededTabs">
+			<div class="form__tabs">
 				<div class="form__tab" @click="() => selectTab(0)" v-bind:class="{
 					selected: form.selectedTab == 0,
 				}">Инфо</div>
 				<div class="form__tab" @click="() => selectTab(1)" v-bind:class="{
 					selected: form.selectedTab == 1,
 				}">Точки - {{form.points.length}}</div>
+				<div class="form__tab" @click="() => selectTab(2)" v-bind:class="{
+					selected: form.selectedTab == 2,
+				}">Доп.</div>
 			</div>
 			
 
 			<div class="form__tabs-content">
-				<div class="form__page-1" v-if="form.selectedTab == 0 || !data.isNeededTabs">
+				<div class="form__page-1" v-if="form.selectedTab == 0">
 					
 					<div class="form__datetime-title">
 						<!-- Datetime -->
@@ -32,10 +35,6 @@
 						</div>
 
 					</div>
-	
-					<div v-if="!data.isNeededTabs">
-						<OrderPointsMap v-model:points="form.points" />
-					</div>
 
 					<!-- Comment -->
 	
@@ -43,7 +42,31 @@
 						<ion-textarea label="Комментарий заказа" labelPlacement="floating" fill="solid" v-model="form.comment">
 						</ion-textarea>
 					</div>
+	
+					<div class="from__order-type-worker">
+						<!-- Order type -->
+						<RSelector
+							v-model:current-item="form.currentOrderType"
+							:items="orderTypes" 
+							:selector="selectOrderType"
+							:label="'Тип заказа'"
+							:multiple="true"
+						/>
+					
+					</div>
 
+					<!-- Is Regular customer -->
+					<ion-checkbox labelPlacement="end" v-model="form.isRegularCustomer">Постоянный клиент</ion-checkbox>
+
+					<!-- Make the table of worker business -->
+					<div class="form__submit-container">
+						<ion-button @click="orderSubmit">Создать</ion-button>
+					</div>
+				</div>
+				<div class="form__page-2" v-if="form.selectedTab == 1">
+					<OrderPointsMap v-model:points="form.points" />
+				</div> 
+				<div class="form__page-3" v-if="form.selectedTab == 2">
 					<div class="form__helpers">
 						<ion-input type="text" v-model="form.helpers" label="Грузчики" fill="solid" label-placement="floating">
 						</ion-input>
@@ -57,48 +80,19 @@
 							<ion-ripple-effect></ion-ripple-effect>
 						</div>
 					</div>
-	
-					<div class="from__order-type-worker">
-						<!-- Worker -->
-					
-						<RSelector 
-							v-model:current-item="form.currentWorkerId"
-							:items="workers" 
-							:selector="selectWorker"
-							:label="'Водитель'"
-						/>
 
-						<!-- Order type -->
+					<!-- Worker -->
 
-						<RSelector
-							v-model:current-item="form.currentOrderType"
-							:items="orderTypes" 
-							:selector="selectOrderType"
-							:label="'Тип заказа'"
-							:multiple="true"
-						/>
-					
-					</div>
-					
-
-
+					<RSelector 
+						v-model:current-item="form.currentWorkerId"
+						:items="workers" 
+						:selector="selectWorker"
+						:label="'Водитель'"
+					/>
 
 					<!-- Is Fragile cargo -->
-
 					<ion-checkbox labelPlacement="end" v-model="form.isFragileCargo">Упаковка груза защитной плёнкой</ion-checkbox>
-
-					<!-- Is Fragile cargo -->
-
-					<ion-checkbox labelPlacement="end" v-model="form.isRegularCustomer">Постоянный клиент</ion-checkbox>
-
-					<!-- Make the table of worker business -->
-					<div class="form__submit-container">
-						<ion-button @click="orderSubmit">Создать</ion-button>
-					</div>
 				</div>
-				<div class="form__page-2" v-if="form.selectedTab == 1">
-					<OrderPointsMap v-model:points="form.points" />
-				</div> 
 			</div>
 
 		</div>
@@ -106,18 +100,18 @@
 </template>
 
 <script lang="ts">
-import OrderPointsMap from "./OrderPointsMap.vue";
+import OrderPointsMap from "../../OrderPointsMap.vue";
 import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect } from "@ionic/vue";
 import { add, arrowBackOutline, remove } from "ionicons/icons";
 import { ComputedRef, computed, reactive, toRaw, toRef } from "vue";
 import User from "@/assets/user";
-import RSelector from './inputs/RSelector.vue'
+import RSelector from '../../inputs/RSelector.vue'
 import { IonSelectCustomEvent } from "@ionic/core";
 import Point from "@/assets/point";
 import SelectableItem from "@/assets/selectableItem";
 import TMS from "@/api/tms";
 import { UTCString } from "@/assets/data";
-import { cssVw } from "@/assets/standardDimensions";
+import "./tabs.css"
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
 
@@ -180,7 +174,6 @@ export default {
 		const form = reactive<CreateForm>(getDefaultForm());
 
 		const data = reactive({
-			isNeededTabs: cssVw*100 <= 480,
 		})
 
 
@@ -247,42 +240,33 @@ export default {
 };
 </script>
 
-<style scoped>
-@import url(../theme/variables.css);
+<style lang="css" scoped>
+@import url(../../../theme/variables.css);
 
+.order_create_form{
+	height: 100%;
+}
 .form {
 	height: 100%;
 	width: 100%;
 	min-width: 350px;
 	max-width: 640px;
 
-	border-radius: 8px;
-
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-
-	padding: 10px 0;
 }
 
 @media (max-width: 768px){
 	.form {
 		width: 100vw;
-		border-radius: 0;
-
+		padding: 25px 0;
 	}
 
-	.form__page-1{
-		height: calc(100% - 98px);
-	}
-
-	.form__page-2{
-		height: calc(100vh - 113px - 32px - 57px);
-		overflow: auto;
-	}
 	.form__tabs-content{
 		height: calc(100vh - 98px - 32px - 16px - 36px);
 		padding: 10px;
+		overflow: auto;
 	}
 
 	.form__datetime-title{
@@ -296,16 +280,24 @@ export default {
 		flex-direction: column;
 		gap: 16px;
 	}	
+
 }
 
 @media (min-width: 768px) {
 	.form {
-		height: calc(100vh - 56px);
 		width: 60vw;
+		background: var(--ion-color-step-100);
+		border-radius: 4px;
+		height: 100%;
+		gap:0;
+	}
+	.order_create_form{
+		padding: 50px 0;
+		height: 100%;
 	}
 	.form__tabs-content{
 		height: 100%;
-		padding-right: 20px;
+		padding: 20px;
 	}
 
 	.form__datetime-title{
@@ -321,74 +313,16 @@ export default {
 	}
 }
 
-
-
-.form > * {
-	width: 100%;
-}
-
-@keyframes open-form {
-	from {
-		opacity: 0;
-		height: calc(100vh - 112px);
-	}
-
-	to {
-		height: calc(100vh - 56px);
-		opacity: 1;
-	}
-}
-
-@keyframes close-form {
-	from {
-		opacity: 0;
-	}
-
-	to {
-		opacity: 1;
-	}
-}
-
-.title {
-	font-size: 20px;
-	font-weight: 600;
-	padding: 0;
+.form__page-3{
 	display: flex;
-	justify-content: center;
-	align-items: center;
+	flex-direction: column;
+	gap: 16px;
 }
 
 .form__date-time-container {
 	display: flex;
 	flex-direction: row;
 	gap: 16px;
-}
-
-.form__tabs {
-	display: grid;
-	grid-template-columns: 50% 50%;
-	height: 32px;
-	width: calc(100% - 20px);
-
-	margin: 0 10px;
-	border: 1px solid var(--ion-color-step-300);
-	border-radius: 4px;
-}
-
-.form__tab {
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	cursor: pointer;
-	border-radius: 4px;
-}
-
-.form__tab:hover {
-	background: var(--ion-color-step-100);
-}
-
-.form__tab.selected {
-	background: var(--ion-color-primary);
 }
 
 .form__page-1{
@@ -403,7 +337,7 @@ export default {
 
 ion-checkbox::part(container) {
 	border-radius: 6px;
-	border: 2px solid #6815ec;
+	border: 2px solid var(--ion-color-primary);
 }
 
 ion-checkbox{

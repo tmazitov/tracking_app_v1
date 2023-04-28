@@ -99,8 +99,9 @@ export default {
 	.search-selector__items{
 		z-index: 4;
 		position: absolute;
-		bottom: -200px;
-		height: 200px;
+		top: 56px;
+		
+		height: 17vh;
 		width: 100%;
 		overflow-y: auto;
 		border-top: none;
@@ -145,7 +146,7 @@ export default {
 		}
 		to {
 			bottom: -200px;
-			height: 200px;
+			height: 17vh;
 		}
 	}
 

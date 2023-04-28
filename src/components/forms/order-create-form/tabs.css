@@ -1,0 +1,70 @@
+@import url(../../../theme/variables.css);
+
+@media (max-width: 768px){
+	.form__tabs {
+		display: grid;
+		grid-template-columns: 33.33% 33.33% 33.33%;
+		height: 32px;
+		
+		margin: 0 10px;
+		border: 1px solid var(--ion-color-step-250);
+		background: var(--ion-color-step-300);
+		border-radius: 4px;
+	}
+	.form__tab {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		cursor: pointer;
+		background: var(--ion-color-step-50);
+	}
+
+	.form__tab:last-child{
+		border-radius: 0 4px 4px 0;
+	}
+
+	.form__tab:first-child{
+		border-radius: 4px 0 0 4px;
+	}
+
+	.form__tab.selected {
+		color: var(--ion-color-primary);
+	}
+}
+@media (min-width: 768px){
+
+	.form__tabs {
+		display: grid;
+		grid-template-columns: 33.33% 33.33% 33.33%;
+		height: 56px;
+		
+		background: var(--ion-background-color);
+		border-radius: 4px;
+	}
+
+	.form__tab {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		cursor: pointer;
+		background: var(--ion-color-step-50);
+		border-bottom: 1px solid var(--ion-color-step-300);
+	}
+
+	.form__tab.selected {
+		background: var(--ion-color-step-100);
+		border-radius: 4px 4px 0 0 ;
+		border: none;
+		color: var(--ion-color-primary);
+	}
+
+	.form__tab:hover {
+		border-radius: 4px 4px 0 0 ;
+		background: var(--ion-color-step-100);
+	}
+}
+
+
+
+
+
