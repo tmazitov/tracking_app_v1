@@ -8,6 +8,7 @@ class Point {
 	lat:number
 	lon:number
 
+	searchQuery:string|undefined
 	detailsIsOpen:boolean
 	detailsEvent:null|Event
 	constructor(pointInfo:any) {
@@ -19,6 +20,7 @@ class Point {
 		this.lon = pointInfo["lon"] ?? pointInfo["x"]
 		this.detailsIsOpen = false
 		this.detailsEvent = null
+		this.searchQuery = pointInfo["searchQuery"]
  	}
 
 	copy(){
@@ -28,7 +30,14 @@ class Point {
 			floor:this.floor,
 			lat: this.lat,
 			lon: this.lon,
+			searchQuery: this.searchQuery,
 		})
+	}
+
+	update(payload:Point){
+		this.title = payload.title
+		this.lat = payload.lat
+		this.lon = payload.lon
 	}
 
 	toLatLng(){

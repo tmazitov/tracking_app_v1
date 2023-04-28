@@ -1,15 +1,15 @@
 <template>
 	<div class="r-search-selector">
 
-		<ion-input v-model="data.search" label-placement="floating" fill="solid" :clear-input="true"
+		<ion-input v-model="searchString" label-placement="floating" fill="solid" :clear-input="true"
 			label="Введите адрес" @ion-input="(ev)=>searchHandler(ev)" 
 			@ion-focus="openItemsHandler"
 			@ion-blur="closeItemsHandler">
 		</ion-input>
 
 		<transition name="search">
-			<div class="search-selector__items" v-if="data.search != '' && data.itemsIsOpen">
-				<div v-if="data.search.length != 0 && items.length > 0">
+			<div class="search-selector__items" v-if="searchString != '' && data.itemsIsOpen">
+				<div v-if="searchString.length != 0 && items.length > 0">
 					<div class="search-selector__item" v-for="item, index in items"
 						:key="`searched_point_${index}`" @click="() => chooseHandler(item)">
 						{{ item.title ?? item.name }}
@@ -34,7 +34,12 @@ export default {
 	components:{
 		IonInput,
 	},
+	emits: ['update:searchString'],
 	props: {
+		searchString: {
+			type: String,
+			required: true,
+		},
 		items: {
 			type: Array<any>,
 			required: true,
@@ -50,15 +55,13 @@ export default {
 		emptyItemsString: String,
 		searchFunction: Function,
 	},
-	setup(props,ctx){
+	setup(props, ctx){
 		const items:ComputedRef<Array<any>> = computed(() => props.items)
 		const data = reactive<{
-			search:string
 			label:string
 			emptyItemsString:string|undefined
 			itemsIsOpen:boolean
 		}>({
-			search: "",
 			label: props.label,
 			emptyItemsString: props.emptyItemsString,
 			itemsIsOpen: false,
@@ -67,6 +70,7 @@ export default {
 		const openItemsHandler = () => data.itemsIsOpen = true
 		const closeItemsHandler = () => data.itemsIsOpen = false
 
+		const searchString = computed(() => props.searchString)
 		const searchHandler = (ev:IonInputCustomEvent<InputInputEventDetail>) => {
 			let action:Function|undefined = props.searchFunction
 			if (action){
@@ -76,7 +80,7 @@ export default {
 		
 		const chooseHandler = (searchedItem:any) => {
 			props.selector(searchedItem)
-			data.search = ""
+			ctx.emit("update:searchString", "")
 		}
 
 		return {
@@ -85,7 +89,8 @@ export default {
 			openItemsHandler,
 			closeItemsHandler,
 			items,
-			data
+			data,
+			searchString: searchString,
 		}
 	}
 }

@@ -107,6 +107,12 @@ class OrderPointsMap {
 		this.updatePlan()
 	}
 
+	updatePoint(point:Point, payload:Point){
+		point.update(payload)
+		this.panTo(point)
+		this.updatePlan()
+	}
+
 	removePoint(point:Point) {
 		this.points.value = this.points.value.filter((p:Point) => point !== p)
 		this.updatePlan()

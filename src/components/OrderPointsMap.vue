@@ -8,8 +8,14 @@
 			<div v-if="map.totalTime">{{ toTimeString(map.totalTime.value) }}</div>
 		</div>
 		<div class="order-map__search-field">
-			<SearchSelector :label="'Введите адресс'" :items="data.searchResults" :selector="createPoint"
-				:searchFunction="searchLocation" />
+			<SearchSelector label="Введите адресс" 
+				v-model:searchString="data.searchField" 
+				:items="data.searchResults" 
+				:selector="data.pointToUpdate? updatePoint : createPoint"
+				:searchFunction=" searchLocation" />
+			<div class="order-map__revert-point-changes" v-if="data.pointToUpdate && pointTitleIsChanged">
+				<div @click="disableUpdatePointMode">Отменить изменения</div>
+			</div>
 		</div>
 
 		<div class="order-map__points">
@@ -25,7 +31,8 @@
 						<ion-content class="order-point-detail__selector">
 							<ion-list>
 								<ion-item class="popover-header"><ion-label>{{ point.title }}</ion-label></ion-item>
-								<ion-item :button="true" :detail="false">
+								<ion-item :button="true" :detail="false"
+									@click="() => enableUpdatePointMode(point)">
 									Изменить
 								</ion-item>
 								<ion-item :button="true" :detail="false"
@@ -51,7 +58,7 @@
 <script lang="ts">
 import OrderPointsMap from '@/assets/map'
 import { IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, IonIcon, IonContent, IonPopover, IonList } from '@ionic/vue'
-import { Transition } from 'vue'
+import { Transition, computed } from 'vue'
 import { toKM, toTimeString } from '@/assets/standardDimensions'
 import SearchSelector from './inputs/RSearchSelector.vue'
 import { reactive, onMounted } from 'vue'
@@ -78,15 +85,13 @@ export default {
 		let map = new OrderPointsMap()
 		let pointsManager = new PointsManager(map)
 		const data = reactive<{
-			pointDetailsIsOpen: boolean,
-			pointDetailsEvent: Event | null,
+			pointToUpdate: Point|undefined,
 
 			searchField: string,
 			searchLastDate: Date | null,
 			searchResults: Point[],
 		}>({
-			pointDetailsIsOpen: false,
-			pointDetailsEvent: null,
+			pointToUpdate: undefined,
 
 			searchField: "",
 			searchLastDate: null,
@@ -128,7 +133,39 @@ export default {
 
 		const createPointHandler = (point: Point) => {
 			if (point.title == "") return
+
+			point.searchQuery = data.searchField
 			map.addPoint(point)
+			data.searchField = ""
+		}
+
+		const pointTitleIsChanged = computed(() => {
+			if (!data.pointToUpdate) return false
+
+			if (data.pointToUpdate.searchQuery){
+				return data.pointToUpdate.searchQuery !== data.searchField
+			}
+
+			return data.pointToUpdate.title !== data.searchField
+		})
+
+		const updatePointHandler = (payload: Point) => {
+			let point:Point|undefined = data.pointToUpdate
+			if (!point) return
+
+			map.updatePoint(point, payload)
+			point.searchQuery = data.searchField
+			disableUpdatePointMode()
+		}
+
+		const enableUpdatePointMode = (point: Point) => {
+			data.pointToUpdate = point
+			data.searchField = point.searchQuery ?? point.title	
+			pointsManager.closePopover(point)
+		}
+
+		const disableUpdatePointMode = () => {
+			data.pointToUpdate = undefined
 			data.searchField = ""
 		}
 
@@ -141,6 +178,10 @@ export default {
 			map,
 			data,
 			open,
+			updatePoint: updatePointHandler,
+			pointTitleIsChanged,
+			enableUpdatePointMode,
+			disableUpdatePointMode,
 		}
 	}
 }
@@ -221,5 +262,13 @@ ion-item.delete-button::part(native) {
 
 .popover-header {
 	border-bottom: 1px solid var(--ion-color-step-300);
+}
+
+.order-map__revert-point-changes{
+	margin-top: 10px;
+	display: flex;
+	justify-content: end;
+	text-decoration: underline;
+	color: var(--ion-color-primary);
 }
 </style>
