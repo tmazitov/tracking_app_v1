@@ -20,11 +20,22 @@
 					<div class="form__datetime-title">
 						<!-- Datetime -->
 
-						<div class="form__date-time-container">
-							<ion-input type="date" v-model="form.date" label="Дата" label-placement="floating" fill="solid">
-							</ion-input>
-							<ion-input type="time" v-model="form.time" label="Время" label-placement="floating" fill="solid">
-							</ion-input>
+						<div class="form__datetime">
+							<div class="form__date">
+								<ion-input class="date" type="date" v-model="form.date" 
+								label="Дата" label-placement="floating" fill="solid">
+								</ion-input>
+							</div>
+	
+							<div class="form__time">
+								<ion-input type="time" v-model="form.start" 
+								label="Начало" label-placement="floating" fill="solid">
+								</ion-input>
+	
+								<ion-input type="time" v-model="form.end" 
+								label="Конец" label-placement="floating" fill="solid">
+								</ion-input>
+							</div>
 						</div>
 
 						<!-- Title -->
@@ -43,17 +54,13 @@
 						</ion-textarea>
 					</div>
 	
-					<div class="from__order-type-worker">
-						<!-- Order type -->
-						<RSelector
-							v-model:current-item="form.currentOrderType"
-							:items="orderTypes" 
-							:selector="selectOrderType"
-							:label="'Тип заказа'"
-							:multiple="true"
-						/>
-					
-					</div>
+					<RSelector
+						v-model:current-item="form.currentOrderType"
+						:items="orderTypes" 
+						:selector="selectOrderType"
+						:label="'Тип заказа'"
+						:multiple="true"
+					/>
 
 					<!-- Is Regular customer -->
 					<ion-checkbox labelPlacement="end" v-model="form.isRegularCustomer">Постоянный клиент</ion-checkbox>
@@ -106,7 +113,6 @@ import { add, arrowBackOutline, remove } from "ionicons/icons";
 import { ComputedRef, computed, reactive, toRaw, toRef } from "vue";
 import User from "@/assets/user";
 import RSelector from '../../inputs/RSelector.vue'
-import { IonSelectCustomEvent } from "@ionic/core";
 import Point from "@/assets/point";
 import SelectableItem from "@/assets/selectableItem";
 import TMS from "@/api/tms";
@@ -118,7 +124,8 @@ import { useStore } from "vuex";
 interface CreateForm {
 	title: string
 	date: string
-	time: string
+	start: string
+	end: string
 
 	helpers: number
 	comment: string
@@ -136,7 +143,8 @@ function getDefaultForm():CreateForm{
 	return {
 		title: "",
 		date: "",
-		time: "",
+		start: "",
+		end: "",
 		helpers: 0,
 		comment: "",
 		points: [],
@@ -195,10 +203,21 @@ export default {
 
 		const orderSubmit = () => {
 
-			let date = new Date(form.date + " " + form.time)
+			let startDate = new Date(form.date + " " + form.start)
+			
+			let endDate 
+			if (form.end){
+				endDate = new Date(form.date + " " + form.end)
+			}
+
+			if (endDate && startDate.getTime() > endDate.getTime()){
+				endDate.setDate(endDate.getDate() + 1)
+			}
+
 			TMS.order().create({
 				title: form.title,
-				startAt: UTCString(date),
+				startAt: UTCString(startDate),
+				endAt: endDate?UTCString(endDate):undefined,
 				points: form.points,
 				workerId: form.currentWorkerId,
 				helpers: form.helpers,
@@ -257,6 +276,18 @@ export default {
 	gap: 16px;
 }
 
+.form__datetime-title{
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.form__datetime{
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
 @media (max-width: 768px){
 	.form {
 		width: 100vw;
@@ -269,13 +300,9 @@ export default {
 		overflow: auto;
 	}
 
-	.form__datetime-title{
-		display: flex;
-		flex-direction: column;
-		gap: 16px;
-	}
 
-	.from__order-type-worker{
+
+	.from__order-type{
 		display: flex;
 		flex-direction: column;
 		gap: 16px;
@@ -291,6 +318,11 @@ export default {
 		height: 100%;
 		gap:0;
 	}
+
+	.form__datetime{
+		flex-direction: row;
+	}
+
 	.order_create_form{
 		padding: 50px 0;
 		height: 100%;
@@ -300,13 +332,7 @@ export default {
 		padding: 20px;
 	}
 
-	.form__datetime-title{
-		display: grid;
-		grid-template-columns: auto auto;
-		grid-column-gap: 16px;
-	}
-
-	.from__order-type-worker{
+	.from__order-type{
 		display: grid;
 		grid-template-columns: calc(50% - 8px) calc(50% - 8px);
 		grid-column-gap: 16px;
@@ -319,7 +345,7 @@ export default {
 	gap: 16px;
 }
 
-.form__date-time-container {
+.form__time {
 	display: flex;
 	flex-direction: row;
 	gap: 16px;
@@ -383,5 +409,5 @@ ion-checkbox{
     overflow: hidden;
 
     user-select: none;
-  }
+}
 </style>

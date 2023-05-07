@@ -7,7 +7,7 @@
 					<ion-chip v-if="order.isRegularCustomer" color="success">Постоянный клиент</ion-chip>
 				</ion-card-subtitle> 	
 				<ion-card-title>
-					<div>{{orderTitle}}</div>
+					<div class="order-title">{{orderTitle}}</div>
 					<div class="time">{{orderTime}}</div>
 				</ion-card-title>
 			  </ion-card-header>
@@ -92,9 +92,9 @@ ion-card{
 }
 
 ion-card-title{
-	display: grid;
-	grid-template-columns: calc(100% - 16px - 50px) 50px;
-	grid-column-gap: 16px;
+	display: flex;
+	flex-direction: row;
+	gap: 16px;
 	font-size: 18px;
 }
 
@@ -104,5 +104,12 @@ ion-card-title{
 
 .time{
 	color: grey;
+}
+
+.order-title{
+	width: calc(100% - 16px - 110px);
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	overflow: hidden;
 }
 </style>

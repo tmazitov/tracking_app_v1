@@ -37,7 +37,7 @@ class Order {
 		this.title = details["title"]
 		this.orderType = details["orderType"]
 		this.startAt = new Date(details["startAt"])
-		this.endAt = new Date(details["endAt"])
+		this.endAt = details["endAt"]? new Date(details["endAt"]):null
 		this.statusId = details["statusId"]
 		this.owner = new User(details["owner"])
 		if (details["worker"]){
@@ -66,7 +66,8 @@ class Order {
 		return this.title
 	}
 
-	getTime(){
+	getTime():string{
+		let timeString = ""
 		let hour = this.startAt.getHours()
 		let minute = this.startAt.getMinutes()
 		let minuteString 
@@ -75,7 +76,20 @@ class Order {
 		} else {
 			minuteString = '' + minute
 		}
-		return `${hour}:${minuteString}`
+		timeString += `${hour}:${minuteString}`
+
+		if (this.endAt){
+			hour = this.endAt.getHours()
+			minute = this.endAt.getMinutes() 
+			if (minute < 10){
+				minuteString = '0' + minute
+			} else {
+				minuteString = '' + minute
+			}
+			timeString += ` - ${hour}:${minuteString}`
+		}
+
+		return timeString
 	}
 }
 

@@ -7,6 +7,7 @@ interface CreatablePoint {
 
 interface CreatableOrder {
 	startAt:			string
+	endAt: 				string|undefined
 	points:				Array<CreatablePoint>
 	title:				string|undefined
 	workerId:			number|undefined
