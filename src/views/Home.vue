@@ -10,10 +10,11 @@
 
 				<DateViewer v-model:date="filters.date" />
 				<div class="tools__container">
-					<div class="tools__fields">
-						<div class="search__container">
-							<ion-searchbar v-model="data.searchField" :debounce="1000"></ion-searchbar>
-						</div>
+					<div class="search__container">
+						<ion-searchbar v-model="data.searchField" :debounce="1000"></ion-searchbar>
+					</div>
+					<div class="filters__container">
+						<OrderListFilters :filters="filters"/>
 					</div>
 				</div>
 				<div class="order_card_container" v-if="searchedOrders.length > 0">
@@ -47,14 +48,17 @@ import {
 	IonItem,
 	IonList,
 } from "@ionic/vue";
-import DateViewer from "@/components/DateViewer.vue";
-import OrderCard from "@/components/OrderCard.vue";
+import { optionsOutline } from "ionicons/icons";
 import { reactive, computed, watch } from "vue";
 import { useStore } from "vuex";
-import Order from "@/assets/order";
-import OrderDetails from "@/components/OrderDetails.vue";
 import { useRoute, useRouter } from "vue-router";
 import { yyyymmdd } from "@/assets/date";
+import Order from "@/assets/order";
+import OrderDetails from "@/components/OrderDetails.vue";
+import OrderCard from "@/components/OrderCard.vue";
+import OrderListFilters from "@/components/OrderListFilters.vue"
+import {OrderListFiltersInstance, newOrderListFilters} from "@/assets/orderListFilters"
+import DateViewer from "@/components/DateViewer.vue";
 
 const searchOrder = (orders: Array<Order>, searchString: string) => {
 	let low = searchString.toLowerCase();
@@ -67,7 +71,7 @@ const searchOrder = (orders: Array<Order>, searchString: string) => {
 export default {
 	name: "HomePage",
 	components: {
-
+		DateViewer,
 		IonSearchbar,
 		IonInput,
 		IonPage,
@@ -75,16 +79,16 @@ export default {
 		IonToolbar,
 		IonTitle,
 		IonContent,
-		DateViewer,
-		OrderCard,
-		OrderDetails,
 		IonBackdrop,
 		IonButton,
 		IonList,
 		IonItem,
+
+		OrderCard,
+		OrderDetails,
+		OrderListFilters,
 	},
 	setup() {
-		const route = useRoute();
 		const store = useStore();
 		const router = useRouter();
 		const data = reactive<{
@@ -95,34 +99,17 @@ export default {
 			searchField: "",
 			detailsIsOpen: false,
 			orderDetails: undefined,
-		});	
+		});
 
-
-		let queryDate = route.query["d"]
-		let initDate:Date 
-		if (queryDate){
-			initDate = new Date(queryDate.toString())
-		} else {
-			initDate = new Date()
-		}
-		const filters = reactive({
-			date: initDate,
-		})
-
-		watch(()=>filters.date, (date:Date,oldDate:Date) => {
-			let dateIsChanged = date.getDate() != oldDate.getDate() || 
-				date.getMonth() != oldDate.getMonth() || 
-				date.getFullYear() != oldDate.getFullYear()
-			
-			if (dateIsChanged){
-				store.dispatch("setup-order-list", filters)
-				let currentParams = {...route.query}
-				currentParams["d"] = yyyymmdd(date)
-
-				if (!route.name) return
-				router.push({name:route.name, query:currentParams})
-			} 
-		})
+		const filters = newOrderListFilters()
+		watch(filters, (() => {
+			const newFiltersQuery = filters.toPageUrlQuery()
+			router.push({
+				name: "home",
+				query: newFiltersQuery,
+			})
+			store.dispatch("setup-order-list", filters)
+		}))
 
 		const user = computed(() => store.getters.userMainInfo);
 
@@ -153,6 +140,7 @@ export default {
 			user,
 			data,
 			filters,
+			optionsOutline,
 			searchedOrders,
 			orders,
 			openDetails,
@@ -192,8 +180,11 @@ export default {
 }
 
 .tools__container {
-	display: flex;
-	align-items: center;
+	display: grid;
+	grid-template-columns: calc(100% - 16px - 24px) 24px;
+	column-gap: 16px;
+	padding-right: 10px;
+
 }
 
 @media (min-width: 768px) {
@@ -208,24 +199,10 @@ export default {
 		height: calc(100% - 124px);
 		padding-bottom: 30px;
 	}
-	.tools__container {
-		display: block;
-	}
-}
-
-.tools__fields{
-	display: inline-flex;
-	gap: 16px;
-	align-items: center;
-	width: fit-content;
 }
 
 .search__container {
 	width: 230px;
-}
-
-.footer{
-	height: 40px;
 }
 
 .order-item-enter-active{
@@ -244,4 +221,6 @@ export default {
 		opacity: 1;
 	}
 }
+
+
 </style>

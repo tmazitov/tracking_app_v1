@@ -8,9 +8,12 @@
 					@ion-change="changeHandler"
 					interface="popover">
 					<ion-select-option v-for="item, index in getItems()" :key="`ion_selector_${index}`" :value="item.value">
-						{{ item.title == "" ? "Clear" : item.title }}
+						{{ item.title }}
 					</ion-select-option>
 					
+					<ion-select-option class="clear"  v-if="!valueIsEmpty" :value="-1">
+						Очистить
+					</ion-select-option>
 				</ion-select>
 			</ion-item>
 		</ion-list>
@@ -24,7 +27,7 @@
 import SelectableItem from '@/assets/selectableItem';
 import { IonSelectCustomEvent } from '@ionic/core';
 import { IonItem, IonLabel, IonList, IonRadio, IonSelect, IonSelectOption, IonIcon, SelectChangeEventDetail } from '@ionic/vue';
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref, watch } from 'vue';
 
 export default {
 	name: "RSelector",
@@ -56,16 +59,30 @@ export default {
 			...props,
 			currentValue: props.currentItem,
 		})
+		
+		watch(() => props.currentItem, (newValue) => {
+			data.currentValue = newValue
+		})
+
 		const changeHandler = (ev:IonSelectCustomEvent<SelectChangeEventDetail<any>>) => {
 			data.selector(data.currentValue)
 		}
 
+		const valueIsEmpty = computed(() => {
+			if (typeof data.currentValue == 'object'){
+				return true
+			}
+			else if (typeof data.currentValue == 'number'){
+				return data.currentValue == -1
+			}
+		})
 		const getItems = () => props.items
 
 		return {
 			getItems,
 			changeHandler,
 			data,
+			valueIsEmpty,
 		}
 	}
 }
@@ -86,5 +103,9 @@ export default {
 	display: flex;
 	justify-content: center;
 	align-items: center;
+}
+
+.clear{
+	color: red;
 }
 </style>

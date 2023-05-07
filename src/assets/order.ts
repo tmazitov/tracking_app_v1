@@ -7,12 +7,12 @@ interface StatusMessage {
 }
 
 const ORDER_STATUS_MESSAGES:Array<StatusMessage> = [
-	{message:"",						colorName:""},
-	{message:"Отменён",					colorName:"danger"},
-	{message:"Ожидает подтверждения",	colorName:"primary"},
-	{message:"Подтверждён",				colorName:"secondary"},
-	{message:"В процессе",				colorName:"tertiary"},
-	{message:"Выполенен",				colorName:"success"},
+	{message: "",				colorName:""},
+	{message: "Выполенен",		colorName:"success"},
+	{message: "Отменён",		colorName:"danger"},
+	{message: "В обработке",	colorName:"primary"},
+	{message: "Подтверждён",	colorName:"secondary"},
+	{message: "В процессе",		colorName:"tertiary"},
 ]
 
 class Order {
@@ -49,7 +49,7 @@ class Order {
 		this.helpers = details["helpers"]
 		this.comment = details["comment"]
 		this.isFragileCargo = details["isFragileCargo"]
-		this.isRegularCustomer = details["isFragileCargo"]
+		this.isRegularCustomer = details["isRegularCustomer"]
 		
 		this.points = []
 		let pointsData:Array<any> = details["points"]

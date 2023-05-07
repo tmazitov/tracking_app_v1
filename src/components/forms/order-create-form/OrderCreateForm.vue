@@ -189,7 +189,7 @@ export default {
 		const orderTypes =  [
 			{value: 1, title: "Город"},
 			{value: 2, title: "Пригород"},
-			{value: 3, title: "Меж. город"},
+			{value: 4, title: "Меж. город"},
 		]
 	
 

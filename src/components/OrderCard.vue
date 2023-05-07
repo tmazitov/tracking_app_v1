@@ -13,6 +13,9 @@
 			  </ion-card-header>
 			  <ion-card-content class="content__container">
 				<div class="property__container secondary">
+					<ion-text class="property-container__worker" v-if="order.worker">
+						{{order.worker.shortName}}
+					</ion-text>
 					<ion-text>
 						Точек:
 						<ion-text color="primary">{{order.points.length}}</ion-text>
@@ -89,10 +92,14 @@ ion-card{
 }
 
 ion-card-title{
-	display: flex;
-	flex-direction: row;
-	gap: 10px;
+	display: grid;
+	grid-template-columns: calc(100% - 16px - 50px) 50px;
+	grid-column-gap: 16px;
 	font-size: 18px;
+}
+
+.property-container__worker{
+	color: var(--ion-color-step-650);
 }
 
 .time{

@@ -126,7 +126,7 @@ export default {
 
 	.date__datetime > ion-datetime{
 		top: 80px;
-		left: 0;
+		left: calc(50% - 175px);
 	}
 }
 
@@ -137,7 +137,8 @@ export default {
 	.date__datetime > ion-datetime{
 		top: 80px;
 		left: 10px;
-		width: calc(100% - 40px);
+		max-width: 400px;
+		width: calc(100% - 20px);
 	}
 }
 
