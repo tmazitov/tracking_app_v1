@@ -33,7 +33,7 @@
 					label="Тип заказа"
 					multiple
 				/>
-				<ion-toggle 
+				<ion-toggle 					
 					:checked="data.filters.isRegularCustomer" 
 					:enable-on-off-labels="true"
 					v-on:ion-change="selectRegularCustomer"
@@ -151,7 +151,7 @@ export default {
 	top: 58px;
 	right: -10px;
 	width: calc(100vw - 20px);
-	height: 362px;
+	height: 382px;
 	background: var(--ion-color-step-100);
 	border-radius: 4px;
 	z-index: 3;
@@ -189,7 +189,7 @@ export default {
 		opacity: 0;
 	}
 	to{
-		max-height: 340px;
+		max-height: 382px;
 		opacity: 1;
 	}
 }
@@ -208,5 +208,9 @@ export default {
 	color: var(--ion-color-primary);
 	text-decoration: underline;
 	cursor: pointer;
+}
+
+ion-toggle{
+	padding: 10px 16px;
 }
 </style>
