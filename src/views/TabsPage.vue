@@ -63,13 +63,13 @@ export default {
         const route = useRoute()
         const store = useStore()
         let isShowTabs = computed(() => store.getters.isShowTabs)
-        let isDesktop = cssVw * 100 > 480
 
         let tabs = [
             {name: "home", href: "/home", icon: home, label: "Главная", toastIsOpen: false},
             {name: "create-order", href: "/order/create", icon: addCircleOutline, label: "Создать заказ" , toastIsOpen: false},
             {name: "profile", href: "/profile", icon: personCircleOutline, label: "Профиль", toastIsOpen: false},
         ]
+
 
         const openToast = (index: number) => tabs[index].toastIsOpen = true
         const closeToast = (index: number) => tabs[index].toastIsOpen = false
@@ -90,7 +90,6 @@ export default {
             pageTitle,
             openToast,
             closeToast,
-            isDesktop,
             isShowTabs,
         }
     }
