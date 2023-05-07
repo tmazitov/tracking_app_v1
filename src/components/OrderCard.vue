@@ -104,6 +104,8 @@ ion-card-title{
 
 .time{
 	color: grey;
+	width: 110px;
+	text-align: end;
 }
 
 .order-title{
