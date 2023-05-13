@@ -3,6 +3,7 @@ import {geocoders} from 'leaflet-control-geocoder' // for geocoding of new point
 import 'leaflet-routing-machine' // for create the roads between the points
 import {Ref, ref } from 'vue'; 
 import Point from '../point';
+import { calculateCenterAndZoom } from './calculations';
 
 interface OrderPointsMapMods {
 	isAddNewPoint:boolean
@@ -70,8 +71,12 @@ class OrderPointsMap {
 			console.log('e.routes[0].summary :>> ', e.routes[0].waypoints);
 		})
 
+		if (this.points.value.length > 0){
+			let mapProps = calculateCenterAndZoom(this.instance, this.points.value)
+			this.instance.setView(mapProps.center.toLatLng(), mapProps.zoom)			
+		}
+		
 		// Hide way instructions
-
 		let cont = this.control.getContainer()
 		if (!cont) return
 		cont.style.display = 'None'

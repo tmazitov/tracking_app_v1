@@ -7,7 +7,7 @@
 			<div v-if="map.totalDistance">{{ toKM(map.totalDistance.value) }}</div>
 			<div v-if="map.totalTime">{{ toTimeString(map.totalTime.value) }}</div>
 		</div>
-		<div class="order-map__search-field">
+		<div class="order-map__search-field" v-if="!readonly">
 			<SearchSelector label="Введите адресс" 
 				v-model:searchString="data.searchField" 
 				:items="data.searchResults" 
@@ -19,18 +19,21 @@
 		</div>
 
 		<div class="order-map__points">
-			<ion-reorder-group :disabled="false" @ionItemReorder="(ev) => pointsManager.reorderPoints(ev)">
+			<ion-reorder-group :disabled="readonly" @ionItemReorder="(ev) => pointsManager.reorderPoints(ev)">
 				<ion-item class="order-map__point-item " v-for="point, index in map.points.value"
 					:key="`order_point_${index}`">
 					<ion-reorder slot="start"></ion-reorder>
 					<ion-label>{{ point.title }}</ion-label>
-					<ion-icon @click="(ev) => pointsManager.openPopover(ev, point)" :icon="ellipsisHorizontal" slot="end"
+					<ion-icon v-if="!readonly" @click="(ev) => pointsManager.openPopover(ev, point)" :icon="ellipsisHorizontal" slot="end"
 						class="detail-icon"></ion-icon>
-					<ion-popover side="top" alignment="end" :is-open="point.detailsIsOpen" :event="point.detailsEvent"
+					<ion-popover v-if="!readonly" side="top" alignment="end" 
+						:is-open="point.detailsIsOpen" :event="point.detailsEvent"
 						@didDismiss="() => pointsManager.closePopover(point)">
 						<ion-content class="order-point-detail__selector">
 							<ion-list>
-								<ion-item class="popover-header"><ion-label>{{ point.title }}</ion-label></ion-item>
+								<ion-item class="popover-header">
+									<ion-label>{{ point.title }}</ion-label>
+								</ion-item>
 								<ion-item :button="true" :detail="false"
 									@click="() => enableUpdatePointMode(point)">
 									Изменить
@@ -60,7 +63,7 @@ import OrderPointsMap from '@/assets/map'
 import { IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, IonIcon, IonContent, IonPopover, IonList } from '@ionic/vue'
 import { Transition, computed } from 'vue'
 import { toKM, toTimeString } from '@/assets/standardDimensions'
-import SearchSelector from './inputs/RSearchSelector.vue'
+import SearchSelector from '../inputs/RSearchSelector.vue'
 import { reactive, onMounted } from 'vue'
 import { ellipsisHorizontal } from 'ionicons/icons'
 import Point from '@/assets/point'
@@ -79,6 +82,10 @@ export default {
 		points: {
 			type: Array<Point>,
 			required: true,
+		},
+		readonly: {
+			type: Boolean,
+			default: false,
 		}
 	},
 	setup(props) {
@@ -182,13 +189,14 @@ export default {
 			pointTitleIsChanged,
 			enableUpdatePointMode,
 			disableUpdatePointMode,
+			readonly: props.readonly,
 		}
 	}
 }
 </script>
 
 <style scoped>
-@import url(../theme/variables.css);
+@import url(../../theme/variables.css);
 
 .order-map {
 	display: flex;
