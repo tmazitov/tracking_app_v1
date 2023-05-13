@@ -9,7 +9,13 @@
 				<ion-icon :icon="calendarOutline" size="large" color="primary" @click="openDatePicker"></ion-icon>
 			</div>
 			<transition name="datetime">
-				<ion-datetime presentation="date" :value="dateFormatString" v-if="datePickerIsOpen" @ionChange="selectDate"></ion-datetime>
+				<ion-datetime presentation="date" 
+				:value="dateFormatString" 
+				v-if="datePickerIsOpen" 
+				@ionChange="selectDate"
+				:first-day-of-week="1"
+				locale="ru">
+				</ion-datetime>
 			</transition>
 		</div>
 		<div class="date__arrow-next" @click="()=>plusDate(1)">
@@ -106,6 +112,7 @@ export default {
 	flex-direction: row;
 	justify-content: center;
 	gap: 16px;
+	user-select: none;
 }
 
 .calendar-container{
