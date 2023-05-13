@@ -10,6 +10,18 @@ class Order {
 	static create(orderData:CreatableOrder ){
 		return client.post('/order', orderData)
 	}
+
+	static start(orderId:bigint){
+		
+	} 
+
+	static end(orderId:bigint){
+		
+	} 
+
+	static setWorker(orderId:bigint, workerId:bigint){
+
+	}
 }
 
 export default Order

@@ -56,7 +56,7 @@ const getDateString: Function = (date: Date) => {
 	let month: String = namesOfMonths[date.getMonth()]
 	let dayOfWeek: String = namesOfWeekDays[date.getDay()]
 
-	return [dayOfWeek, date.getDate(), month, date.getFullYear()].join(" ")
+	return [dayOfWeek, date.getDate(), month].join(" ")
 }
 
 const getTimeString: Function = (date: Date) => {

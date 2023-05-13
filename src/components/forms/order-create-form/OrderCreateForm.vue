@@ -107,7 +107,7 @@
 </template>
 
 <script lang="ts">
-import OrderPointsMap from "../../OrderPointsMap.vue";
+import OrderPointsMap from "../../map/OrderPointsMap.vue";
 import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect } from "@ionic/vue";
 import { add, arrowBackOutline, remove } from "ionicons/icons";
 import { ComputedRef, computed, reactive, toRaw, toRef } from "vue";

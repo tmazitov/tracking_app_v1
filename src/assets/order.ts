@@ -1,3 +1,4 @@
+import TMS from "@/api/tms"
 import Point from "./point"
 import User from "./user"
 
@@ -91,6 +92,86 @@ class Order {
 
 		return timeString
 	}
+
+	getDetailAction(user:User):OrderDetailAction|undefined{
+		let now:Date = new Date()
+		switch(user.roleId){
+			case 1:	// worker
+				/**
+				 * 1. Can start the order
+				 * 2. Can end the order 
+				 */
+				if (this.statusId == 4 && this.startAt.getMinutes() - now.getMinutes() < 7*60*1000){
+					return {
+						id:1,
+						action: TMS.order().start,
+						title: "Начать"
+					}
+				}
+
+				if (this.statusId == 5) {
+					return {
+						id:2,
+						action: TMS.order().end,
+						title: "Закончить"
+					}
+				}
+
+				break;
+			case 2: // manager
+				/**
+				 * 1. Can set the worker if is not already set 
+				 * */ 
+				if (!this.worker){
+					return {
+						id:3,
+						action: TMS.order().setWorker,
+						title: "Назначить водителя"
+					}
+				}
+				break;
+
+			case 3: // admin
+				/**
+				 * 1. Can start the order
+				 * 2. Can end the order 
+				 * 3. Can set the worker if is not already set  
+				 */
+
+				
+				if (this.statusId == 4 && this.startAt.getTime() - now.getTime() < 7*60*1000){
+					return {
+						id:1,
+						action: TMS.order().start,
+						title: "Начать"
+					}
+				}
+
+				if (this.statusId == 5) {
+					return {
+						id:2,
+						action: TMS.order().end,
+						title: "Закончить"
+					}
+				}
+
+				if (!this.worker){
+					return {
+						id:3,
+						action: TMS.order().setWorker,
+						title: "Назначить водителя"
+					}
+				}
+
+				break;
+		}
+	} 
+}
+
+interface OrderDetailAction {
+	id:number
+	action:Function
+	title:string
 }
 
 export default Order
