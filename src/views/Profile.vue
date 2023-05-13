@@ -50,7 +50,7 @@ export default {
 }
 
 .blocks-container > *{
-	background: var(--ion-color-step-100);
+	background: var(--ion-card-background);
 	border-radius: 4px;
 	padding: 20px;
 }
