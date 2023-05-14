@@ -1,14 +1,15 @@
 import TMS from "@/api/tms"
 import Order from "@/assets/order"
+import User from "@/assets/user"
 import { Store, Module } from "vuex"
 
 interface OrderState {
-	list:Array<Order>
+	orders:Array<Order>
 }
 
 function getDefaultState():OrderState{
 	return {
-		list: []
+		orders: []
 	}
 }
 
@@ -16,12 +17,17 @@ const module:Module<OrderState,any> = {
 	state: getDefaultState(),
 	mutations:{
 		'setup-order-list': (state:OrderState, list:Array<Order>) => {
-			state.list = list
+			state.orders = list
 		}
 	},
 	getters:{
 		orderList(state:OrderState){
-			return state.list
+			return state.orders
+		},
+		orderLitsByWorker: (state:OrderState) => (worker:User) => {
+			return state.orders.filter((order:Order) => {
+				return order.worker && worker.id == order.worker.id
+			})
 		}
 	},
 	

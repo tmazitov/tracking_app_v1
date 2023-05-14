@@ -15,12 +15,15 @@ class User {
 	title:string
 	value:number
 	
+	state:UserState
+
 	constructor(userData:any) {
 		this.id = userData["id"]
 		this.value = this.id 
 		this.shortName = userData["shortName"]
 		this.title = this.shortName
 		this.roleId = userData["roleId"]
+		this.state = new UserState()
 	}
 
 	getRoleName(){
@@ -33,6 +36,10 @@ class User {
 			value: this.id,
 		}
 	}
+}
+
+class UserState {
+	detailsIsOpen:boolean=false
 }
 
 export default User
