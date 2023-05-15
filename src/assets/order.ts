@@ -20,8 +20,12 @@ class Order {
 	details:Object|null
 	title:string
 	orderId:number
+
 	startAt:Date
+	startAtFact:Date|undefined
 	endAt:Date
+	endAtFact:Date|undefined
+	
 	statusId:number
 	points:Array<Point>
 	owner:User
@@ -101,18 +105,18 @@ class Order {
 				 * 1. Can start the order
 				 * 2. Can end the order 
 				 */
-				if (this.statusId == 4 && this.startAt.getMinutes() - now.getMinutes() < 7*60*1000){
+				if (this.statusId == 4 && this.worker && this.worker.id == user.id && this.startAt.getMinutes() - now.getMinutes() < 7*60*1000){
 					return {
 						id:1,
-						action: TMS.order().start,
+						action: () => this.start(),
 						title: "Начать"
 					}
 				}
 
-				if (this.statusId == 5) {
+				if (this.statusId == 5 && this.worker && this.worker.id == user.id) {
 					return {
 						id:2,
-						action: TMS.order().end,
+						action: () => this.end(),
 						title: "Закончить"
 					}
 				}
@@ -122,7 +126,7 @@ class Order {
 				/**
 				 * 1. Can set the worker if is not already set 
 				 * */ 
-				if (!this.worker){
+				if (!this.worker && this.manager && this.manager.id == user.id ){
 					return {
 						id:3,
 						action: TMS.order().setWorker,
@@ -133,29 +137,10 @@ class Order {
 
 			case 3: // admin
 				/**
-				 * 1. Can start the order
-				 * 2. Can end the order 
-				 * 3. Can set the worker if is not already set  
+				 * 1. Can set the worker if is not already set  
 				 */
 
-				
-				if (this.statusId == 4 && this.startAt.getTime() - now.getTime() < 7*60*1000){
-					return {
-						id:1,
-						action: TMS.order().start,
-						title: "Начать"
-					}
-				}
-
-				if (this.statusId == 5) {
-					return {
-						id:2,
-						action: TMS.order().end,
-						title: "Закончить"
-					}
-				}
-
-				if (!this.worker){
+				if (!this.worker && this.manager && this.manager.id == user.id ){
 					return {
 						id:3,
 						action: TMS.order().setWorker,
@@ -165,6 +150,24 @@ class Order {
 
 				break;
 		}
+	}
+	private start(){
+		TMS.order().start(this.orderId).then((response) => {
+			if (response.data["err"]){
+				throw response.data["err"]
+			}	
+			this.statusId = 5
+			this.startAtFact = new Date(response.data["startAtFact"])
+		})
+	} 
+	private end(){
+		TMS.order().end(this.orderId).then((response) => {
+			if (response.data["err"]){
+				throw response.data["err"]
+			}	
+			this.statusId = 1
+			this.startAtFact = new Date(response.data["endAtFact"])
+		})
 	} 
 }
 

@@ -12,11 +12,11 @@ class Order {
 	}
 
 	static start(orderId:number){
-		
+		return client.get(`/order/${orderId}/start`)
 	} 
 
 	static end(orderId:number){
-		
+		return client.get(`/order/${orderId}/end`)		
 	} 
 
 	static setWorker(orderId:number, workerId:number){

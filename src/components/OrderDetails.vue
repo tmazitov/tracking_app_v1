@@ -145,12 +145,6 @@ export default {
 			if (!handler) return 
 			
 			switch (handler.id){ 
-				case 1:
-					handler.action = () => handler?.action(props.order?.orderId)
-					break;
-				case 2:
-					handler.action = () => handler?.action(props.order?.orderId)
-					break;
 				case 3:
 					handler.action = openChooseWorker
 			}
