@@ -78,9 +78,9 @@ export default {
 		const store = useStore()
 
 		const order:Order = props.order
-		const orderTitle = order.getTitle()
-		const orderTime = order.getTime()
-		const orderStatus = order.getStatusMessage()
+		const orderTitle =	computed(() => order.getTitle())
+		const orderTime = 	computed(() => order.getTime())
+		const orderStatus = computed(() => order.getStatusMessage())
 
 		const user = computed(() => store.getters.userMainInfo)
 

@@ -21,21 +21,17 @@
 						<!-- Datetime -->
 
 						<div class="form__datetime">
-							<div class="form__date">
-								<ion-input class="date" type="date" v-model="form.date" 
-								label="Дата" label-placement="floating" fill="solid">
-								</ion-input>
-							</div>
+							<ion-input class="date" type="date" v-model="form.date" 
+							label="Дата" label-placement="floating" fill="solid">
+							</ion-input>
 	
-							<div class="form__time">
-								<ion-input type="time" v-model="form.start" 
-								label="Начало" label-placement="floating" fill="solid">
-								</ion-input>
-	
-								<ion-input type="time" v-model="form.end" 
-								label="Конец" label-placement="floating" fill="solid">
-								</ion-input>
-							</div>
+							<ion-input type="time" v-model="form.start" 
+							label="Начало" label-placement="floating" fill="solid">
+							</ion-input>
+
+							<ion-input type="number" v-model="form.end" 
+							label="Часы" label-placement="floating" fill="solid">
+							</ion-input>
 						</div>
 
 						<!-- Title -->
@@ -205,19 +201,13 @@ export default {
 
 			let startDate = new Date(form.date + " " + form.start)
 			
-			let endDate 
-			if (form.end){
-				endDate = new Date(form.date + " " + form.end)
-			}
-
-			if (endDate && startDate.getTime() > endDate.getTime()){
-				endDate.setDate(endDate.getDate() + 1)
-			}
+			let endDate = new Date(startDate.getTime())
+			endDate.setHours(startDate.getHours() + Number(form.end))
 
 			TMS.order().create({
 				title: form.title,
 				startAt: UTCString(startDate),
-				endAt: endDate?UTCString(endDate):undefined,
+				endAt:   UTCString(endDate),
 				points: form.points,
 				workerId: form.currentWorkerId,
 				helpers: form.helpers,
@@ -284,7 +274,7 @@ export default {
 
 .form__datetime{
 	display: flex;
-	flex-direction: column;
+	flex-direction: row;
 	gap: 16px;
 }
 

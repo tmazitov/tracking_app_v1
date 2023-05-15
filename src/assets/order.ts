@@ -19,9 +19,9 @@ const ORDER_STATUS_MESSAGES:Array<StatusMessage> = [
 class Order {
 	details:Object|null
 	title:string
-	orderId:bigint
+	orderId:number
 	startAt:Date
-	endAt:Date|null
+	endAt:Date
 	statusId:number
 	points:Array<Point>
 	owner:User
@@ -38,7 +38,7 @@ class Order {
 		this.title = details["title"]
 		this.orderType = details["orderType"]
 		this.startAt = new Date(details["startAt"])
-		this.endAt = details["endAt"]? new Date(details["endAt"]):null
+		this.endAt = new Date(details["endAt"])
 		this.statusId = details["statusId"]
 		this.owner = new User(details["owner"])
 		if (details["worker"]){

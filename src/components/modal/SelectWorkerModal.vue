@@ -4,11 +4,11 @@
 			<ion-header>
 				<ion-toolbar>
 				<ion-buttons slot="start">
-					<ion-button @click="() => close()">
+					<ion-button @click="() => closeHandler()">
 						<ion-icon :icon="closeOutline"></ion-icon>
 					</ion-button>
 				</ion-buttons>
-				<ion-title>
+				<ion-title class="title">
 					Назначить водителя
 				</ion-title>
 				<ion-buttons slot="end">
@@ -19,29 +19,47 @@
 				</ion-toolbar>
 			</ion-header>
 			<ion-content>
+
+				<div class="order-context">
+					<div>{{currentOrder.getTime()}}</div>
+					<ion-label class="order-context__label">
+						{{ currentOrder.title}}
+					</ion-label>
+				</div>
+
 				<div class="worker-list">
-					<div class="worker" v-for="worker in workers" :key="`worker-${worker.id}`">
+					<div class="worker" v-for="worker in workers" :key="`worker-${worker.user.id}`">
 						<ion-item>
-							<div class="worker-icon" @click="selectHandler(worker)">
-								<ion-icon :icon="workerIcon(worker)" color="primary" slot="start"></ion-icon>
+							<div class="worker-icon" @click="selectHandler(worker.user)">
+								<ion-icon :icon="workerIcon(worker.user)" color="primary" slot="start"></ion-icon>
 							</div>
 
-							<ion-label @click="selectHandler(worker)">{{worker.shortName}}</ion-label>
+							<ion-label @click="selectHandler(worker.user)">{{worker.user.shortName}}</ion-label>
 							
-							<div @click="openDetails(worker)">
-								<ion-icon v-if="worker.state.detailsIsOpen" :icon="chevronUpOutline"></ion-icon>
+							<div class="worker-busy" v-if="worker.busyOrder">Занят</div>
+
+							<div @click="openDetails(worker.user)">
+								<ion-icon v-if="worker.user.state.detailsIsOpen" :icon="chevronUpOutline"></ion-icon>
 								<ion-icon v-else :icon="chevronDownOutline"></ion-icon>
 							</div>
 						</ion-item>
 						<transition name="details">
-							<div class="worker-details" v-if="worker.state.detailsIsOpen">
+							<div class="worker-details" v-if="worker.user.state.detailsIsOpen">
 								<div class="worker-details__content">
-									<ion-item class="worker-details__order" 
-									v-for="order in workerOrders(worker)" 
-									:key="`order_${order.orderId}`">
-										<div class="worker-details__order-time">{{order.getTime()}}</div>
-										<ion-label>{{ order.title }}</ion-label>
-									</ion-item>
+									<div class="worker-details__order-list" v-if="worker.orders.length > 0">
+										<ion-item class="worker-details__order"  
+										v-for="order in worker.orders" 
+										:key="`order_${order.orderId}`"
+										v-bind:class="{
+											busy: worker.busyOrder && worker.busyOrder.orderId == order.orderId 
+										}">
+											<div class="worker-details__order-time">{{order.getTime()}}</div>
+											<ion-label>{{ order.title }}</ion-label>
+										</ion-item>
+									</div>
+									<div class="worker-details__empty" v-else>
+										Нет назначенных заказов
+									</div>
 								</div>
 							</div>
 						</transition>
@@ -54,12 +72,20 @@
 </template>
 
 <script lang="ts">
+import TMS from '@/api/tms';
 import Order from '@/assets/order';
 import User from '@/assets/user';
 import { IonModal, IonHeader, IonToolbar, IonButtons, IonButton, IonTitle, IonContent, IonItem, IonIcon, IonLabel } from '@ionic/vue';
+import { AxiosResponse } from 'axios';
 import { closeOutline, checkmarkOutline, radioButtonOffOutline, radioButtonOnOutline, chevronDownOutline, chevronUpOutline } from 'ionicons/icons';
 import { ComputedRef, computed, reactive, watch } from 'vue';
 import { useStore } from 'vuex';
+
+interface SelectableWorker {
+	user: User
+	orders: Array<Order>
+	busyOrder: Order|undefined
+}
 
 export default {
 	name: "SelectWorkerModal",
@@ -88,10 +114,10 @@ export default {
 			type: Function,
 			required: true,
 		},
-		selector: {
-			type: Function,
+		order: {
+			type: Order,
 			required: true,
-		}
+		},
 	},
 	setup(props) {
 
@@ -100,11 +126,7 @@ export default {
 			isOpen: props.isOpen,
 		})
 
-		const submitHandler = () => {
-			props.selector(data.selectedWorkerId)
-			props.closer()
-			workers.value.forEach((worker:User) => worker.state.detailsIsOpen = false)
-		}
+
 
 		const selectHandler = (worker:User) => {
 			data.selectedWorkerId = data.selectedWorkerId != worker.id ? 
@@ -129,7 +151,50 @@ export default {
 		})
 
 		const store = useStore()
-		const workers:ComputedRef<Array<User>> = computed(() => store.getters.staffWorkers)
+		const BUSY_ORDER_DIFFERENCE = 0 // 15 min in ms
+		const currentOrder = props.order
+
+		const workers:ComputedRef<Array<SelectableWorker>> = computed(() => {
+			let workers:Array<User> = store.getters.staffWorkers
+
+			return workers.map((worker:User) => {
+				let orders:Array<Order> = store.getters.orderLitsByWorker(worker)
+					.sort((ord1:Order,ord2:Order) => {
+						return ord1.startAt.getTime() - ord2.startAt.getTime()
+					})
+				let busyOrder:Order|undefined = orders.find((order:Order) => {
+
+					let checkStart = Math.abs(currentOrder.startAt.getTime() - order.endAt.getTime()) > BUSY_ORDER_DIFFERENCE 
+					let checkEnd   = Math.abs(currentOrder.endAt.getTime() - order.startAt.getTime()) > BUSY_ORDER_DIFFERENCE 
+
+					return checkStart && checkEnd
+				})
+				return {
+					user: worker,
+					orders,
+					busyOrder,
+				}
+
+			}) 
+		})
+
+		const closeHandler = props.closer
+
+		const submitHandler = () => {
+			TMS.order().setWorker(props.order.orderId, data.selectedWorkerId)
+			.then((response:AxiosResponse) => {
+				if (response.data["err"]) {
+					throw response.data["err"]
+				}	
+				let selectedWorker = new User(response.data)
+				currentOrder.worker = selectedWorker
+				currentOrder.statusId = 4
+			})
+
+			
+			closeHandler()
+			workers.value.forEach((worker:SelectableWorker) => worker.user.state.detailsIsOpen = false)				
+		}
 		
 		return {
 			data,
@@ -137,11 +202,12 @@ export default {
 			workerOrders,
 			workerIcon,
 			openDetails,
-			close: props.closer,
+			closeHandler,
 			selectHandler,
 			submitHandler,
 			closeOutline,
 			checkmarkOutline,
+			currentOrder,
 
 			chevronUpOutline,
 			chevronDownOutline,
@@ -153,6 +219,11 @@ export default {
 <style scoped>
 
 @import url(../../theme/variables.css);
+
+.title{
+	text-align: center;
+}
+
 .worker-list{
 	display: flex;
 	flex-direction: column;
@@ -163,6 +234,11 @@ export default {
 
 .worker-icon{
 	width: 32px;
+}
+
+.worker-busy{
+	margin: 0 10px;
+	color: var(--ion-color-danger);
 }
 .worker-details{
 	background: var(--ion-item-background);
@@ -192,9 +268,33 @@ export default {
 	}
 }
 
+.worker-details__order.busy{
+	color: var(--ion-color-danger);
+}
 .worker-details__order-time{
 	margin-right: 16px;
-	width: 40.5px;
+	width: 100px;
 }
 
+.worker-details__empty{
+	padding: 16px;
+	text-align: center;
+	color: var(--ion-color-step-450);
+}
+
+.order-context{
+	padding: 16px;
+	padding-bottom: 0;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	flex-direction: row;
+	gap: 16px;
+	color: var(--ion-color-step-500);
+}
+
+.order-context__label{
+	text-align: center;
+
+}
 </style>

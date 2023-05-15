@@ -20,8 +20,9 @@
 
 		<div class="order-map__points">
 			<ion-reorder-group :disabled="readonly" @ionItemReorder="(ev) => pointsManager.reorderPoints(ev)">
-				<ion-item class="order-map__point-item " v-for="point, index in map.points.value"
-					:key="`order_point_${index}`">
+				<ion-item class="order-map__point-item "  
+				v-for="point, index in map.points.value"
+				:key="`order_point_${index}`">
 					<ion-reorder slot="start"></ion-reorder>
 					<ion-label>{{ point.title }}</ion-label>
 					<ion-icon v-if="!readonly" @click="(ev) => pointsManager.openPopover(ev, point)" :icon="ellipsisHorizontal" slot="end"

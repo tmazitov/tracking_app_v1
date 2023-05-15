@@ -11,16 +11,18 @@ class Order {
 		return client.post('/order', orderData)
 	}
 
-	static start(orderId:bigint){
+	static start(orderId:number){
 		
 	} 
 
-	static end(orderId:bigint){
+	static end(orderId:number){
 		
 	} 
 
-	static setWorker(orderId:bigint, workerId:bigint){
-
+	static setWorker(orderId:number, workerId:number){
+		return client.patch(`/order/${orderId}/worker/update`, {
+			workerId
+		})
 	}
 }
 

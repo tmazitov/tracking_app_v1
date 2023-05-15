@@ -58,10 +58,11 @@
 					{{ submit.title }}
 				</ion-button>
 				<SelectWorkerModal
-					v-if="submit.id==3"
+					v-if="submit.id==3 && order"
 					:isOpen="data.selectWorkerIsOpen"
 					:selector="chooseWorker"
 					:closer="closeChooseWorker"
+					:order="order"
 				/>
 			</div>
 		</div>
@@ -130,7 +131,7 @@ export default {
 
 		const isOpen = computed(() => props.isOpen)
 		const closeChooseWorker = () => data.selectWorkerIsOpen = false
-		const chooseWorker = (workerId:bigint) => {
+		const chooseWorker = (workerId:number) => {
 			if (!props.order) return
 			TMS.order().setWorker(props.order.orderId, workerId)
 		}
