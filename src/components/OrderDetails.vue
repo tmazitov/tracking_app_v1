@@ -53,17 +53,32 @@
 				<div v-if="order?.isFragileCargo">Необходима упаковка защитной плёнкой</div>
 			</div>
 
-			<div class="order-details__action-button" v-if="submit">
-				<ion-button id="submit" class="submit" @click="submit.action">
-					{{ submit.title }}
-				</ion-button>
-				<SelectWorkerModal
-					v-if="submit.id==3 && order"
-					:isOpen="data.selectWorkerIsOpen"
-					:selector="chooseWorker"
-					:closer="closeChooseWorker"
-					:order="order"
-				/>
+			<div class="order-details__action">
+				<div class="order-details__time-fact" v-if="order?.statusId == 1 || order?.statusId == 5">
+					<div class="time-fact__timer">
+						<div class="time-fact__title" v-if="order?.statusId == 1">
+							Заказ выполнен за 
+						</div>
+						<div class="time-fact__icon" v-if="order?.statusId == 5">
+							<ion-icon :icon="timeOutline"></ion-icon>
+						</div>
+						<div class="time-fact__time">
+							{{ orderTimeFact }}
+						</div>
+					</div>
+				</div>
+				<div class="order-details__action-button" v-if="submit">
+					<ion-button id="submit" class="submit" @click="submit.action">
+						{{ submit.title }}
+					</ion-button>
+					<SelectWorkerModal
+						v-if="submit.id==3 && order"
+						:isOpen="data.selectWorkerIsOpen"
+						:selector="chooseWorker"
+						:closer="closeChooseWorker"
+						:order="order"
+					/>
+				</div>
 			</div>
 		</div>
 	</transition>
@@ -74,12 +89,13 @@ import { getDateString, getTimeString } from '@/assets/date';
 import Order from '@/assets/order';
 import { limitedString } from '@/assets/string';
 import { IonButton, IonChip, IonIcon } from '@ionic/vue';
-import { arrowBackOutline } from 'ionicons/icons';
-import { ComputedRef, Transition, computed, reactive, ref } from 'vue';
+import { arrowBackOutline, timeOutline } from 'ionicons/icons';
+import { ComputedRef, Transition, computed, onMounted, reactive, ref } from 'vue';
 import { useStore } from 'vuex';
 import OrderPointsMap from '@/components/map/OrderPointsMap.vue';
 import SelectWorkerModal from './modal/SelectWorkerModal.vue';
 import TMS from '@/api/tms';
+import { toTimeString } from '@/assets/standardDimensions';
 
 interface StatusMessage {
 	message:string
@@ -113,7 +129,13 @@ export default {
 	},
 	setup(props){
 		const store = useStore()
-		const data = reactive({
+		const data = reactive<{
+			now: Date,
+			nowInterval: NodeJS.Timer|null,
+			selectWorkerIsOpen: boolean
+		}>({
+			now: new Date(),
+			nowInterval: null,
 			selectWorkerIsOpen: false,
 		})
 
@@ -128,6 +150,11 @@ export default {
 			return order.getStatusMessage()
 		})
 
+		onMounted(() => {
+			data.nowInterval = setInterval(() => {
+				data.now = new Date()
+			}, 1000)
+		})
 
 		const isOpen = computed(() => props.isOpen)
 		const closeChooseWorker = () => data.selectWorkerIsOpen = false
@@ -135,6 +162,26 @@ export default {
 			if (!props.order) return
 			TMS.order().setWorker(props.order.orderId, workerId)
 		}
+		const orderTimeFact = computed(() => {
+			if (!orderData.value || !orderData.value.startAtFact) return
+			if (orderData.value.statusId != 5 && data.nowInterval){
+				clearInterval(data.nowInterval)
+			}
+
+			
+			let difference
+			if (orderData.value.endAtFact){
+				difference = Math.abs(orderData.value.endAtFact.getTime() - orderData.value.startAtFact.getTime()) / 1000
+			} else {
+				difference = Math.abs(data.now.getTime() - orderData.value.startAtFact.getTime()) / 1000
+			}
+
+
+			let timeString = toTimeString(difference)
+			if (timeString == "") timeString = "0 м."
+			return timeString;
+		})
+		
 		const openChooseWorker = () => data.selectWorkerIsOpen = true
 		
 		const user = computed(() => store.getters.userMainInfo)
@@ -155,6 +202,7 @@ export default {
 			data,
 			status,
 			user,
+			orderTimeFact,
 			order: orderData,
 			isOpen: isOpen,
 			getDateString,
@@ -162,6 +210,7 @@ export default {
 			close: props.closer,
 			arrowBackOutline,
 			limitedString,
+			timeOutline,
 			submit,
 
 			closeChooseWorker,
@@ -263,11 +312,27 @@ ion-icon{
 	gap: 16px;
 }
 
-.order-details__action-button{
+.order-details__action{
 	position: absolute;
 	bottom: 10px;
 	left: 10px;
 	right: 10px;
+}
+
+.order-details__time-fact{
+	font-size: 18px;
+	
+	margin-bottom: 10px;
+	border: 1px solid var(--ion-color-primary);
+	border-radius: 4px;
+}
+
+.time-fact__timer{
+	display: flex;
+	gap: 10px;
+	justify-content: center;
+	align-items: center;
+	height: 36px;
 }
 
 ion-button.submit{

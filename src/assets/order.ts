@@ -41,8 +41,15 @@ class Order {
 		this.orderId = details["orderId"]
 		this.title = details["title"]
 		this.orderType = details["orderType"]
+
 		this.startAt = new Date(details["startAt"])
+		if (details["startAtFact"]){
+			this.startAtFact = new Date(details["startAtFact"])
+		}
 		this.endAt = new Date(details["endAt"])
+		if (details["endAtFact"]){
+			this.endAtFact = new Date(details["endAtFact"])
+		}
 		this.statusId = details["statusId"]
 		this.owner = new User(details["owner"])
 		if (details["worker"]){
@@ -166,7 +173,7 @@ class Order {
 				throw response.data["err"]
 			}	
 			this.statusId = 1
-			this.startAtFact = new Date(response.data["endAtFact"])
+			this.endAtFact = new Date(response.data["endAtFact"])
 		})
 	} 
 }
