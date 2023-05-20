@@ -311,4 +311,19 @@ ion-backdrop {
 	background: #383a3e;
 	border-radius: 8px;
 }
+
+
+@media (max-width:768px) {
+	.auth__container{
+		grid-template-columns: 100%;
+	}
+	.sub__container.active{
+		height: inherit;
+		margin: 0 10px;
+	}
+
+	.sub__container{ 
+		padding: 0;
+	}
+}
 </style>
