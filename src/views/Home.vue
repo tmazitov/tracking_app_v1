@@ -1,9 +1,14 @@
 <template>
 	<ion-page>
 		<OrderDetails
+			:order="data.orderDetails"
 			:isOpen="data.detailsIsOpen"
 			:closer="closeDetails"
-			:order="data.orderDetails"
+		/>
+		<OrderCreateForm
+			:date="filters.date"
+			:isOpen="data.createFormIsOpen"
+			:closer="closeCreateForm"
 		/>
 		<ion-content :fullscreen="true">
 			<div class="content__container">
@@ -30,6 +35,12 @@
 					Заказы не найдены
 				</div>
 			</div>
+			<ion-fab slot="fixed" vertical="bottom" horizontal="end" 
+			v-if="user.roleId != 1 && !data.detailsIsOpen && !data.createFormIsOpen">
+				<ion-fab-button @click="openCreateForm">
+					<ion-icon :icon="addOutline"></ion-icon>
+				</ion-fab-button>
+			</ion-fab>
 		</ion-content>
 	</ion-page>
 </template>
@@ -47,8 +58,11 @@ import {
 	IonSearchbar,
 	IonItem,
 	IonList,
+IonFab,
+IonFabButton,
+IonIcon,
 } from "@ionic/vue";
-import { optionsOutline } from "ionicons/icons";
+import { addOutline, optionsOutline } from "ionicons/icons";
 import { reactive, computed, watch } from "vue";
 import { useStore } from "vuex";
 import {  useRouter } from "vue-router";
@@ -59,6 +73,7 @@ import OrderCardSmall from "@/components/OrderCardSmall.vue";
 import OrderListFilters from "@/components/OrderListFilters.vue"
 import { newOrderListFilters} from "@/assets/orderListFilters"
 import DateViewer from "@/components/DateViewer.vue";
+import OrderCreateForm from '@/components/forms/order-create-form/OrderCreateForm.vue';
 
 const searchOrder = (orders: Array<Order>, searchString: string) => {
 	let low = searchString.toLowerCase();
@@ -84,10 +99,15 @@ export default {
 		IonList,
 		IonItem,
 
+		IonFab,
+		IonFabButton,
+		IonIcon,
+
 		OrderCard,
 		OrderCardSmall,
 		OrderDetails,
 		OrderListFilters,
+		OrderCreateForm,
 	},
 	setup() {
 		const store = useStore();
@@ -95,10 +115,12 @@ export default {
 		const data = reactive<{
 			searchField: string,
 			detailsIsOpen: boolean,
-			orderDetails: Order|undefined,
+			createFormIsOpen: boolean,
+			orderDetails: any,
 		}>({
 			searchField: "",
 			detailsIsOpen: false,
+			createFormIsOpen: false,
 			orderDetails: undefined,
 		});
 
@@ -137,15 +159,26 @@ export default {
 			store.dispatch('toggle-tabs')
 		}
 
+		const openCreateForm = () => {
+			data.createFormIsOpen = true
+		}
+
+		const closeCreateForm = () => {
+			data.createFormIsOpen = false
+		}
+
 		return {
 			user,
 			data,
 			filters,
+			openCreateForm,
+			closeCreateForm,
 			optionsOutline,
 			searchedOrders,
 			orders,
 			openDetails,
 			closeDetails,
+			addOutline,
 		};
 	},
 };

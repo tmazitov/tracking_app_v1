@@ -118,6 +118,7 @@ export default {
 	props:{ 
 		order: {
 			type: Order,
+			default: null,
 			required: false,
 		},
 		isOpen: {

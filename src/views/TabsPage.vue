@@ -68,7 +68,6 @@ export default {
 
         let tabs = [
             {name: "home", href: "/home", icon: home, label: "Главная", toastIsOpen: false},
-            {name: "create-order", href: "/order/create", icon: addCircleOutline, label: "Создать заказ" , toastIsOpen: false},
             {name: "profile", href: "/profile", icon: personCircleOutline, label: "Профиль", toastIsOpen: false},
         ]
 

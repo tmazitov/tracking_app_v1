@@ -1,112 +1,125 @@
 <template>
-	<div class="order_create_form">
-		<div class="form">
-			<div class="form__tabs">
-				<div class="form__tab" @click="() => selectTab(0)" v-bind:class="{
-					selected: form.selectedTab == 0,
-				}">Инфо</div>
-				<div class="form__tab" @click="() => selectTab(1)" v-bind:class="{
-					selected: form.selectedTab == 1,
-				}">Точки - {{form.points.length}}</div>
-				<div class="form__tab" @click="() => selectTab(2)" v-bind:class="{
-					selected: form.selectedTab == 2,
-				}">Доп.</div>
-			</div>
-			
+	<transition name="modal">
+		<div class="order_create_form" v-if="isOpen">
+			<div class="form">
+				
+				<div class="form__header">
+					<div class="header__go-back" @click="close()">
+						<ion-icon :icon="arrowBackOutline"></ion-icon>
+					</div>
+					<div class="header__title">
+						Создать заказ
+					</div>
+				</div>
 
-			<div class="form__tabs-content">
-				<div class="form__page-1" v-if="form.selectedTab == 0">
-					
-					<div class="form__datetime-title">
-						<!-- Datetime -->
-
-						<div class="form__datetime">
-							<ion-input class="date" type="date" v-model="form.date" 
-							label="Дата" label-placement="floating" fill="solid">
-							</ion-input>
+				<div class="form__tabs">
+					<div class="form__tab" @click="() => selectTab(0)" v-bind:class="{
+						selected: form.selectedTab == 0,
+					}">Инфо</div>
+					<div class="form__tab" @click="() => selectTab(1)" v-bind:class="{
+						selected: form.selectedTab == 1,
+					}">Точки - {{form.points.length}}</div>
+					<div class="form__tab" @click="() => selectTab(2)" v-bind:class="{
+						selected: form.selectedTab == 2,
+					}">Доп.</div>
+				</div>
+				
 	
-							<ion-input type="time" v-model="form.start" 
-							label="Начало" label-placement="floating" fill="solid">
-							</ion-input>
-
-							<ion-input type="number" v-model="form.end" 
-							label="Часы" label-placement="floating" fill="solid">
-							</ion-input>
-						</div>
-
-						<!-- Title -->
+				<div class="form__tabs-content">
+					<div class="form__page-1" v-if="form.selectedTab == 0">
+						
+						<div class="form__datetime-title">
+							<!-- Datetime -->
+	
+							<div class="form__datetime">
+								<ion-input class="date" type="date" v-model="form.date" 
+								label="Дата" label-placement="floating" fill="solid">
+								</ion-input>
 		
-						<div class="form__title-container">
-							<ion-input type="text" v-model="form.title" label="Название заказа" fill="solid" label-placement="floating" placeholder="По умолчанию адрес первой точки">
-							</ion-input>
+								<ion-input type="time" v-model="form.start" 
+								label="Начало" label-placement="floating" fill="solid">
+								</ion-input>
+	
+								<ion-input type="number" v-model="form.end" 
+								label="Часы" label-placement="floating" fill="solid">
+								</ion-input>
+							</div>
+	
+							<!-- Title -->
+			
+							<div class="form__title-container">
+								<ion-input type="text" v-model="form.title" label="Название заказа" fill="solid" label-placement="floating" placeholder="По умолчанию адрес первой точки">
+								</ion-input>
+							</div>
+	
 						</div>
+	
+						<!-- Comment -->
+		
+						<div class="form__comment-container">
+							<ion-textarea label="Комментарий заказа" labelPlacement="floating" fill="solid" v-model="form.comment">
+							</ion-textarea>
+						</div>
+		
+						<RSelector
+							v-model:current-item="form.currentOrderType"
+							:items="orderTypes" 
+							:selector="selectOrderType"
+							:label="'Тип заказа'"
+							:multiple="true"
+						/>
+	
+						<!-- Is Regular customer -->
+						<ion-checkbox labelPlacement="end" v-model="form.isRegularCustomer">Постоянный клиент</ion-checkbox>
+	
+						<!-- Make the table of worker business -->
 
 					</div>
-
-					<!-- Comment -->
+					<div class="form__page-2" v-if="form.selectedTab == 1">
+						<OrderPointsMap v-model:points="form.points" />
+					</div> 
+					<div class="form__page-3" v-if="form.selectedTab == 2">
+						<div class="form__helpers">
+							<ion-input type="text" v-model="form.helpers" label="Грузчики" fill="solid" label-placement="floating">
+							</ion-input>
 	
-					<div class="form__comment-container">
-						<ion-textarea label="Комментарий заказа" labelPlacement="floating" fill="solid" v-model="form.comment">
-						</ion-textarea>
-					</div>
+							<div class="ion-activatable ripple-parent form__helpers-button"  @click="addHelper">
+								<ion-icon :icon="add"></ion-icon>
+								<ion-ripple-effect></ion-ripple-effect>
+							</div>
+							<div class="ion-activatable ripple-parent form__helpers-button" @click="removeHelper">
+								<ion-icon :icon="remove" ></ion-icon>
+								<ion-ripple-effect></ion-ripple-effect>
+							</div>
+						</div>
 	
-					<RSelector
-						v-model:current-item="form.currentOrderType"
-						:items="orderTypes" 
-						:selector="selectOrderType"
-						:label="'Тип заказа'"
-						:multiple="true"
-					/>
-
-					<!-- Is Regular customer -->
-					<ion-checkbox labelPlacement="end" v-model="form.isRegularCustomer">Постоянный клиент</ion-checkbox>
-
-					<!-- Make the table of worker business -->
-					<div class="form__submit-container">
-						<ion-button @click="orderSubmit">Создать</ion-button>
+						<!-- Worker -->
+	
+						<RSelector 
+							v-model:current-item="form.currentWorkerId"
+							:items="workers" 
+							:selector="selectWorker"
+							:label="'Водитель'"
+						/>
+	
+						<!-- Is Fragile cargo -->
+						<ion-checkbox labelPlacement="end" v-model="form.isFragileCargo">Упаковка груза защитной плёнкой</ion-checkbox>
 					</div>
 				</div>
-				<div class="form__page-2" v-if="form.selectedTab == 1">
-					<OrderPointsMap v-model:points="form.points" />
-				</div> 
-				<div class="form__page-3" v-if="form.selectedTab == 2">
-					<div class="form__helpers">
-						<ion-input type="text" v-model="form.helpers" label="Грузчики" fill="solid" label-placement="floating">
-						</ion-input>
-
-						<div class="ion-activatable ripple-parent form__helpers-button"  @click="addHelper">
-							<ion-icon :icon="add"></ion-icon>
-							<ion-ripple-effect></ion-ripple-effect>
-						</div>
-						<div class="ion-activatable ripple-parent form__helpers-button" @click="removeHelper">
-							<ion-icon :icon="remove" ></ion-icon>
-							<ion-ripple-effect></ion-ripple-effect>
-						</div>
-					</div>
-
-					<!-- Worker -->
-
-					<RSelector 
-						v-model:current-item="form.currentWorkerId"
-						:items="workers" 
-						:selector="selectWorker"
-						:label="'Водитель'"
-					/>
-
-					<!-- Is Fragile cargo -->
-					<ion-checkbox labelPlacement="end" v-model="form.isFragileCargo">Упаковка груза защитной плёнкой</ion-checkbox>
+				
+				<div class="form__submit-container">
+					<ion-button @click="orderSubmit">Создать</ion-button>
 				</div>
 			</div>
-
 		</div>
-	</div>
+	</transition>
 </template>
 
 <script lang="ts">
 import OrderPointsMap from "../../map/OrderPointsMap.vue";
 import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect } from "@ionic/vue";
 import { add, arrowBackOutline, remove } from "ionicons/icons";
-import { ComputedRef, computed, reactive, toRaw, toRef } from "vue";
+import { ComputedRef, computed, reactive, toRaw, toRef, watch } from "vue";
 import User from "@/assets/user";
 import RSelector from '../../inputs/RSelector.vue'
 import Point from "@/assets/point";
@@ -116,6 +129,7 @@ import { UTCString } from "@/assets/data";
 import "./tabs.css"
 import { useRouter } from "vue-router";
 import { useStore } from "vuex";
+import { getDateString, yyyymmdd } from "@/assets/date";
 
 interface CreateForm {
 	title: string
@@ -140,7 +154,7 @@ function getDefaultForm():CreateForm{
 		title: "",
 		date: "",
 		start: "",
-		end: "",
+		end: "2",
 		helpers: 0,
 		comment: "",
 		points: [],
@@ -172,15 +186,35 @@ export default {
 		IonRippleEffect
 	},
 
+	props: {
+		isOpen: {
+			type: Boolean,
+			required: true,
+		},
+		closer: {
+			type: Function,
+			required: true,
+		},
+		date: {
+			type: Date,
+		}
+	},
+
 	setup(props) {
 		const store = useStore()
 		const router = useRouter()
+
 		const form = reactive<CreateForm>(getDefaultForm());
+		if (props.date){
+			form.date = yyyymmdd(props.date)
+			watch(() => props.date, () => {
+				if (!props.date) return
+				form.date = yyyymmdd(props.date)
+			})
+		}
 
-		const data = reactive({
-		})
 
-
+		const isOpen = computed(() => props.isOpen)
 		const workers = computed(() => store.getters.staffWorkers)
 		const selectWorker = (workerId:number) => {
 			form.currentWorkerId = workerId
@@ -233,8 +267,9 @@ export default {
 		return {
 			addHelper,
 			removeHelper,
-			data,
 			remove,
+			isOpen,
+			close: props.closer,
 			add,
 			form,
 			workers,
@@ -252,8 +287,27 @@ export default {
 <style lang="css" scoped>
 @import url(../../../theme/variables.css);
 
+.form__header{
+	padding: 0 10px;
+	font-size: 22px;
+	display: flex;
+	flex-direction: row;
+	gap: 10px;
+}
+
+.form__header > * {
+	display: flex;
+	align-items: center;
+}
+	
 .order_create_form{
 	height: 100%;
+	position: absolute;
+	z-index: 2;
+	top: 0;
+	right: 0;
+	left: 0;	
+	background: var(--ion-background-color);
 }
 .form {
 	height: 100%;
@@ -399,5 +453,22 @@ ion-checkbox{
     overflow: hidden;
 
     user-select: none;
+}
+
+
+.modal-enter-active{
+	animation: .65s modal cubic-bezier(0.76, 0.03, 0.54, 0.96);
+}
+.modal-leave-active{
+	animation: .65s modal reverse cubic-bezier(0.76, 0.03, 0.54, 0.96);
+}
+
+@keyframes modal {
+	from {
+		top: 100vh;
+	}
+	to {
+		top: 0;
+	}
 }
 </style>
