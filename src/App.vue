@@ -42,13 +42,12 @@ ion-backdrop {
     align-items: center;
 }
 
-  /* Firefox */
+/*  
 * {
     scrollbar-width: auto;
     scrollbar-color: #8f54a0 ;
 }
 
-  /* Chrome, Edge, and Safari */
 *::-webkit-scrollbar {
     width: 10px;
 }
@@ -66,7 +65,7 @@ ion-backdrop {
 
 .alert-wrapper.sc-ion-alert-md {
     z-index: 12;
-}
+}*/
 
 body {
     overflow-y: auto;

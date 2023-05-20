@@ -117,6 +117,7 @@ export default {
 	props:{ 
 		order: {
 			type: Order,
+			required: false,
 		},
 		isOpen: {
 			type: Boolean,

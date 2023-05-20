@@ -3,17 +3,18 @@ import Point from "./point"
 import User from "./user"
 
 interface StatusMessage {
+	icon:string
 	message:string
 	colorName:string
 }
 
 const ORDER_STATUS_MESSAGES:Array<StatusMessage> = [
-	{message: "",				colorName:""},
-	{message: "Выполенен",		colorName:"success"},
-	{message: "Отменён",		colorName:"danger"},
-	{message: "В обработке",	colorName:"primary"},
-	{message: "Подтверждён",	colorName:"secondary"},
-	{message: "В процессе",		colorName:"tertiary"},
+	{message: "",				colorName:""			,icon:""},
+	{message: "Выполенен",		colorName:"success"		,icon:"✔"},
+	{message: "Отменён",		colorName:"danger"		,icon:"❌"},
+	{message: "В обработке",	colorName:"primary"		,icon:"📞"},
+	{message: "Подтверждён",	colorName:"secondary"	,icon:"📄"},
+	{message: "В процессе",		colorName:"tertiary"	,icon:"🚚"},
 ]
 
 class Order {

@@ -19,7 +19,7 @@
 				</div>
 				<div class="order_card_container" v-if="searchedOrders.length > 0">
 					<transition-group name="order-item">
-						<OrderCard v-for="order in searchedOrders" 
+						<OrderCardSmall v-for="order in searchedOrders" 
 						:key="`order__${order.orderId}`" 
 						:order="order"
 						:openDetails="openDetails"
@@ -51,13 +51,13 @@ import {
 import { optionsOutline } from "ionicons/icons";
 import { reactive, computed, watch } from "vue";
 import { useStore } from "vuex";
-import { useRoute, useRouter } from "vue-router";
-import { yyyymmdd } from "@/assets/date";
+import {  useRouter } from "vue-router";
 import Order from "@/assets/order";
 import OrderDetails from "@/components/OrderDetails.vue";
 import OrderCard from "@/components/OrderCard.vue";
+import OrderCardSmall from "@/components/OrderCardSmall.vue";
 import OrderListFilters from "@/components/OrderListFilters.vue"
-import {OrderListFiltersInstance, newOrderListFilters} from "@/assets/orderListFilters"
+import { newOrderListFilters} from "@/assets/orderListFilters"
 import DateViewer from "@/components/DateViewer.vue";
 
 const searchOrder = (orders: Array<Order>, searchString: string) => {
@@ -85,6 +85,7 @@ export default {
 		IonItem,
 
 		OrderCard,
+		OrderCardSmall,
 		OrderDetails,
 		OrderListFilters,
 	},
@@ -169,7 +170,7 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
-	padding-right: 20px;
+	padding: 0 10px;
 	animation: .3s order-item;
 }
 
