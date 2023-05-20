@@ -8,11 +8,24 @@
 	
 				<div class="main-info__title">
 					<div class="title__name">{{ order.title }}</div>
-					<div class="title__worker" v-if="order.worker">{{ order.worker.shortName }}</div>
+					<span v-if="order.worker">
+						<div class="title__worker" v-if="user.roleId != 1">
+							{{ order.worker.shortName }}
+						</div>
+						<div class="title__worker" v-if="user.roleId == 1 && order.manager"> 
+							{{ order.manager.shortName }}
+						</div>
+					</span>
+					<span v-if="order.manager && !order.worker">
+						<div class="title__worker"> 
+							{{ order.manager.shortName }}
+						</div>
+					</span>
 				</div>
 	
 				<div class="main-info__subtitle">
-					{{getTimeString(order.startAt)}} - {{getTimeString(order.endAt)}}
+					<div class="plan">{{getTimeString(order.startAt)}} - {{getTimeString(order.endAt)}}</div>
+					<div class="duration">{{orderTimeFact}}</div>
 				</div>
 	
 			</div>
@@ -48,11 +61,12 @@
 <script lang="ts">
 import Order from '@/assets/order'
 import { limitedString } from '@/assets/string'
-import { computed, reactive } from 'vue'
+import { computed, onMounted, reactive } from 'vue'
 import { getTimeString } from '@/assets/date'
 import { useStore } from 'vuex'
 import { chevronDownOutline, chevronUpOutline } from 'ionicons/icons'
 import { IonButton, IonIcon, IonText } from '@ionic/vue'
+import { toTimeString } from '@/assets/standardDimensions'
 
 export default {
 	name: 'OrderCardSmall',
@@ -75,8 +89,14 @@ export default {
 	},
 	setup(props, ctx) {
 		const store = useStore()
-		const data = reactive({
+		const data = reactive<{
+			isOpen: boolean,
+			now: Date,
+			nowInterval: NodeJS.Timer|null,
+		}>({
 			isOpen: false,
+			now: new Date(),
+			nowInterval: null,
 		})
 
 		const toggleDetails = () => data.isOpen = !data.isOpen
@@ -87,6 +107,33 @@ export default {
 		const orderStatus = computed(() => order.getStatusMessage())
 
 		const user = computed(() => store.getters.userMainInfo)
+
+		onMounted(() => {
+			data.nowInterval = setInterval(() => {
+				data.now = new Date()
+			}, 1000)
+		})
+
+
+		const orderTimeFact = computed(() => {
+			if (!order || !order.startAtFact) return
+			if (order.statusId != 5 && data.nowInterval){
+				clearInterval(data.nowInterval)
+			}
+
+			
+			let difference
+			if (order.endAtFact){
+				difference = Math.abs(order.endAtFact.getTime() - order.startAtFact.getTime()) / 1000
+			} else {
+				difference = Math.abs(data.now.getTime() - order.startAtFact.getTime()) / 1000
+			}
+
+
+			let timeString = toTimeString(difference)
+			if (timeString == "") timeString = "0 мин."
+			return timeString;
+		})
 
 		return {
 			order,
@@ -101,6 +148,7 @@ export default {
 			chevronUpOutline,
 			data,
 			toggleDetails,
+			orderTimeFact,
 		}
 	}
 }
@@ -120,18 +168,19 @@ export default {
 /*var(--ion-card-background)*/
 .order-card-small{
 	display: grid;
-	grid-template-columns: 32px calc(100% - 12px - 32px - 12px - 32px) 32px;
+	grid-template-columns: 36px calc(100% - 12px - 36px - 12px - 32px) 32px;
 	gap: 12px;
 	padding: 14px;
 }
 
 .order-card-small__status{
-	height: 32px;
-	width: 32px;
+	height: 36px;
+	width: 36px;
 	border-radius: 4px;
 	display: flex;
 	justify-content: center;
 	align-items: center;
+	font-size: 16px;
 }
 
 .order-card-small__status.primary{
@@ -161,12 +210,20 @@ export default {
 .main-info__subtitle{
 	color: var(--ion-color-step-400);
 	font-size: 13px;
+	display: flex;
+	flex-direction: row;
+	gap: 10px;
+}
+
+.duration{
+	color: var(--ion-color-step-550);
 }
 .main-info__title{
 	display: flex;
 	flex-direction: row;
 	gap:7px;
 	max-width: 100%;
+	margin-bottom: 3px;
 }
 .title__name{
 	text-overflow: ellipsis;
@@ -178,6 +235,7 @@ export default {
 
 .title__worker{
 	color: var(--ion-color-step-550);
+	white-space: nowrap;
 }
 
 .order-card-small__details{

@@ -19,7 +19,7 @@ function toTimeString(seconds: number){
 	let totalString = ""
 	if (time.days != 0) totalString += `${time.days} д. `
 	if (time.hours != 0) totalString += `${time.hours} ч. `
-	if (time.minutes != 0) totalString += `${time.minutes} м. `
+	if (time.minutes != 0) totalString += `${time.minutes} мин. `
 
 	return totalString
 }

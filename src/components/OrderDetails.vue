@@ -21,7 +21,8 @@
 				<div class="value">
 					{{getDateString(order?.startAt)}}
 					{{getTimeString(order?.startAt)}} 
-					<span v-if="order?.endAt">-{{getTimeString(order.endAt)}}</span>
+					-
+					{{getTimeString(order?.endAt)}}
 				</div>
 			</div>
 
