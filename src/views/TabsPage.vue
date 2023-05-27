@@ -39,9 +39,8 @@
 </template>
 
 <script lang="ts">
-import { cssVw } from '@/assets/standardDimensions';
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet, IonToast, IonHeader, IonTitle, IonToolbar } from '@ionic/vue';
-import { personCircleOutline, home, addCircleOutline, barChartOutline, } from 'ionicons/icons';
+import { personCircleOutline, home, barChartOutline, } from 'ionicons/icons';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useStore } from 'vuex';
@@ -68,6 +67,7 @@ export default {
 
         let tabs = [
             {name: "home", href: "/home", icon: home, label: "Главная", toastIsOpen: false},
+            {name: "load", href: "/load", icon: barChartOutline, label: "Нагрузка", toastIsOpen: false},
             {name: "profile", href: "/profile", icon: personCircleOutline, label: "Профиль", toastIsOpen: false},
         ]
 
@@ -78,8 +78,8 @@ export default {
             let title:string = ""
             if (route.name == 'home'){
                 title = 'Главная'
-            } else if (route.name == 'create-order') {
-                title = 'Создать заказ'
+            } else if (route.name == 'load') {
+                title = 'Нагрузка'
             } else if (route.name == 'profile') {
                 title = 'Профиль'
             }
