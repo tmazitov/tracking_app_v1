@@ -12,8 +12,17 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      "/aaa/api": "http://127.0.0.1:5000",
-      "/tms/api": "http://127.0.0.1:5001",
+      "/aaa/api": {
+        target: "http://127.0.0.1:5000",
+      },
+      "/tms/api": {
+        target: "http://127.0.0.1:5001",
+      },
+      // "/tms/ws": {
+      //   target: "ws://127.0.0.1:5001",
+      //   changeOrigin: true,
+      //   ws: true
+      // },
     }
   },
 })

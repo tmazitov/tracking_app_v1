@@ -17,13 +17,13 @@ export default {
     setup() {
         const store = useStore()
         store.dispatch('setup-user')
-
+        store.dispatch('setup-order-websocket')
         const route = useRoute()
 
         if (route.name != 'auth' && AccessTokenPairAPI.getAccess() == null) {
             const router = useIonRouter()
             sessionStorage.setItem("origin_path", route.fullPath)
-            router.replace({ name: 'auth' })
+            router.replace({ name: 'auth' })   
         }
     }
 }

@@ -109,4 +109,9 @@ client.interceptors.response.use(
     }
 )
 
+export {
+    failedQueue,
+    isRefreshing,
+}
+
 export default client

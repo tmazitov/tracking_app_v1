@@ -30,6 +30,21 @@ class AuthAPI {
 		AccessTokenPairAPI.save(access, refresh)
 		CheckTokenAPI.del()
 	}
+
+	static refresh(){
+		const oldRefresh = AccessTokenPairAPI.getRefresh()
+		return auth.post("/refresh", { refresh : oldRefresh },{
+			headers: {
+				"Authorization" : AccessTokenPairAPI.getAccess()
+			}
+		})
+		.then(response => {
+			let access = response.data['access']
+			let refresh = response.data['refresh']
+			AccessTokenPairAPI.save(access, refresh)
+			return response
+		})
+	}
 }
 
 class CheckTokenAPI {
