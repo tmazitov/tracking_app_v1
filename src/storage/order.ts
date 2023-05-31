@@ -3,8 +3,8 @@ import TMS from "@/api/tms"
 import Order from "@/assets/order"
 import OrderUpdateHub from "@/assets/orderUpdateHub"
 import User from "@/assets/user"
-import { Store, Module } from "vuex"
-import { wsRouter } from "./order-actions"
+import { Module } from "vuex"
+import { setupOrderPriceList } from "./order-actions"
 import { IOrderState, getDefaultState } from "./order-store"
 
 
@@ -20,6 +20,12 @@ const module:Module<IOrderState,any> = {
 			if (access) {
 				state.ordersWebSocket = new OrderUpdateHub('ws://localhost:5001/tms/ws/order/updates', state)
 			}
+		},
+		'setup-order-price-list': (state:IOrderState, priceList:{[key: string]:number}) => {
+			state.ordersPriseList = priceList
+		},
+		'add-order': (state:IOrderState, order:Order) => {
+			state.orders.push(order)
 		}
 	},
 	getters:{
@@ -38,6 +44,15 @@ const module:Module<IOrderState,any> = {
 					order.startAt.getFullYear() == date.getFullYear() 
 			})
 		},
+		orderDefaultCarPrice: (state: IOrderState) => {
+			return state.ordersPriseList["big_car_price"]
+		},
+		orderDefaultHelperPrice: (state: IOrderState) => {
+			return state.ordersPriseList["helper_price"]
+		},
+		defaultFragilePrice: (state: IOrderState) => {
+			return state.ordersPriseList["fragile_price"]
+		}
 	},
 	
 	actions:{
@@ -57,7 +72,9 @@ const module:Module<IOrderState,any> = {
 				})
 				commit('setup-order-list', orderList)
 			})
-		}
+		},
+		'setup-order-price-list': setupOrderPriceList,
+		'add-order': ({commit}, order:Order) => commit('add-order', order)
 	},
 }
 

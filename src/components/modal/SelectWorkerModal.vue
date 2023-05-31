@@ -21,10 +21,10 @@
 			<ion-content>
 
 				<div class="order-context">
-					<div>{{currentOrder.getTime()}}</div>
-					<ion-label class="order-context__label">
+					<div class="order-context__time">{{currentOrder.getTime()}}</div>
+					<div class="order-context__label">
 						{{ currentOrder.title}}
-					</ion-label>
+					</div>
 				</div>
 
 				<div class="worker-list">
@@ -139,7 +139,7 @@ export default {
 		}
 
 		const workerOrders = (worker:User):Array<Order> => {
-			return store.getters.orderLitsByWorker(worker)
+			return store.getters.orderListByWorker(worker)
 		}
 		
 		const openDetails = (worker:User) => {
@@ -151,30 +151,30 @@ export default {
 		})
 
 		const store = useStore()
-		const BUSY_ORDER_DIFFERENCE = 0 // 15 min in ms
+		const BUSY_ORDER_DIFFERENCE = 15 * 60 * 1000 // 15 min in ms
 		const currentOrder = props.order
 
+
+		const checkDateIntersection = (startDate1:Date, endDate1:Date, startDate2:Date, endDate2:Date) => {
+			return (startDate1 <= endDate2 && startDate2 <= endDate1);
+		}
+		
 		const workers:ComputedRef<Array<SelectableWorker>> = computed(() => {
 			let workers:Array<User> = store.getters.staffWorkers
 
 			return workers.map((worker:User) => {
-				let orders:Array<Order> = store.getters.orderLitsByWorker(worker)
+				let orders:Array<Order> = store.getters.orderListByWorker(worker)
 					.sort((ord1:Order,ord2:Order) => {
 						return ord1.startAt.getTime() - ord2.startAt.getTime()
 					})
 				let busyOrder:Order|undefined = orders.find((order:Order) => {
-
-					let checkStart = Math.abs(currentOrder.startAt.getTime() - order.endAt.getTime()) > BUSY_ORDER_DIFFERENCE 
-					let checkEnd   = Math.abs(currentOrder.endAt.getTime() - order.startAt.getTime()) > BUSY_ORDER_DIFFERENCE 
-
-					return checkStart && checkEnd
+					return checkDateIntersection(currentOrder.startAt, currentOrder.endAt, order.startAt, order.endAt)
 				})
 				return {
 					user: worker,
 					orders,
 					busyOrder,
 				}
-
 			}) 
 		})
 
@@ -285,16 +285,21 @@ export default {
 .order-context{
 	padding: 16px;
 	padding-bottom: 0;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: row;
-	gap: 16px;
+	display: grid;
+	grid-template-columns: 100px calc(100% - 100px - 10px);
+	column-gap: 10px;
 	color: var(--ion-color-step-500);
 }
 
-.order-context__label{
-	text-align: center;
+.order-context__time{
+	white-space: nowrap;
+	width: 100px;
+}
 
+.order-context__label{
+	width: 100%;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	overflow: hidden;
 }
 </style>

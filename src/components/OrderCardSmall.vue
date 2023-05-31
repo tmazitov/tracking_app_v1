@@ -12,11 +12,11 @@
 						<div class="title__worker" v-if="user.roleId != 1">
 							{{ order.worker.shortName }}
 						</div>
-						<div class="title__worker" v-if="user.roleId == 1 && order.manager"> 
+						<div class="title__worker" v-if="user.roleId == 1 && order.manager "> 
 							{{ order.manager.shortName }}
 						</div>
 					</span>
-					<span v-if="order.manager && !order.worker">
+					<span v-if="order.manager && !order.worker && user.id != order.manager.id">
 						<div class="title__worker"> 
 							{{ order.manager.shortName }}
 						</div>
@@ -41,8 +41,8 @@
 							<div>Точек : 
 								<ion-text color="primary">{{order.points.length}}</ion-text>
 							</div>
-							<div v-if="order.helpers">Грузчики :
-								<ion-text color="primary">{{order.helpers}}</ion-text>
+							<div v-if="order.bill.helperCount">Грузчики :
+								<ion-text color="primary">{{order.bill.helperCount}}</ion-text>
 							</div>
 						</div>
 						<div class="details__description" v-if="order.comment">
@@ -221,6 +221,7 @@ export default {
 .main-info__title{
 	display: flex;
 	flex-direction: row;
+	justify-content: space-between;
 	gap:7px;
 	max-width: 100%;
 	margin-bottom: 3px;

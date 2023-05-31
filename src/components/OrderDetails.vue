@@ -39,7 +39,6 @@
 				<div class="value">{{order?.manager.shortName}}</div>
 			</div>
 
-
 			<div class="order-details__properties">
 				<div class="order-details__map" v-if="order">
 					<OrderPointsMap
@@ -47,11 +46,19 @@
 						readonly
 					/>
 				</div>
+			</div>
+
+			<div class="order-details__properties description">
+				<div class="title">Описание</div>
+				<div v-if="order?.bill.helperCount">
+					Грузчики: {{order?.bill.helperCount}} чел. x {{order.bill.helperHours}} ч.
+				</div>
+				<div v-if="order?.bill.isFragileCargo">
+					Необходима упаковка защитной плёнкой
+				</div>
 				<div class="order-details__description" v-if="order?.comment">
 					{{ order?.comment }}
 				</div>
-				<div v-if="order?.helpers">Количество грузчиков: {{order?.helpers}}</div>
-				<div v-if="order?.isFragileCargo">Необходима упаковка защитной плёнкой</div>
 			</div>
 
 			<div class="order-details__action">
@@ -313,6 +320,16 @@ ion-icon{
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+}
+
+.order-details__properties.description {
+	border: 1px solid var(--ion-color-step-300);
+	border-radius: 4px;
+	padding: 16px;
+}
+
+.order-details__properties.description > .title{
+	font-size: 20px;
 }
 
 .order-details__action{

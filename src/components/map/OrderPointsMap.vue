@@ -63,9 +63,9 @@
 import OrderPointsMap from '@/assets/map'
 import { IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, IonIcon, IonContent, IonPopover, IonList } from '@ionic/vue'
 import { Transition, computed } from 'vue'
-import { toKM, toTimeString } from '@/assets/standardDimensions'
+import { toKM, toTimeString, convertSeconds } from '@/assets/standardDimensions'
 import SearchSelector from '../inputs/RSearchSelector.vue'
-import { reactive, onMounted } from 'vue'
+import { reactive, onMounted, watch } from 'vue'
 import { ellipsisHorizontal } from 'ionicons/icons'
 import Point from '@/assets/point'
 
@@ -79,17 +79,21 @@ export default {
 	components: {
 		IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, IonIcon, Transition, SearchSelector, IonPopover, IonContent, IonList,
 	},
+	emits:['update:wayHours'],
 	props: {
 		points: {
 			type: Array<Point>,
 			required: true,
+		},
+		wayHours: {
+			type: Number,
 		},
 		readonly: {
 			type: Boolean,
 			default: false,
 		}
 	},
-	setup(props) {
+	setup(props, ctx) {
 		let map = new OrderPointsMap()
 		let pointsManager = new PointsManager(map)
 		const data = reactive<{
@@ -176,6 +180,18 @@ export default {
 			data.pointToUpdate = undefined
 			data.searchField = ""
 		}
+
+		watch(() => map.totalTime.value, (newValue) => {
+			let time = convertSeconds(newValue)
+			let totalHours = time.hours + time.days * 24 + time.minutes/60
+			if (totalHours < 2) {
+				totalHours = 2
+			} else {
+				totalHours = Math.ceil(totalHours)
+			} 
+			console.log('newTotalTime :>> ', newValue);
+			ctx.emit('update:wayHours', totalHours)
+		})
 
 		return {
 			toKM, toTimeString,

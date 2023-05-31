@@ -70,8 +70,28 @@ const getTimeString: Function = (date: Date) => {
 	return `${hours}:${minuteString}`
 }
 
+function isToday(date:Date) {
+	const today = new Date(); // Получаем текущую дату
+  
+	// Сравниваем год, месяц и день переданной даты с текущей датой
+	return (
+	  date.getFullYear() === today.getFullYear() &&
+	  date.getMonth() === today.getMonth() &&
+	  date.getDate() === today.getDate()
+	);
+}
+
+function isEqual(date1:Date, date2:Date) {
+	return (
+	  date1.getDate() === date2.getDate() &&
+	  date1.getMonth() === date2.getMonth() &&
+	  date1.getFullYear() === date2.getFullYear()
+	);
+  }
 
 export {
+	isToday,
+	isEqual,
 	yyyymmdd,
 	namesOfMonths,
 	namesOfWeekDays,

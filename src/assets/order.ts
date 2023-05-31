@@ -8,14 +8,34 @@ interface StatusMessage {
 	colorName:string
 }
 
+const OrderStatusDone:number            = 1
+const OrderStatusCanceled:number        = 2
+const OrderStatusCreated:number         = 3
+const OrderStatusAccepted:number        = 4
+const OrderStatusInProcess:number       = 6
+
 const ORDER_STATUS_MESSAGES:Array<StatusMessage> = [
 	{message: "",				colorName:""			,icon:""},
-	{message: "Выполенен",		colorName:"success"		,icon:"✔"},
-	{message: "Отменён",		colorName:"danger"		,icon:"❌"},
-	{message: "В обработке",	colorName:"primary"		,icon:"📞"},
-	{message: "Подтверждён",	colorName:"secondary"	,icon:"📄"},
-	{message: "В процессе",		colorName:"tertiary"	,icon:"🚚"},
+	{message: "Выполенен",			colorName:"success"		,icon:"✔"},
+	{message: "Отменён",			colorName:"danger"		,icon:"❌"},
+	{message: "В обработке",		colorName:"primary"		,icon:"📞"},
+	{message: "Подтверждён",		colorName:"secondary"	,icon:"📄"},
+	{message: "Назачен водитель", 	colorName:"secondary" 	,icon:"⌚" },
+	{message: "В процессе",			colorName:"tertiary"	,icon:"🚚"},
 ]
+
+class OrderPublicBill {
+	carTypeId:number
+	helperCount:number
+	helperHours:number
+	isFragileCargo:	boolean
+	constructor(details:any) {
+		this.carTypeId = details["carTypeId"]
+		this.helperCount = details["helperCount"]
+		this.helperHours = details["helperHours"]
+		this.isFragileCargo = details["isFragileCargo"]
+	}
+}
 
 class Order {
 	details:Object|null
@@ -33,10 +53,10 @@ class Order {
 	orderType:number
 	worker:User|undefined
 	manager:User|undefined
-	helpers: number|null
 	comment: string|null
-	isFragileCargo: boolean|null
 	isRegularCustomer: boolean|undefined
+
+	bill:OrderPublicBill
 	constructor(details:any) {
 		this.details = details
 		this.orderId = details["orderId"]
@@ -59,9 +79,7 @@ class Order {
 		if (details["manager"]){
 			this.manager = new User(details["manager"])
 		}
-		this.helpers = details["helpers"]
 		this.comment = details["comment"]
-		this.isFragileCargo = details["isFragileCargo"]
 		this.isRegularCustomer = details["isRegularCustomer"]
 		
 		this.points = []
@@ -69,6 +87,7 @@ class Order {
 		pointsData.forEach((pointInfo) => {
 			this.points.push(new Point(pointInfo))
 		}) 
+		this.bill = new OrderPublicBill(details["price"])
 	}
 
 	getStatusMessage(){
@@ -113,7 +132,12 @@ class Order {
 				 * 1. Can start the order
 				 * 2. Can end the order 
 				 */
-				if (this.statusId == 4 && this.worker && this.worker.id == user.id && this.startAt.getMinutes() - now.getMinutes() < 7*60*1000){
+				if (!this.worker || this.worker.id != user.id) {
+					break;
+				}
+
+
+				if (this.statusId == OrderStatusAccepted && this.startAt.getMinutes() - now.getMinutes() < 7*60*1000){
 					return {
 						id:1,
 						action: () => this.start(),
@@ -121,7 +145,7 @@ class Order {
 					}
 				}
 
-				if (this.statusId == 5 && this.worker && this.worker.id == user.id) {
+				if (this.statusId == OrderStatusInProcess) {
 					return {
 						id:2,
 						action: () => this.end(),
@@ -134,7 +158,12 @@ class Order {
 				/**
 				 * 1. Can set the worker if is not already set 
 				 * */ 
-				if (!this.worker && this.manager && this.manager.id == user.id ){
+				if (!this.manager || this.manager.id != user.id){
+					break;
+				}
+
+
+				if (!this.worker && this.manager){
 					return {
 						id:3,
 						action: TMS.order().setWorker,
@@ -148,7 +177,7 @@ class Order {
 				 * 1. Can set the worker if is not already set  
 				 */
 
-				if (!this.worker && this.manager && this.manager.id == user.id ){
+				if (!this.worker){
 					return {
 						id:3,
 						action: TMS.order().setWorker,
@@ -164,7 +193,7 @@ class Order {
 			if (response.data["err"]){
 				throw response.data["err"]
 			}	
-			this.statusId = 5
+			this.statusId = Number(response.data["statusId"])
 			this.startAtFact = new Date(response.data["startAtFact"])
 		})
 	} 
@@ -172,8 +201,8 @@ class Order {
 		TMS.order().end(this.orderId).then((response) => {
 			if (response.data["err"]){
 				throw response.data["err"]
-			}	
-			this.statusId = 1
+			}
+			this.statusId = Number(response.data["statusId"])
 			this.endAtFact = new Date(response.data["endAtFact"])
 		})
 	} 

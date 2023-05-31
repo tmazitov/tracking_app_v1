@@ -11,11 +11,20 @@ interface CreatableOrder {
 	points:				Array<CreatablePoint>
 	title:				string|undefined
 	workerId:			number|undefined
-	helpers:			number|undefined
 	orderType:			number|undefined
 	comment:			string|undefined
-	isFragileCargo:		boolean|undefined
 	isRegularCustomer:	boolean|undefined
+	price: {
+		total:number,
+		carPrice:number,
+		carHours:number,
+		carTypeId:number,
+		helperPrice:number,
+		helperCount:number,
+		helperHours:number,
+		km: number,
+		isFragileCargo:		boolean|undefined
+	}
 }
 
 export default CreatableOrder

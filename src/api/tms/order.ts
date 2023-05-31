@@ -24,6 +24,10 @@ class Order {
 			workerId
 		})
 	}
+
+	static priceList() {
+		return client.get(`/order/price-list`)
+	}
 }
 
 export default Order

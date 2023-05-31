@@ -30,5 +30,6 @@ var vh:number = Number((Math.max(document.documentElement.clientHeight || 0, win
 export {
 	toKM,
 	toTimeString,
+	convertSeconds,
 	vh as cssVh, vw as cssVw
 }

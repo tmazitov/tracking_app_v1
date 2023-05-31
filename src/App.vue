@@ -18,6 +18,7 @@ export default {
         const store = useStore()
         store.dispatch('setup-user')
         store.dispatch('setup-order-websocket')
+        store.dispatch('setup-order-price-list')
         const route = useRoute()
 
         if (route.name != 'auth' && AccessTokenPairAPI.getAccess() == null) {
