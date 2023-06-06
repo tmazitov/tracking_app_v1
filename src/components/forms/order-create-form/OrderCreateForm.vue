@@ -1,4 +1,13 @@
 <template>
+
+	<ion-toast :is-open="data.orderCreatedIsOpen"
+      	message="Заказ успешно создан!"
+	    :duration="5000"
+		layout="stacked"
+		color="success"
+		:icon="checkmarkCircleOutline">
+	</ion-toast>
+	
 	<transition name="modal">
 		<div class="order_create_form" v-if="isOpen">
 
@@ -51,7 +60,7 @@
 								<div class="datetime__duration">
 	
 									<ion-input 
-									type="number" v-model="form.duration" 
+									type="number" v-model="form.duration" min="2"
 									label="Часы работы" label-placement="floating" fill="solid">
 									</ion-input>
 
@@ -115,8 +124,8 @@
 <script lang="ts">
 import OrderPointsMap from "../../map/OrderPointsMap.vue";
 import CreateOrderBillModal from "../../modal/CreateOrderBillModal.vue"
-import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect } from "@ionic/vue";
-import { add, arrowBackOutline, open, remove } from "ionicons/icons";
+import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect, IonToast } from "@ionic/vue";
+import { add, arrowBackOutline, checkmarkCircleOutline, open, remove } from "ionicons/icons";
 import { ComputedRef, computed, reactive, toRaw, toRef, watch } from "vue";
 import User from "@/assets/user";
 import RSelector from '../../inputs/RSelector.vue'
@@ -141,6 +150,7 @@ export default {
 		OrderPointsMap,
 		IonTitle,
 		IonInput,
+		IonToast,
 		IonTextarea,
 		IonIcon,
 		IonCheckbox,
@@ -148,7 +158,7 @@ export default {
 		IonButton,
 		IonSelect, IonSelectOption,
 		IonRippleEffect,
-		CreateOrderBillModal
+		CreateOrderBillModal,
 	},
 
 	props: {
@@ -167,8 +177,14 @@ export default {
 
 	setup(props) {
 		const store = useStore()
-		const data = reactive({
+		const data = reactive<{
+			billIsOpen: boolean,
+			orderCreatedIsOpen: boolean,
+			createdOrder: Order|undefined,
+		}>({
 			billIsOpen: false,
+			orderCreatedIsOpen: false,
+			createdOrder: undefined,
 		})
 
 
@@ -197,14 +213,23 @@ export default {
 			{value: 2, title: "Пригород"},
 			{value: 4, title: "Меж. город"},
 		]
-	
 
 		
+
+		const selectTab = (index: number) => (form.selectedTab = index);
+
+		const openBill = () => data.billIsOpen = true
+		const closeBill = () => data.billIsOpen = false
+
+		const openCreatedOrder = () => data.orderCreatedIsOpen = true
+		const closeCreatedOrder = () => {
+			data.orderCreatedIsOpen = false
+		}
 
 		const orderSubmit = () => {
 
 			let startDate = new Date(form.date + " " + form.start)
-			
+
 			let endDate = new Date(startDate.getTime())
 			endDate.setHours(startDate.getHours() + form.duration)
 
@@ -230,15 +255,21 @@ export default {
 				if (date && isEqual(order.startAt, date)){
 					store.dispatch('add-order', order)
 				}
+				
+				data.createdOrder = order
+
+				closeBill()
 				props.closer()
+				setTimeout(() => {
+					openCreatedOrder()
+					setTimeout(() => {
+						closeCreatedOrder()
+					}, 5000)
+				}, 500)
 			})
 		}
 
-		const selectTab = (index: number) => (form.selectedTab = index);
 
-
-		const openBill = () => data.billIsOpen = true
-		const closeBill = () => data.billIsOpen = false
 
 		return {
 			remove,
@@ -257,6 +288,8 @@ export default {
 
 			openBill,
 			closeBill,
+			closeCreatedOrder,
+			checkmarkCircleOutline,
 		};
 	},
 };
@@ -448,18 +481,18 @@ ion-checkbox{
 
 
 .modal-enter-active{
-	animation: .65s modal cubic-bezier(0.76, 0.03, 0.54, 0.96);
+	animation: .45s modal cubic-bezier(0.76, 0.03, 0.54, 0.96);
 }
 .modal-leave-active{
-	animation: .65s modal reverse cubic-bezier(0.76, 0.03, 0.54, 0.96);
+	animation: .45s modal reverse cubic-bezier(0.76, 0.03, 0.54, 0.96);
 }
 
 @keyframes modal {
 	from {
-		top: 100vh;
+		left: 100vw;
 	}
 	to {
-		top: 0;
+		left: 0;
 	}
 }
 </style>

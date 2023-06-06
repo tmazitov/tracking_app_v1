@@ -188,7 +188,7 @@ class Order {
 				break;
 		}
 	}
-	private start(){
+	start(){
 		TMS.order().start(this.orderId).then((response) => {
 			if (response.data["err"]){
 				throw response.data["err"]
@@ -197,7 +197,7 @@ class Order {
 			this.startAtFact = new Date(response.data["startAtFact"])
 		})
 	} 
-	private end(){
+	end(){
 		TMS.order().end(this.orderId).then((response) => {
 			if (response.data["err"]){
 				throw response.data["err"]

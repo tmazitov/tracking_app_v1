@@ -15,15 +15,15 @@ interface CreatableOrder {
 	comment:			string|undefined
 	isRegularCustomer:	boolean|undefined
 	price: {
-		total:number,
-		carPrice:number,
-		carHours:number,
-		carTypeId:number,
-		helperPrice:number,
-		helperCount:number,
-		helperHours:number,
-		km: number,
-		isFragileCargo:		boolean|undefined
+		total:			number,
+		carPrice:		number,
+		carHours:		number,
+		carTypeId:		number,
+		helperPrice:	number,
+		helperCount:	number,
+		helperHours:	number,
+		km: 			number,
+		isFragileCargo:	boolean|undefined
 	}
 }
 

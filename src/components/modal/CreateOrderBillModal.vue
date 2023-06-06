@@ -335,7 +335,6 @@ export default {
 
 			props.form.price = price
 			props.submit()
-			closer()
 		}
 
 		return {
@@ -392,19 +391,19 @@ export default {
 }
 
 .bill-enter-active{ 
-	animation: .65s bill cubic-bezier(0.76, 0.03, 0.54, 0.96);
+	animation: .45s bill cubic-bezier(0.76, 0.03, 0.54, 0.96);
 }
 
 .bill-leave-active{
-	animation: .65s bill reverse cubic-bezier(0.76, 0.03, 0.54, 0.96);
+	animation: .45s bill reverse cubic-bezier(0.76, 0.03, 0.54, 0.96);
 }
 
 @keyframes bill {
 	from {
-		top: 100vh;
+		left: 100vw;
 	}
 	to {
-		top: 0;
+		left: 0;
 	}
 }
 
