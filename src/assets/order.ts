@@ -12,15 +12,14 @@ const OrderStatusDone:number            = 1
 const OrderStatusCanceled:number        = 2
 const OrderStatusCreated:number         = 3
 const OrderStatusAccepted:number        = 4
-const OrderStatusInProcess:number       = 6
+const OrderStatusInProcess:number       = 5
 
 const ORDER_STATUS_MESSAGES:Array<StatusMessage> = [
-	{message: "",				colorName:""			,icon:""},
+	{message: "",					colorName:""			,icon:""},
 	{message: "Выполенен",			colorName:"success"		,icon:"✔"},
 	{message: "Отменён",			colorName:"danger"		,icon:"❌"},
-	{message: "В обработке",		colorName:"primary"		,icon:"📞"},
+	{message: "В обработке",		colorName:"primary"		,icon:"⌚"},
 	{message: "Подтверждён",		colorName:"secondary"	,icon:"📄"},
-	{message: "Назачен водитель", 	colorName:"secondary" 	,icon:"⌚" },
 	{message: "В процессе",			colorName:"tertiary"	,icon:"🚚"},
 ]
 
@@ -136,8 +135,7 @@ class Order {
 					break;
 				}
 
-
-				if (this.statusId == OrderStatusAccepted && this.startAt.getMinutes() - now.getMinutes() < 7*60*1000){
+				if (this.statusId == OrderStatusAccepted && this.startAt.getTime() - now.getTime() < 7*60*1000){
 					return {
 						id:1,
 						action: () => this.start(),
