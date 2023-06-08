@@ -186,9 +186,9 @@ export default {
 				if (response.data["err"]) {
 					throw response.data["err"]
 				}	
-				let selectedWorker = new User(response.data)
+				let selectedWorker = new User(response.data["worker"])
 				currentOrder.worker = selectedWorker
-				currentOrder.statusId = 4
+				currentOrder.statusId = response.data["statusId"]
 			})
 
 			

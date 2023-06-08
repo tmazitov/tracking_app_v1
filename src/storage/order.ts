@@ -6,6 +6,7 @@ import User from "@/assets/user"
 import { Module } from "vuex"
 import { setupOrderPriceList } from "./order-actions"
 import { IOrderState, getDefaultState } from "./order-store"
+import { OrderListFiltersInstance } from "@/assets/orderListFilters"
 
 
 
@@ -26,6 +27,9 @@ const module:Module<IOrderState,any> = {
 		},
 		'add-order': (state:IOrderState, order:Order) => {
 			state.orders.push(order)
+		},
+		'ws-update-filters': (state:IOrderState, filters: OrderListFiltersInstance) => {
+			state.ordersWebSocket?.updateFilters(filters)
 		}
 	},
 	getters:{
@@ -74,7 +78,8 @@ const module:Module<IOrderState,any> = {
 			})
 		},
 		'setup-order-price-list': setupOrderPriceList,
-		'add-order': ({commit}, order:Order) => commit('add-order', order)
+		'add-order': ({commit}, order:Order) => commit('add-order', order),
+		'ws-update-filters': ({commit}, filters:OrderListFiltersInstance) => commit('ws-update-filters', filters)
 	},
 }
 

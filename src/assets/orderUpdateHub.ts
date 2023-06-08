@@ -2,6 +2,8 @@ import AuthAPI, { AccessTokenPairAPI } from "@/api/auth/auth"
 import { IOrderState } from "@/storage/order-store";
 import Order from "./order";
 import { failedQueue, isRefreshing } from "@/api/client";
+import User from "./user";
+import { OrderListFiltersInstance } from "./orderListFilters";
 
 interface IOrderUpdateMessage {
 	orderId:number       
@@ -11,8 +13,9 @@ interface IOrderUpdateMessage {
 
 const UpdateStartAtFact:number = 1
 const UpdateEndAtFact:number = 2
+const UpdateWorker:number = 3
 
-
+const ClientMessageUpdateFilters:number = 1
 
 interface IOnMessageFunction {
 	(message:IOrderUpdateMessage):void;
@@ -22,7 +25,9 @@ interface IOnMessageFunction {
 class OrderUpdateHub {
 	ws: WebSocket
 	state: IOrderState
+	isAuthorized:boolean = false
 	isRefreshAttempt:boolean = false
+	onAuthWaitList:Array<{reject:Function, resolve:Function}> = []
 	constructor(path:string, state:IOrderState) {
 		this.ws = new WebSocket(path)
 		this.ws.onmessage = (e)=>this.onmessage(e)
@@ -33,16 +38,45 @@ class OrderUpdateHub {
 		console.log("ws created")
 	}
 
+	updateFilters(filters: OrderListFiltersInstance){
+		let message = {
+			access: AccessTokenPairAPI.getAccess(),
+			type: ClientMessageUpdateFilters,
+			data: filters.toRequestData()
+		}
+
+		if (!this.isAuthorized) {
+			this.onAuthWaitList.push({
+				resolve: (access:string) => {
+					message.access = access
+					this.ws.send(JSON.stringify(message))
+				},
+				reject: () => {throw new Error("Fail to update filters")}
+			})
+			return
+		}
+
+		this.ws.send(JSON.stringify(message))
+	}
+
 	private router(message:IOrderUpdateMessage){
-		let order = this.state.orders.find(order => order.orderId == message.orderId)
-		if (!order) return
+		let order:Order|undefined = this.state.orders.find(order => order.orderId == message.orderId)
 
 		switch (message.type){
 			case UpdateStartAtFact:
+				if (!order) return
 				this.updateStartAtFact(order, message.data)
 				break
 			case UpdateEndAtFact:
+				if (!order) return
 				this.updateEndAtFact(order, message.data)	
+				break
+			case UpdateWorker: 
+				if (order) {
+					this.updateWorker(order, message.data)
+				} else {
+					this.state.orders.push(new Order(message.data))
+				}
 				break
 		}
 	}
@@ -60,17 +94,33 @@ class OrderUpdateHub {
 		}
 	}
 
+	private updateWorker(order:Order, data:any){
+		if (data["worker"]){
+			order.statusId = Number(data["statusId"])
+			order.worker = new User(data["worker"])
+		}
+	}
+
 
 	private printLog(data:any) {
 		console.log(`ws received : ${(new Date()).toLocaleTimeString()} : ${data}`)
-	}
+	}	
 
 	private onmessage(event:MessageEvent<any>) {
 		this.printLog(event.data)
 
 		let message = JSON.parse(event.data)
-
+		if (message["status"] == 200){
+			this.isAuthorized = true
+			if (this.onAuthWaitList.length > 0){
+				this.onAuthWaitList.forEach((p) => {
+					p.resolve()
+				})	
+				this.onAuthWaitList = []
+			}
+		}
 		if (message["status"] == 401){
+			this.isAuthorized = false
 			if (!this.isRefreshAttempt) {
 				let accessMessage = {
 					access: AccessTokenPairAPI.getAccess(),
@@ -84,6 +134,7 @@ class OrderUpdateHub {
 						resolve: (access:string) => {
 							this.ws.send(JSON.stringify({access}))
 							this.isRefreshAttempt = false
+							this.isAuthorized = true
 						}
 					}
 					failedQueue.push(prom)
@@ -99,6 +150,7 @@ class OrderUpdateHub {
 						}
 						this.ws.send(JSON.stringify(accessMessage))
 						this.isRefreshAttempt = false
+						this.isAuthorized = true
 					})
 				}
 				
@@ -110,11 +162,12 @@ class OrderUpdateHub {
 
 
 	private onopen(event:Event) {
-		
+
 		let accessMessage = {
 			access: AccessTokenPairAPI.getAccess(),
 		}
 		this.ws.send(JSON.stringify(accessMessage))
+
 	}
 
 	private onerror(event:Event){

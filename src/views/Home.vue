@@ -62,7 +62,7 @@ IonFab,
 IonFabButton,
 IonIcon,
 } from "@ionic/vue";
-import { addOutline, optionsOutline } from "ionicons/icons";
+import { addOutline, optionsOutline, podiumOutline } from "ionicons/icons";
 import { reactive, computed, watch } from "vue";
 import { useStore } from "vuex";
 import {  useRouter } from "vue-router";
@@ -125,6 +125,7 @@ export default {
 		});
 
 		const filters = newOrderListFilters()
+		store.dispatch("ws-update-filters", filters)
 		watch(filters, (() => {
 			const newFiltersQuery = filters.toPageUrlQuery()
 			router.push({
@@ -132,6 +133,7 @@ export default {
 				query: newFiltersQuery,
 			})
 			store.dispatch("setup-order-list", filters)
+			store.dispatch("ws-update-filters", filters)
 		}))
 
 		const user = computed(() => store.getters.userMainInfo);
@@ -179,6 +181,7 @@ export default {
 			openDetails,
 			closeDetails,
 			addOutline,
+			podiumOutline,
 		};
 	},
 };
@@ -214,11 +217,10 @@ export default {
 }
 
 .tools__container {
-	display: grid;
-	grid-template-columns: calc(100% - 16px - 24px) 24px;
-	column-gap: 16px;
+	display: flex;
+	flex-direction: row;
+	gap: 16px;
 	padding-right: 10px;
-
 }
 
 @media (min-width: 768px) {
@@ -236,7 +238,7 @@ export default {
 }
 
 .search__container {
-	width: 230px;
+	width: 100%;
 }
 
 .order-item-enter-active{
@@ -256,5 +258,13 @@ export default {
 	}
 }
 
+.table-view-toggle {
+	display: flex;
+	align-items: center;
+}
 
+.table-view-toggle > ion-icon {
+	height: 24px;
+	width: 24px;
+}
 </style>

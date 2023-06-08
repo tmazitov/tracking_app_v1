@@ -110,6 +110,24 @@ class OrderListFiltersInstance {
 		filterString += filterItems.join("&")
 		return filterString
 	}
+
+	toRequestData():{[key:string]: any}{
+		let filterData:{[key:string]: any} = {
+			date: this.date,
+			statuses: this.status,
+			types: this.type,
+			isRegularCustomer: this.isRegularCustomer
+		}
+
+		if (this.page != -1){
+			filterData.page = this.page
+		}
+		if (this.workerId != -1){
+			filterData.workerId = this.workerId
+		}
+
+		return filterData
+	}
 }
 
 function newOrderListFilters():OrderListFiltersInstance{
