@@ -1,43 +1,85 @@
 <template>
 	<div class="order-load-map">
-		<div class="load-map__header">
-			<div class="header__date">
-				{{ getDateString(date) }}
+
+
+		<!-- Toolbar -->
+		<div class="load-map__toolbar" v-if="user.roleId == 3">
+
+			<div class="toolbar__buttons"  v-bind:style="{
+				'justify-content' : ordersWithoutWorker.length==0 || data.editMode ? 'flex-end' : 'space-between',
+			}">
+				<div class="toolbar__orders-without-worker" v-if="ordersWithoutWorker.length && !data.editMode">
+					<div>Заявок без водителей :</div>
+					<div class="clear-button__value">
+						{{ ordersWithoutWorker.length }}
+					</div>
+				</div>
+				<div class="clear-button" v-if="!data.editMode" @click="toggleEditMode">
+					<div class="clear-button__label">{{
+						ordersWithoutWorker.length>0? 'Распределить' : 'Изменить'
+					}}</div>
+				</div>
+				<div class="clear-button" v-else @click="toggleEditMode">
+					<div class="clear-button__label">Закрыть</div>
+				</div>
 			</div>
-			<div class="header__workers">
-				<ion-grid>
-				<ion-row>
+
+			<draggable 
+			v-if="data.editMode"
+			tag="div" class="toolbar__orders"
+			:list="ordersWithoutWorker" 
+			@change="log"
+			@start="startDrag"
+			@move="onDragMove"
+			@end="endDrag"
+			itemKey="orderId" 
+			group="orders"> 
+				<template #item="{element}" >
+					<OrderCard 
+					:id="element.orderId" 
+					:order="element" 
+					:smallSize="data.replaceOrder != `${element.orderId}`"
+					:valid="data.replaceOrder != `${element.orderId}` ||  data.replaceIsValid"/>
+				</template>
+			</draggable>
+		</div>
+
+		<!-- Map -->
+		<div class="load-map__columns">
+			<ion-grid>
+				<ion-row class="row__content header">
 					<ion-col size="auto">
 						<div class="hour"></div> 
 					</ion-col>
-					<ion-col class="ceil worker" v-for="worker in workers" :key="`worker_${worker.id}`" size="auto">
-						<div class="worker-content">
+					<ion-col class="ceil worker" v-for="worker in workers" :key="`worker_${worker.id}`" size="auto"
+					v-bind:class="{
+						holiday: workersWithHoliday.includes(worker.id)
+					}">
+						<div class="worker-content" @click="() => toggleWorkerHoliday(worker.id)">
 							{{ worker.shortName }}
 						</div>
 					</ion-col>
 				</ion-row>
-			</ion-grid>
-			</div>
-		</div>
-		<div class="load-map__columns">
-			<ion-grid>
-				<ion-row v-for="hour in range(5,24)" :key="`hour__${hour}`">
+				<ion-row class="row__content" v-for="hour in range(5,24)" :key="`hour__${hour}`">
 					<ion-col size="auto">
 						<div class="hour">{{ `${hour}:00` }}</div> 
 					</ion-col>
-					<ion-col class="ceil" v-for="worker in workers" :key="`worker_slot_${worker.id}`" size="auto">
+					<ion-col class="ceil" v-for="worker in workers" :key="`worker_slot_${worker.id}`" size="auto"
+						v-bind:class="{
+							holiday: workersWithHoliday.includes(worker.id)
+						}">
 						<div class="ceil-content empty">
 							-
 						</div>
 					</ion-col>
 				</ion-row>
-
 			</ion-grid>
-			<div :class="`order ${order.getStatusMessage().colorName}`" v-for="order in orders" :key="`order_${order.orderId}`"
-			v-bind:style="{
-				...orderPosition(order),
-			}">
-				{{ order.getStatusMessage().icon }}
+
+			<div class="worker-columns-container">
+				<WorkerOrdersColumn 
+				v-for="worker in workers" :key="`worker-${worker.id}`"
+				:replaceIsValid="data.replaceIsValid"
+				:worker="worker" :orders="getWorkerOrders(worker)" :disable="!data.editMode"/>
 			</div>
 		</div>
 	</div>
@@ -45,11 +87,16 @@
 
 <script lang="ts">
 import Order from '@/assets/order';
-import { ComputedRef, computed } from 'vue';
+import { ComputedRef, computed, reactive, triggerRef, watch } from 'vue';
 import { useStore } from 'vuex';
 import User from '@/assets/user';
-import { getDateString } from '@/assets/date';
-import { IonCol, IonGrid, IonRow } from '@ionic/vue';
+import { getTimeString  } from '@/assets/date';
+import { IonBadge, IonButton, IonCol, IonGrid, IonItem, IonRow } from '@ionic/vue';
+import OrderCard from './OrderCard.vue';
+import { useRoute, useRouter } from 'vue-router';
+import draggable from 'vuedraggable'
+import WorkerOrdersColumn from './WorkerOrdersColumn.vue';
+import TMS from '@/api/tms';
 
 export default {
 	name: "OrderLoadMap",
@@ -57,19 +104,36 @@ export default {
 		IonGrid,
 		IonCol,
 		IonRow,
+		IonItem,
+		IonButton,
+		IonBadge,
+		OrderCard,  
+		draggable,
+		WorkerOrdersColumn,
 	},	
 	props: {
-		day: {
+		orders: {
+			type: Array<Order>,
+			required: true,
+		},
+		date: {
 			type: Date,
+			required: true,
+		},
+		workersWithHoliday: {
+			type: Array<Number>,
 			required: true,
 		}
 	},
 	setup(props) {
-
 		const store = useStore()
-		const date:ComputedRef<Date> = computed(() => props.day)
-		const orders:ComputedRef<Array<Order>> = computed(() => {
-			return store.getters.orderListByDate(props.day)
+		const orders:ComputedRef<Array<Order>> = computed(() => props.orders)
+		const workersWithHoliday:ComputedRef<Array<Number>> = computed(() => props.workersWithHoliday)
+		const user = computed(() => store.getters.userMainInfo)
+		const data = reactive({
+			editMode: false,
+			replaceOrder: null,
+			replaceIsValid: true,
 		})
 		const workers:ComputedRef<Array<User>> = computed(() => {
 			return store.getters.staffWorkers
@@ -85,37 +149,117 @@ export default {
 			}
 			return output;
 		};
-		const orderPosition = (order:Order) => {
 
-			if (!order.worker){
-				return {
-					top: 0,
-					left: 0,
-					display: 'none',
-				}
+		const ordersWithoutWorker:ComputedRef<Array<Order>> = computed(() => {
+			return orders.value.filter((order:Order) => order.isNotAccepted()) 
+		})
+		const ordersWithWorker:ComputedRef<Array<Order>> = computed(() => {
+			return orders.value.filter((order:Order) => !order.isNotAccepted()) 
+		})
+
+		const createWorkerHolidayHandler = (workerId:number) => {
+			if (user.value["roleId"] != 4)  return
+
+			TMS.user().holidayCreate(workerId, props.date).then((response) => {
+				if (response.data && response.data.err) throw response.data.err
+				
+				workersWithHoliday.value.push(workerId)
+			})
+		}
+
+		const deleteWorkerHolidayHandler = (workerId:number) => {
+			if (user.value["roleId"] != 4)  return
+			
+			TMS.user().holidayDelete(workerId, props.date).then((response) => {
+				if (response.data && response.data.err) throw response.data.err
+				
+				let workerIndex = workersWithHoliday.value.indexOf(workerId)
+				delete workersWithHoliday.value[workerIndex]
+			})
+		}
+
+		const toggleWorkerHoliday = (workerId:number) => {
+			if (workersWithHoliday.value.includes(workerId)) {
+				deleteWorkerHolidayHandler(workerId)
 			}
-
-			let left:number = workers.value.findIndex((worker:User) => {
-				if (!order.worker) return false
-				return order.worker.id == worker.id	
-			}) * 97 + 77
-			let top:number = (order.startAt.getHours() + order.startAt.getMinutes() / 60 - 4) * 40 - 6
-			let bot:number = (order.endAt.getHours() + order.endAt.getMinutes() / 60 - 4) * 40 - 2
-			let height:number = bot - top
-
-			return {
-				top: `${top}px`,
-				left: `${left}px`,
-				height: `${height}px`
+			else {
+				createWorkerHolidayHandler(workerId)
 			}
 		}
+		
+		const toggleEditMode = () => {
+			data.editMode = !data.editMode
+		}
+
+		const log = () => {
+			console.log("move")
+		}
+
+		const startDrag = (event:any) => {
+			data.replaceOrder = event.item.id
+			data.replaceIsValid = true
+		}
+		const endDrag = (event:any) => {
+			data.replaceOrder = null
+			if(!data.replaceIsValid) {
+				event.cancel = true
+				triggerRef(orders)
+			}
+			data.replaceIsValid = true
+		}
+
+		function checkTimeIntervalsOverlap(start1:Date, end1:Date, start2:Date, end2:Date) {
+			return (start1 <= end2 && end1 >= start2) || (start1 >= start2 && end1 <= end2);
+		}
+
+		const onDragMove = (event:any) => {
+			data.replaceOrder = event.from == event.to ?
+				null :
+				event.dragged.id
+			if (data.replaceOrder) {
+				let id:string = event.to.id
+				let draggedOrderId:number = Number(data.replaceOrder)
+				let draggedOrder:Order|undefined = ordersWithoutWorker.value.find((order:Order) => {
+					return order.orderId == draggedOrderId
+				})
+				if (draggedOrder == undefined) return
+				let workerId:number = Number(id.split("-")[1])
+				let workerOrders = ordersWithWorker.value.filter((order:Order) => {
+					return order.worker && order.worker.id == workerId
+				})
+
+				let overlap = workerOrders.find((order:Order) => {
+					if (!draggedOrder) return false
+					return checkTimeIntervalsOverlap(order.startAt, order.endAt, draggedOrder.startAt, draggedOrder.endAt )
+				})
+
+				data.replaceIsValid = !Boolean(overlap)
+			}
+		}
+
+		const getWorkerOrders = (worker:User) => {
+			return ordersWithWorker.value.filter((order:Order) => {
+				return order.worker && order.worker.id == worker.id
+			})
+		}
+
 		return {
-			date,
+			log,
+			data,
 			range,
+			user,
 			orders,
 			workers,
-			getDateString,
-			orderPosition,
+			toggleEditMode,
+			getTimeString,
+			ordersWithoutWorker,
+			toggleWorkerHoliday,
+			workersWithHoliday,
+			ordersWithWorker,
+			startDrag,
+			endDrag,
+			onDragMove,
+			getWorkerOrders,
 		}
 	}
 }
@@ -126,18 +270,22 @@ export default {
 @import url(../../theme/variables.css);
 
 .order-load-map{
-	height: calc(100vh - 113px);
-	overflow: hidden;
+	height: 100%;
+	padding-top: 16px;
+	padding-bottom: 6px;
+	
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
 }
 
 .load-map__columns{
-	padding-bottom: 50px;	
-	height: calc(100% - 78px);
-	padding: 10px;
-	overflow: auto;
+	width: 100%;
+	height: 835px;
+	overflow-x: auto;
+	overflow-y: auto;
 	font-size: 14px;
-	position: relative;
-	margin-bottom: 56px;
+	position: relative; 
 }
 
 ion-grid{
@@ -149,7 +297,7 @@ ion-grid{
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	padding: 10px;
+	padding: 10px 0;
 	padding-bottom: 0;
 }
 
@@ -173,13 +321,18 @@ ion-grid{
 	padding: 0;
 }
 
+.ceil.holiday {
+	background: rgba(128, 121, 121, 0.1);
+	color: grey;
+}
+
 .ceil:last-child{
 	border: solid 1px  var(--ion-color-step-250);
 	border-bottom: none;
 }
 
 .hour{
-	width: 51px;
+	width: 40px;
 	color: var(--ion-color-step-450);
 	display: flex;
 	justify-content: center;
@@ -217,32 +370,24 @@ ion-grid{
 	color: var(--ion-color-step-550);
 }
 
-.order{
-	position: absolute;
-	width: 96px;
-	height: 40px;
+
+
+.row__content{
 	display: flex;
-	justify-content: center;
-	align-items: center;
+  	flex-wrap: nowrap;
 }
 
-.order.primary{
-	background: #FFC107;
-}
-.order.secondary{
-	background: #4CAF50;
-}
-.order.tertiary{
-	background: #1976D2;
-}
-.order.success{
-	background: #009688 ;
+.row__content.header {
+	position: sticky;
+	top: 0;
+	left: 0;
+	right: 0;
+	z-index: 2;
 }
 
-.order.danger{
-	background: grey;
+ion-row:first-child > ion-col:last-child{ 
+	border-bottom: none;
 }
-
 
 ion-row:last-child > ion-col {
 	border-bottom: solid 1px  var(--ion-color-step-250);
@@ -254,5 +399,64 @@ ion-row:last-child > ion-col:first-child {
 
 ion-row:last-child > ion-col:last-child {
 	border: solid 1px  var(--ion-color-step-250);
+}
+
+.toolbar__orders-without-worker{
+	display: flex;
+	flex-direction: row;
+	gap:10px
+}
+
+.load-map__toolbar{
+	display: flex;
+	flex-direction: row-reverse;
+	align-items: center;
+	gap: 10px;
+}
+
+.toolbar__buttons{
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	gap: 10px;
+}
+
+.clear-button{
+	color: var(--ion-color-primary);
+
+	display: flex;
+	flex-direction: row;
+
+	gap: 10px;
+}
+
+.clear-button__label{
+	text-decoration: underline;
+}
+
+.clear-button__value{
+	font-weight: 600;
+}
+
+.toolbar__orders{
+	overflow-x: auto;
+	width: 100%;
+
+	white-space: nowrap;
+}
+
+.toolbar__orders > *{
+	display: inline-flex;
+	margin-right: 10px;
+}
+
+.worker-columns-container{
+	position: absolute;
+	top: 37px;
+	left: 56px;
+	display: flex;
+	flex-direction: row;
+	z-index: 1;
+	height: 798px;
 }
 </style>

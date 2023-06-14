@@ -61,7 +61,12 @@ class OrderUpdateHub {
 
 	private router(message:IOrderUpdateMessage){
 		let order:Order|undefined = this.state.orders.find(order => order.orderId == message.orderId)
+		this.routerUpdater(order, this.state.orders, message)
+		order = this.state.ordersMap.find(order => order.orderId == message.orderId)
+		this.routerUpdater(order, this.state.ordersMap, message)
+	}	
 
+	private routerUpdater(order:Order|undefined, orders:Array<Order>, message:IOrderUpdateMessage){
 		switch (message.type){
 			case UpdateStartAtFact:
 				if (!order) return
@@ -74,8 +79,8 @@ class OrderUpdateHub {
 			case UpdateWorker: 
 				if (order) {
 					this.updateWorker(order, message.data)
-				} else {
-					this.state.orders.push(new Order(message.data))
+				} else if (message.data["startAt"]) {
+					orders.push(new Order(message.data))
 				}
 				break
 		}
@@ -121,6 +126,19 @@ class OrderUpdateHub {
 		}
 		if (message["status"] == 401){
 			this.isAuthorized = false
+			if (isRefreshing) {
+				let prom = {
+					reject: (err:any) => console.log("fail to refresh for ws", err),
+					resolve: (access:string) => {
+						this.ws.send(JSON.stringify({access}))
+						this.isRefreshAttempt = false
+						this.isAuthorized = true
+					}
+				}
+				failedQueue.push(prom)
+				return
+			}
+
 			if (!this.isRefreshAttempt) {
 				let accessMessage = {
 					access: AccessTokenPairAPI.getAccess(),
@@ -128,31 +146,18 @@ class OrderUpdateHub {
 				this.ws.send(JSON.stringify(accessMessage))
 				this.isRefreshAttempt = true
 			} else {
-				if (isRefreshing) {
-					let prom = {
-						reject: (err:any) => console.log("fail to refresh for ws", err),
-						resolve: (access:string) => {
-							this.ws.send(JSON.stringify({access}))
-							this.isRefreshAttempt = false
-							this.isAuthorized = true
-						}
+				AuthAPI.refresh().then(response => {
+					if (response.data.err){
+						throw response.data.err
 					}
-					failedQueue.push(prom)
-				}
-				else {
-					AuthAPI.refresh().then(response => {
-						if (response.data.err){
-							throw response.data.err
-						}
 
-						let accessMessage = {
-							access: response.data["access"],
-						}
-						this.ws.send(JSON.stringify(accessMessage))
-						this.isRefreshAttempt = false
-						this.isAuthorized = true
-					})
-				}
+					let accessMessage = {
+						access: response.data["access"],
+					}
+					this.ws.send(JSON.stringify(accessMessage))
+					this.isRefreshAttempt = false
+					this.isAuthorized = true
+				})
 				
 			}
 		} else if (message["data"]) {

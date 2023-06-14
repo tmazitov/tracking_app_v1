@@ -2,10 +2,9 @@
 	<ion-page>
 		<ion-content>
 			<div class="order-load">
-				<div class="order-load__table" v-for="day, index in days" :key="`day__${index}`">
-					<OrderLoadMap 
-						:day="day"
-					/>
+				<DateViewer v-model:date="filters.date"/>
+				<div class="map">
+					<OrderLoadMap :orders="orders" :date="filters.date" :workersWithHoliday="data.workersWithHoliday"/>
 				</div>
 			</div>		
 		</ion-content>
@@ -13,10 +12,15 @@
 </template>
 
 <script lang="ts">
-import { IonContent, IonPage } from '@ionic/vue';
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { IonContent, IonPage } from '@ionic/vue';	
+import { computed, reactive, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import OrderLoadMap from '@/components/load-map/OrderLoadMap.vue';
+import DateViewer from '@/components/DateViewer.vue';
+import { useStore } from 'vuex';
+import { newOrderListFilters } from '@/assets/orderListFilters';
+import TMS from '@/api/tms';
+import Order from '@/assets/order';
 
 export default {
 	name: "OrderLoad",
@@ -24,29 +28,56 @@ export default {
 		IonPage,
 		IonContent,
 		OrderLoadMap,
+		DateViewer,
 	},
 	setup(){
-		const route = useRoute()
-		const days = computed(() => {
-			const d = route.query["d"]
-			let currentDate:Date
-			if (d) currentDate = new Date(d.toString())	
-			else currentDate = new Date() 
+		const store = useStore()
+		const router = useRouter()
+		const orders = computed(() => store.getters.orderMap)
 
-			let early:Date = new Date(currentDate.getTime())
-			early.setDate(early.getDate() - 1)
-			let next:Date = new Date(currentDate.getTime())
-			next.setDate(next.getDate() - 1)
-
-			return [
-				// early,
-				currentDate,
-				// next,
-			]
+		const data = reactive<{
+			workersWithHoliday: Array<number>
+		}>({
+			workersWithHoliday: [],
 		})
-		
+
+		const filters = newOrderListFilters()
+		store.dispatch("ws-update-filters", filters)
+
+		const updateOrders = () => {
+			store.dispatch('setup-order-map', filters)
+
+			TMS.user().holidayList(filters.date).then((response) => {
+
+				if (response.data && response.data.err) throw response.data.err
+
+				data.workersWithHoliday = response.data ?? []
+			})
+		}
+
+		updateOrders()
+		watch(filters, (() => {
+			const newFiltersQuery = filters.toPageUrlQuery()
+			router.push({
+				name: "load",
+				query: newFiltersQuery,
+			})
+
+			store.dispatch("ws-update-filters", filters)
+			updateOrders()
+		}))
+
+		watch(router.currentRoute, (currentRoute) => {
+			if (currentRoute.name == "load") {
+				store.dispatch("ws-update-filters", filters)
+				updateOrders()
+			}
+		})
+
 		return {
-			days
+			filters,
+			data,
+			orders
 		}
 	}
 }
@@ -54,5 +85,15 @@ export default {
 
 <style  scoped>
 .order-load{
+	height: calc(100% - 56px);
+	padding: 0 10px;
+	display: grid;
+	grid-template-rows: 66px calc(100% - 16px);
+	width: 100vw;
+}
+
+.map {
+	
+	overflow-x: auto;
 }
 </style>

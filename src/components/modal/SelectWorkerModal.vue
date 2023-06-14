@@ -30,13 +30,19 @@
 				<div class="worker-list">
 					<div class="worker" v-for="worker in workers" :key="`worker-${worker.user.id}`">
 						<ion-item>
-							<div class="worker-icon" @click="selectHandler(worker.user)">
-								<ion-icon :icon="workerIcon(worker.user)" color="primary" slot="start"></ion-icon>
+							<div class="worker-icon" 
+							@click="worker.isHoliday? () => {} : selectHandler(worker.user)">
+								<ion-icon :icon="workerIcon(worker.user)" 
+								:color="worker.isHoliday? 'medium' : 'primary'" slot="start"></ion-icon>
 							</div>
 
-							<ion-label @click="selectHandler(worker.user)">{{worker.user.shortName}}</ion-label>
+							<ion-label  
+							@click="worker.isHoliday? () => {} : selectHandler(worker.user)">
+								{{worker.user.shortName}}
+							</ion-label>
 							
 							<div class="worker-busy" v-if="worker.busyOrder">Занят</div>
+							<div class="worker-holiday" v-if="worker.isHoliday">Выходной</div>
 
 							<div @click="openDetails(worker.user)">
 								<ion-icon v-if="worker.user.state.detailsIsOpen" :icon="chevronUpOutline"></ion-icon>
@@ -85,6 +91,7 @@ interface SelectableWorker {
 	user: User
 	orders: Array<Order>
 	busyOrder: Order|undefined
+	isHoliday: boolean
 }
 
 export default {
@@ -121,11 +128,16 @@ export default {
 	},
 	setup(props) {
 
-		const data = reactive({
+		const store = useStore()
+		const data = reactive<{
+			selectedWorkerId: number,
+			isOpen: boolean,
+			workersWithHoliday: Array<number>,
+		}>({
 			selectedWorkerId: props.selectedWorkerId,
 			isOpen: props.isOpen,
+			workersWithHoliday: [],
 		})
-
 
 
 		const selectHandler = (worker:User) => {
@@ -146,14 +158,18 @@ export default {
 			worker.state.detailsIsOpen = !worker.state.detailsIsOpen
 		}
 
-		watch(() => props.isOpen, (newValue) => {
-			data.isOpen = newValue
-		})
 
-		const store = useStore()
 		const BUSY_ORDER_DIFFERENCE = 15 * 60 * 1000 // 15 min in ms
 		const currentOrder = props.order
+		watch(() => props.isOpen, (newValue) => {
+			data.isOpen = newValue
+			TMS.user().holidayList(currentOrder.startAt).then((response) => {
 
+				if (response.data && response.data.err) throw response.data.err
+
+				data.workersWithHoliday = response.data ?? []
+			})
+		})
 
 		const checkDateIntersection = (startDate1:Date, endDate1:Date, startDate2:Date, endDate2:Date) => {
 			return (startDate1 <= endDate2 && startDate2 <= endDate1);
@@ -174,6 +190,7 @@ export default {
 					user: worker,
 					orders,
 					busyOrder,
+					isHoliday: data.workersWithHoliday.includes(worker.id),
 				}
 			}) 
 		})
@@ -239,6 +256,10 @@ export default {
 .worker-busy{
 	margin: 0 10px;
 	color: var(--ion-color-danger);
+}
+.worker-holiday{
+	margin: 0 10px;
+	color: grey;
 }
 .worker-details{
 	background: var(--ion-item-background);

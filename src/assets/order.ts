@@ -204,6 +204,9 @@ class Order {
 			this.endAtFact = new Date(response.data["endAtFact"])
 		})
 	} 
+	isNotAccepted(){
+		return this.statusId == OrderStatusCreated
+	}
 }
 
 interface OrderDetailAction {

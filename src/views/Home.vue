@@ -24,7 +24,8 @@
 				</div>
 				<div class="order_card_container" v-if="searchedOrders.length > 0">
 					<transition-group name="order-item">
-						<OrderCardSmall v-for="order in searchedOrders" 
+						<OrderCardSmall 
+						v-for="order in searchedOrders" 
 						:key="`order__${order.orderId}`" 
 						:order="order"
 						:openDetails="openDetails"
@@ -124,21 +125,22 @@ export default {
 			orderDetails: undefined,
 		});
 
-		const filters = newOrderListFilters()
+	const filters = newOrderListFilters()
+	store.dispatch("ws-update-filters", filters)
+	store.dispatch("setup-order-list", filters)
+	watch(filters, (() => {
+		const newFiltersQuery = filters.toPageUrlQuery()
+		router.push({
+			name: "home",
+			query: newFiltersQuery,
+		})
+		store.dispatch("setup-order-list", filters)
 		store.dispatch("ws-update-filters", filters)
-		watch(filters, (() => {
-			const newFiltersQuery = filters.toPageUrlQuery()
-			router.push({
-				name: "home",
-				query: newFiltersQuery,
-			})
-			store.dispatch("setup-order-list", filters)
-			store.dispatch("ws-update-filters", filters)
-		}))
+	}))
 
 		const user = computed(() => store.getters.userMainInfo);
 
-		store.dispatch("setup-order-list", filters)
+
 		const orders = computed(() => {
 			return store.getters.orderList.sort((a:Order, b:Order) => {
 				return a.startAt.getTime() - b.startAt.getTime();
@@ -168,6 +170,13 @@ export default {
 		const closeCreateForm = () => {
 			data.createFormIsOpen = false
 		}
+
+		watch(router.currentRoute, (currentRoute) => {
+			if (currentRoute.name == "home") {
+				store.dispatch("setup-order-list", filters)
+				store.dispatch("ws-update-filters", filters)
+			}
+		})
 
 		return {
 			user,

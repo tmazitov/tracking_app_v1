@@ -16,6 +16,9 @@ const module:Module<IOrderState,any> = {
 		'setup-order-list': (state:IOrderState, list:Array<Order>) => {
 			state.orders = list
 		},
+		'setup-order-map': (state:IOrderState, list:Array<Order>) => {
+			state.ordersMap = list
+		},
 		'setup-order-websocket': (state:IOrderState) => {
 			let access = AccessTokenPairAPI.getAccess()
 			if (access) {
@@ -35,6 +38,9 @@ const module:Module<IOrderState,any> = {
 	getters:{
 		orderList(state:IOrderState){
 			return state.orders
+		},
+		orderMap(state:IOrderState){
+			return state.ordersMap
 		},
 		orderListByWorker: (state:IOrderState) => (worker:User) => {
 			return state.orders.filter((order:Order) => {
@@ -75,6 +81,20 @@ const module:Module<IOrderState,any> = {
 					orderList.push(new Order(orderInfo))
 				})
 				commit('setup-order-list', orderList)
+			})
+		},
+		'setup-order-map': ({commit}, filters) => {
+			TMS.order().list(filters).then((response) => {
+				if (response.data && response.data["err"] != null){
+					throw response.data["err"]
+				}
+
+				let orderList:Array<Order> = []
+				const ordersInfo:Array<Object> = response.data
+				ordersInfo.forEach((orderInfo) => {
+					orderList.push(new Order(orderInfo))
+				})
+				commit('setup-order-map', orderList)
 			})
 		},
 		'setup-order-price-list': setupOrderPriceList,

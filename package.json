@@ -17,14 +17,18 @@
     "@ionic/vue-router": "^7.0.0",
     "@vue-leaflet/vue-leaflet": "^0.9.0",
     "axios": "^1.3.5",
+    "draggabilly": "^3.0.0",
     "ionicons": "^7.0.0",
     "leaflet": "^1.9.3",
     "leaflet-control-geocoder": "^2.4.0",
     "leaflet-geosearch": "^3.7.0",
     "leaflet-routing-machine": "^3.2.12",
+    "mobile-drag-drop": "^3.0.0-rc.0",
     "vue": "^3.2.45",
+    "vue-draggable-next": "^2.2.0",
     "vue-router": "^4.1.6",
     "vue3-openlayers": "^0.1.75",
+    "vuedraggable": "^4.1.0",
     "vuex": "^4.1.0"
   },
   "devDependencies": {
