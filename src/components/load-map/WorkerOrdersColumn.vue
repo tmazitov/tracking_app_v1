@@ -3,12 +3,12 @@
 	:id="`worker-${worker.id}`"
 	tag="div" class="worker-orders-column"
 	:list="workerOrders"
-	:disabled="disable"
+	:disabled="replaceIsDisable"
 	@change="log"	
 	itemKey="orderId"
 	group="orders"> 
 		<template #item="{element}" >
-			<OrderCard :order="element" :smallSize="false"/>
+			<OrderCard :order="element" @click="cardStaticClick(element)" :smallSize="false"/>
 		</template>
 	</draggable>
 </template>
@@ -32,13 +32,17 @@ export default {
 			type: Array<Order>,
 			required: true,
 		},
-		disable: {
+		replaceIsDisable: {
 			type: Boolean,
 			required: true,
 		},
 		replaceIsValid: {
 			type: Boolean,
 			default: false,
+		},
+		cardStaticClick: {
+			type: Function,
+			required: true,
 		}
 	},
 	components:{
@@ -46,9 +50,11 @@ export default {
 		OrderCard,
 	},
 	setup(props){
+		const cardStaticClick = computed(() => props.cardStaticClick)
+		const replaceIsDisable = computed(() => props.replaceIsDisable)
 		const replaceIsValid = computed(() => props.replaceIsValid)
 		const worker = computed(() => props.worker)
-		const disable = computed(() => props.disable)
+
 		const workerOrders = computed(() => props.orders)
 
 		const log = (data:any) => {
@@ -70,7 +76,8 @@ export default {
 		return {
 			workerOrders,
 			log,
-			disable,
+			replaceIsDisable,
+			cardStaticClick,
 		}
 	}
 }

@@ -1,6 +1,12 @@
 <template>
 	<div class="order-load-map">
-
+		<!-- Order details modal -->
+		<OrderDetails
+			v-if="data.orderDetails"
+			:order="data.orderDetails"
+			:isOpen="data.orderDetailsIsOpen"
+			:closer="closeOrderDetails"
+		/>
 
 		<!-- Toolbar -->
 		<div class="load-map__toolbar" v-if="user.roleId == 3">
@@ -78,8 +84,10 @@
 			<div class="worker-columns-container">
 				<WorkerOrdersColumn 
 				v-for="worker in workers" :key="`worker-${worker.id}`"
-				:replaceIsValid="data.replaceIsValid"
-				:worker="worker" :orders="getWorkerOrders(worker)" :disable="!data.editMode"/>
+				:worker="worker" :orders="getWorkerOrders(worker)" 
+				:cardStaticClick="openOrderDetails"
+				:replaceIsDisable="!data.editMode"
+				:replaceIsValid="data.replaceIsValid" />
 			</div>
 		</div>
 	</div>
@@ -97,7 +105,7 @@ import { useRoute, useRouter } from 'vue-router';
 import draggable from 'vuedraggable'
 import WorkerOrdersColumn from './WorkerOrdersColumn.vue';
 import TMS from '@/api/tms';
-
+import OrderDetails from '../OrderDetails.vue'
 export default {
 	name: "OrderLoadMap",
 	components: {
@@ -109,6 +117,7 @@ export default {
 		IonBadge,
 		OrderCard,  
 		draggable,
+		OrderDetails,
 		WorkerOrdersColumn,
 	},	
 	props: {
@@ -130,10 +139,18 @@ export default {
 		const orders:ComputedRef<Array<Order>> = computed(() => props.orders)
 		const workersWithHoliday:ComputedRef<Array<Number>> = computed(() => props.workersWithHoliday)
 		const user = computed(() => store.getters.userMainInfo)
-		const data = reactive({
+		const data = reactive<{
+			editMode: boolean,
+			replaceOrder: string|null,
+			replaceIsValid: boolean,
+			orderDetails: Order|null,
+			orderDetailsIsOpen: boolean,
+		}>({
 			editMode: false,
 			replaceOrder: null,
 			replaceIsValid: true,
+			orderDetails: null,
+			orderDetailsIsOpen: false,
 		})
 		const workers:ComputedRef<Array<User>> = computed(() => {
 			return store.getters.staffWorkers
@@ -243,6 +260,13 @@ export default {
 			})
 		}
 
+		const openOrderDetails = (order:Order) => {
+			data.orderDetails = order
+			data.orderDetailsIsOpen = true
+		}
+
+		const closeOrderDetails= () => data.orderDetailsIsOpen = false
+
 		return {
 			log,
 			data,
@@ -260,6 +284,8 @@ export default {
 			endDrag,
 			onDragMove,
 			getWorkerOrders,
+			openOrderDetails,
+			closeOrderDetails,
 		}
 	}
 }
