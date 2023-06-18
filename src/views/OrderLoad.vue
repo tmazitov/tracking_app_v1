@@ -67,8 +67,8 @@ export default {
 			updateOrders()
 		}))
 
-		watch(router.currentRoute, (currentRoute) => {
-			if (currentRoute.name == "load") {
+		watch(router.currentRoute, (currentRoute, oldRoute) => {
+			if (currentRoute.name == "load" && currentRoute.name != oldRoute.name ) {
 				store.dispatch("ws-update-filters", filters)
 				updateOrders()
 			}

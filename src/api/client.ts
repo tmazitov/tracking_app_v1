@@ -24,6 +24,8 @@ interface FailedRequest {
 }
 
 let isRefreshing = false;
+let updateRefreshing = (value:boolean) => isRefreshing = value 
+
 let failedQueue:Array<FailedRequest> = [];
 
 const processQueue = (error:AxiosError|null, token = null) => {
@@ -112,6 +114,7 @@ client.interceptors.response.use(
 export {
     failedQueue,
     isRefreshing,
+    updateRefreshing,
 }
 
 export default client
