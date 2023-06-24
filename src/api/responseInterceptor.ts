@@ -1,53 +1,16 @@
-import axios, { AxiosError } from 'axios'
-import Auth, { AccessTokenPairAPI } from './auth/auth';
-import router from '../router/index'
+import axios, { AxiosError, AxiosResponse } from "axios";
+import router from "@/router";
+import { AccessTokenPairAPI } from "./auth/auth";
+import { failedQueue, isRefreshing, processQueue, updateRefreshing } from "./failedQueue";
+import { IResponseInterceptor } from "./interceptor";
 
-const client = axios.create({
-    baseURL: "/tms/api",
-    timeout: 3000,
-});
-
-client.interceptors.request.use(
-    (request) => {
-        let access = AccessTokenPairAPI.getAccess()
-        if (access)
-            request.headers.Authorization = access
-
-        return request
-    },
-    (error) => Promise.reject(error)
-)
-
-interface FailedRequest {
-    reject:Function;
-    resolve:Function;
-}
-
-let isRefreshing = false;
-let updateRefreshing = (value:boolean) => isRefreshing = value 
-
-let failedQueue:Array<FailedRequest> = [];
-
-const processQueue = (error:AxiosError|null, token = null) => {
-    failedQueue.forEach((prom) => {
-        if (error) {
-            prom.reject(error);
-        } else {
-            prom.resolve(token);
-        }
-    });
-
-    failedQueue = [];
-};
-
-client.interceptors.response.use(
-    (response) => {
+const responseInterceptor:IResponseInterceptor = {
+	onFulfilled : (response:AxiosResponse<any, any>) => {
         console.info("response interceptor: OK : ", response.config.url)
         return response
     },
-    (error) => {
-
-        const originalRequest = error.config;
+	onRejected : (error:any) => {
+		const originalRequest = error.config;
         let statusCode = error.response.status
 
         if (statusCode === 401 && !originalRequest._retry) {
@@ -71,7 +34,7 @@ client.interceptors.response.use(
             }
 
             originalRequest._retry = true;
-            isRefreshing = true;
+            updateRefreshing(true)
 
             const refresh = AccessTokenPairAPI.getRefresh()
             return new Promise(function(resolve, reject) {
@@ -102,19 +65,13 @@ client.interceptors.response.use(
                     })
                     .finally(() => {
                         console.error("interceptor finally");
-                        isRefreshing = false;
+                        updateRefreshing(false)
                     });
             });
         }
 
         return Promise.reject(error);
-    }
-)
-
-export {
-    failedQueue,
-    isRefreshing,
-    updateRefreshing,
+	}
 }
 
-export default client
+export default responseInterceptor

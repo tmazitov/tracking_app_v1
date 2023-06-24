@@ -1,7 +1,7 @@
 import AuthAPI, { AccessTokenPairAPI } from "@/api/auth/auth"
 import { IOrderState } from "@/storage/order-store";
 import Order from "./order";
-import { failedQueue, isRefreshing, updateRefreshing } from "@/api/client";
+import { failedQueue, isRefreshing, updateRefreshing } from "@/api/failedQueue";
 import User from "./user";
 import { OrderListFiltersInstance } from "./orderListFilters";
 

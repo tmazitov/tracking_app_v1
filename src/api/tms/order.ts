@@ -1,32 +1,32 @@
 import CreatableOrder from "@/assets/forms/createOrderForm";
-import client from "../client";
 import { OrderListFiltersInstance } from "@/assets/orderListFilters";
+import tmsClient from "./client";
 
 class Order {
 	static list(filters:OrderListFiltersInstance){
-		return client.get('/order/list'+filters.toRequestQuery())
+		return tmsClient.get('/order/list'+filters.toRequestQuery())
 	}
 
 	static create(orderData:CreatableOrder ){
-		return client.post('/order', orderData)
+		return tmsClient.post('/order', orderData)
 	}
 
 	static start(orderId:number){
-		return client.get(`/order/${orderId}/start`)
+		return tmsClient.get(`/order/${orderId}/start`)
 	} 
 
 	static end(orderId:number){
-		return client.get(`/order/${orderId}/end`)		
+		return tmsClient.get(`/order/${orderId}/end`)		
 	} 
 
 	static setWorker(orderId:number, workerId:number){
-		return client.patch(`/order/${orderId}/worker/update`, {
+		return tmsClient.patch(`/order/${orderId}/worker/update`, {
 			workerId
 		})
 	}
 
 	static priceList() {
-		return client.get(`/order/price-list`)
+		return tmsClient.get(`/order/price-list`)
 	}
 }
 

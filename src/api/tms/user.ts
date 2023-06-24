@@ -1,21 +1,30 @@
 import { yyyymmdd } from "@/assets/date";
-import client from "../client";
+import UserJobForm from "@/components/forms/user-job-form/instance";
+import tmsClient from "./client";
 
 class User {
 	static getStaffList(){
-		return client.get('/staff')
+		return tmsClient.get('/staff')
 	}
 
 	static holidayCreate(workerId:number, date:Date){
-		return client.get(`/user/${workerId}/holiday?d=${yyyymmdd(date)}`)	
+		return tmsClient.get(`/user/${workerId}/holiday?d=${yyyymmdd(date)}`)	
 	}
 
 	static holidayList(date:Date){ 
-		return client.get(`/holiday-list?d=${yyyymmdd(date)}`)	
+		return tmsClient.get(`/holiday-list?d=${yyyymmdd(date)}`)	
 	}
 
 	static holidayDelete(workerId:number, date:Date){
-		return client.delete(`/user/${workerId}/holiday?d=${yyyymmdd(date)}`)	
+		return tmsClient.delete(`/user/${workerId}/holiday?d=${yyyymmdd(date)}`)	
+	}
+
+	static offerSubmit(form:UserJobForm){
+		return tmsClient.post(`/user/offer`, form)	
+	}
+
+	static offerGet() {
+		return tmsClient.get(`/user/offer`)
 	}
 }
 

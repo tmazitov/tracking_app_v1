@@ -1,13 +1,13 @@
-import client from '../client'
+import tmsClient from './client'
 import Order from './order'
 import User from './user'
 
 class TMS {
 	static getUserInfo(){
-		return client.get("/user")
+		return tmsClient.get("/user")
 	}
 	static putUserInfo(shortName:string){
-		return client.put("/user", {
+		return tmsClient.put("/user", {
 			shortName: shortName
 		})
 	}
