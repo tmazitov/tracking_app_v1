@@ -31,9 +31,9 @@
 						Точек:
 						<ion-text color="primary">{{order.points.length}}</ion-text>
 					</ion-text>
-					<ion-text v-if="order.helpers">
+					<ion-text v-if="order.bill.helperCount">
 						Грузчики:
-						<ion-text color="primary">{{order.helpers ?? 0}}</ion-text> 
+						<ion-text color="primary">{{order.bill.helperHours ?? 0}}</ion-text> 
 					</ion-text>
 				</div>
 				<div v-if="order.comment">{{limitedString(order.comment, 120)}}</div>

@@ -18,6 +18,9 @@ export default defineConfig({
       "/tms/api": {
         target: "http://127.0.0.1:5001",
       },
+      "/adm/api": {
+        target: "http://127.0.0.1:5002",  
+      },
       // "/tms/ws": {
       //   target: "ws://127.0.0.1:5001",
       //   changeOrigin: true,

@@ -2,12 +2,14 @@ import TMS from '@/api/tms'
 import Vuex from 'vuex'
 import order from './order'
 import User from '@/assets/user'
+import { RouteLocationNormalizedLoaded, useRoute, useRouter } from 'vue-router'
 
 interface userState{
 	user: User,
 	workers: Array<User>
 	managers: Array<User>
 	isShowTabs: boolean
+	offerId:number|null|undefined
 }
 
 function getDefaultState():userState{
@@ -16,6 +18,7 @@ function getDefaultState():userState{
 		workers: [],
 		managers: [],
 		isShowTabs: true,
+		offerId:undefined
 	}
 }
 
@@ -34,7 +37,16 @@ const store = new Vuex.Store({
 		},
 		'toggle-tabs': (state) => {
 			state.isShowTabs = !state.isShowTabs
-		}
+		},
+		'update-offer': (state, value) => {
+			state.offerId = value
+		},
+		'add-worker': (state, staff) => {
+			state.workers.push(staff)
+		},
+		'add-manager': (state, staff) => {
+			state.managers.push(staff)
+		},
 	},
 	getters: {
 		userMainInfo(state){
@@ -43,8 +55,14 @@ const store = new Vuex.Store({
 		staffWorkers(state){
 			return state.workers
 		},
+		staffManagers(state){
+			return state.managers
+		},
 		isShowTabs(state){
 			return state.isShowTabs
+		},
+		userOffer(state){
+			return state.offerId
 		}
 	},
 	actions: {
@@ -62,7 +80,20 @@ const store = new Vuex.Store({
 				store.commit('save-staff', staffList)
 			})
 		},
-		'setup-user': (store) => {
+		'setup-offer': (store, offerId) => {
+			if (offerId) {
+				store.commit("update-offer", offerId)
+				return
+			}
+
+			TMS.user().offerGet().then((response) => {
+				if (response.data && response.data.err ) throw response.data.err
+				let offerId = response.data.offerId
+
+				store.commit("update-offer", offerId ?? null)
+			})
+		},
+		'setup-user': (store, route: RouteLocationNormalizedLoaded) => {
 			TMS.getUserInfo().then(userInfo => {
 				if (userInfo.data["err"]){
 				  throw new userInfo.data["err"]
@@ -70,13 +101,24 @@ const store = new Vuex.Store({
 				
 				store.commit('save-user', new User(userInfo.data))
 				let roleId:number = userInfo.data["roleId"]
-				if (roleId == 2 || roleId == 3){
+				if (roleId == 1 || roleId == 2 || roleId == 3){
 					store.dispatch('setup-staff')		
+				}
+				if (roleId == 0) {
+					store.dispatch('setup-offer')
 				}
 			})
 		},
 		'toggle-tabs': (store) => {
 			store.commit('toggle-tabs')
+		},
+		'add-staff' : (store, staff:User) => {
+			if (staff.roleId == 1) {
+				store.commit('add-worker', staff)
+			}
+			else if (staff.roleId == 2){
+				store.commit('add-manager', staff)
+			}
 		}
 	}
 })

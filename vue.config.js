@@ -10,6 +10,9 @@ module.exports = {
             "/aaa/api": {
                 target: "http://127.0.0.1:5000",
             },
+            "/adm/api": {
+                target: "http://127.0.0.1:5002",  
+            },
             "/tms/api": {
                 target: "http://127.0.0.1:5001",
             },
@@ -17,7 +20,8 @@ module.exports = {
                 target: "ws://127.0.0.1:5001",
                 changeOrigin: true,
                 ws: true
-              },
+            },
+
         },
     },
 };

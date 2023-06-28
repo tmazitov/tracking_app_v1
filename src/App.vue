@@ -16,10 +16,11 @@ export default {
     },
     setup() {
         const store = useStore()
-        store.dispatch('setup-user')
+        const route = useRoute()
+        store.dispatch('setup-user', route)
         store.dispatch('setup-order-websocket')
         store.dispatch('setup-order-price-list')
-        const route = useRoute()
+
 
         if (route.name != 'auth' && AccessTokenPairAPI.getAccess() == null) {
             const router = useIonRouter()

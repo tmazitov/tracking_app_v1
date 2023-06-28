@@ -16,7 +16,7 @@
 <script lang="ts">
 import Order from '@/assets/order';
 import User from '@/assets/user';
-import { computed } from 'vue';
+import { computed, toRaw } from 'vue';
 import OrderCard from './OrderCard.vue';
 import draggable from 'vuedraggable'
 import TMS from '@/api/tms';
@@ -62,8 +62,7 @@ export default {
 			if (!replaceIsValid.value) return
 
 			// Get data about replaced order
-			let order:Order = data["added"]["element"]
-
+			let order:Order = toRaw(data["added"]["element"])
 			
 			TMS.order().setWorker(order.orderId, worker.value.id).then((response) => {
 				if (response.data.err) throw response.data.err
