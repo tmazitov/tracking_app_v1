@@ -17,6 +17,15 @@
 						<ion-label color="danger">Выйти</ion-label>
 					</ion-item>
 				</ion-list>	
+
+				<ion-toast 
+				:is-open="data.toastInDevIsOpen"
+				color="warning"
+				message="В разработке" 
+				:duration="3000" 
+				:icon="buildOutline"
+				@didDismiss="data.toastInDevIsOpen = false">
+				</ion-toast>
 			</div>
 		</ion-content>
 	</ion-page>
@@ -24,8 +33,8 @@
 
 <script lang="ts">
 import User from '@/assets/user';
-import { IonPage, IonContent, IonItem, IonList, IonIcon, IonLabel } from '@ionic/vue';
-import { briefcaseOutline, cashOutline, documentTextOutline, exitOutline, peopleOutline, settingsOutline, statsChartOutline } from 'ionicons/icons';
+import { IonPage, IonContent, IonItem, IonList, IonIcon, IonLabel, IonToast } from '@ionic/vue';
+import { briefcaseOutline, buildOutline, cashOutline, documentTextOutline, exitOutline, peopleOutline, settingsOutline, statsChartOutline } from 'ionicons/icons';
 import { ComputedRef, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -39,7 +48,7 @@ interface SettingsItem {
 export default {
 	name: 'Menu',
 	components: {
-		IonPage, IonContent, IonList, IonItem, IonIcon, IonLabel
+		IonPage, IonContent, IonList, IonItem, IonIcon, IonLabel, IonToast,
 	},
 	setup(){
 		const store = useStore()
@@ -56,14 +65,18 @@ export default {
 
 		const defaultSettings:Array<SettingsItem> = [
 			{title: "Общие настройки",	path: "settings-main",			icon: settingsOutline},
-			{title: "Документы",		path: "settings-documents",	icon: documentTextOutline},
+			{title: "Документы",		path: "settings-documents",		icon: documentTextOutline},
 			{title: "Статистика",		path: "settings-statistics",	icon: statsChartOutline},
 		]	
 
 		const baseSettings:Array<SettingsItem> = [
 			{title: "Общие настройки",	path: "settings-main",			icon: settingsOutline},
-			{title: "Работа",	path: "settings-job",			icon: briefcaseOutline},
+			{title: "Работа",			path: "settings-job",			icon: briefcaseOutline},
 		]	
+
+		const data = reactive({
+			toastInDevIsOpen: false
+		})
 
 		const getSettingsList = () => {
 			if (user.value.roleId == 3) return adminSettings
@@ -71,14 +84,22 @@ export default {
 			return defaultSettings
 		}
 
+
 		const staticClickHandler = (routeName:string) => {
-			router.push({name:routeName})
+			
+			if (router.hasRoute(routeName)) {
+				router.push({name:routeName})
+			} else {
+				data.toastInDevIsOpen = true
+			}
 		}
 
 		return {
 			user,
+			data,
 			staticClickHandler,
 			getSettingsList,
+			buildOutline,
 			exitOutline, 
 		}
 	}
