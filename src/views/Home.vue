@@ -6,6 +6,7 @@
 			:closer="closeDetails"
 		/>
 		<OrderCreateForm
+			v-if="filters.date"
 			:date="filters.date"
 			:isOpen="data.createFormIsOpen"
 			:closer="closeCreateForm"
@@ -13,14 +14,17 @@
 		<ion-content :fullscreen="true">
 			<div class="content__container">
 
-				<DateViewer v-model:date="filters.date" />
+				<DateViewer v-if="filters.date" v-model:date="filters.date" />
 				<div class="tools__container">
 					<div class="search__container">
 						<ion-searchbar v-model="data.searchField" :debounce="1000"></ion-searchbar>
 					</div>
-					<div class="filters__container">
-						<OrderListFilters :filters="filters"/>
+					<div class="filters__button" @click="toggleFilters">
+						<img src="/options-outline.svg" height="24">
 					</div>
+				</div>
+				<div class="filters__container">
+					<OrderListFilters :filters="filters" :isOpen="data.filtersIsOpen"/>
 				</div>
 				<div class="order_card_container" v-if="searchedOrders.length > 0">
 					<transition-group name="order-item">
@@ -115,32 +119,32 @@ export default {
 		const router = useRouter();
 		const data = reactive<{
 			searchField: string,
+			filtersIsOpen: boolean,
 			detailsIsOpen: boolean,
 			createFormIsOpen: boolean,
-			orderDetails: any,
+			orderDetails: Order|undefined,
 		}>({
 			searchField: "",
+			filtersIsOpen: false,
 			detailsIsOpen: false,
 			createFormIsOpen: false,
 			orderDetails: undefined,
 		});
 
-	const filters = newOrderListFilters()
-	store.dispatch("ws-update-filters", filters)
-	store.dispatch("setup-order-list", filters)
-	watch(filters, (() => {
-		const newFiltersQuery = filters.toPageUrlQuery()
-		router.push({
-			name: "home",
-			query: newFiltersQuery,
-		})
-		store.dispatch("setup-order-list", filters)
+		const filters = newOrderListFilters()
 		store.dispatch("ws-update-filters", filters)
-	}))
+		store.dispatch("setup-order-list", filters)
+		watch(filters, (() => {
+			const newFiltersQuery = filters.toPageUrlQuery()
+			router.push({
+				name: "home",
+				query: newFiltersQuery,
+			})
+			store.dispatch("setup-order-list", filters)
+			store.dispatch("ws-update-filters", filters)
+		}))
 
 		const user = computed(() => store.getters.userMainInfo);
-
-
 		const orders = computed(() => {
 			return store.getters.orderList.sort((a:Order, b:Order) => {
 				return a.startAt.getTime() - b.startAt.getTime();
@@ -171,6 +175,8 @@ export default {
 			data.createFormIsOpen = false
 		}
 
+		const toggleFilters = () => data.filtersIsOpen = !data.filtersIsOpen
+
 		watch(router.currentRoute, (currentRoute) => {
 			if (currentRoute.name == "home") {
 				store.dispatch("setup-order-list", filters)
@@ -191,6 +197,7 @@ export default {
 			closeDetails,
 			addOutline,
 			podiumOutline,
+			toggleFilters
 		};
 	},
 };
@@ -202,6 +209,7 @@ export default {
 	max-width: 800px;
 	margin: auto;
 	height: 100%;
+	position: relative;
 }
 
 @media (max-width:768px) {
@@ -230,11 +238,23 @@ export default {
 	flex-direction: row;
 	gap: 16px;
 	padding-right: 10px;
+	position: relative;
+	width: 100%;
+}
+
+.filters__container{
+	position: fixed;
+	right: 10px;
+	z-index: 2;
 }
 
 @media (min-width: 768px) {
 	.order_card_container{
 		height: calc(100% - 112px - 40px);
+	}
+
+	.filters__container{
+		width: 350px;
 	}
 }
 
@@ -244,10 +264,19 @@ export default {
 		height: calc(100% - 124px);
 		padding-bottom: 30px;
 	}
+
+	.filters__container{
+		left: 14px;
+	}
 }
 
 .search__container {
 	width: 100%;
+}
+
+.filters__button{
+	display: flex;
+	align-items: center;
 }
 
 .order-item-enter-active{

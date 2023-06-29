@@ -244,7 +244,7 @@ export default {
 	
 	color: white;
 
-	position: absolute;
+	position: fixed;
 	top: 0;
 	z-index: 14;
 

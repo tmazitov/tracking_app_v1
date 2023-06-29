@@ -46,6 +46,11 @@ const routes: Array<RouteRecordRaw> = [
 				component: () => import('../views/MenuWorkers.vue')
 			},
 			{
+				name: 'settings-history',
+				path: 'history',
+				component: () => import('../views/MenuOrderHistory.vue')
+			},
+			{
 				name: 'settings-job',
 				path: 'job', 
 				component: () => import('../views/MenuJob.vue')

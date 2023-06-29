@@ -1,48 +1,43 @@
 <template>
-	<div class="order-list-filters">
-		<div class="filters__button" @click="toggleFilters">
-			<ion-icon :icon="data.filtersIsOpen? closeOutline: optionsOutline" color="primary"></ion-icon>
-		</div>
-		<transition name="filters">
-			<div class="filters__content" v-if="data.filtersIsOpen">
-				<div class="filters-content__header">
-					<div class="filters-content-header__title">
-						Фильтры
-					</div>
-					<div class="filter-content-header__clear-button" @click="clearFilters">
-						Очистить
-					</div>
+	<transition name="filters">
+		<div class="filters__content" v-if="isOpen">
+			<div class="filters-content__header">
+				<div class="filters-content-header__title">
+					Фильтры
 				</div>
-				<RSelector
-					v-model:current-item="data.filters.workerId"
-					:items="workers" 
-					:selector="selectWorker"
-					label="Водитель"
-				/>
-				<RSelector
-					v-model:current-item="data.filters.status"
-					:items="orderStatuses"
-					:selector="selectStatus"
-					label="Статус заказа"
-					multiple
-				/>
-				<RSelector
-					v-model:current-item="data.filters.type"
-					:items="orderTypes"
-					:selector="selectType"
-					label="Тип заказа"
-					multiple
-				/>
-				<ion-toggle 					
-					:checked="data.filters.isRegularCustomer" 
-					:enable-on-off-labels="true"
-					v-on:ion-change="selectRegularCustomer"
-				>
-					Постоянный клиент
-				</ion-toggle>
-			</div>                     
-		</transition>
-	</div>
+				<div class="filter-content-header__clear-button" @click="clearFilters">
+					Очистить
+				</div>
+			</div>
+			<RSelector
+				v-model:current-item="data.filters.workerId"
+				:items="workers" 
+				:selector="selectWorker"
+				label="Водитель"
+			/>
+			<RSelector
+				v-model:current-item="data.filters.status"
+				:items="orderStatuses"
+				:selector="selectStatus"
+				label="Статус заказа"
+				multiple
+			/>
+			<RSelector
+				v-model:current-item="data.filters.type"
+				:items="orderTypes"
+				:selector="selectType"
+				label="Тип заказа"
+				multiple
+			/>
+			<ion-toggle 					
+				:checked="data.filters.isRegularCustomer" 
+				:enable-on-off-labels="true"
+				v-on:ion-change="selectRegularCustomer"
+			>
+				Постоянный клиент
+			</ion-toggle>
+		</div>                     
+	</transition>
 </template>
 
 <script lang="ts">
@@ -67,16 +62,17 @@ export default {
 			type: OrderListFiltersInstance,
 			required: true, 
 		},
+		isOpen: {
+			type: Boolean,
+			required: true,
+		}
 	},
 	setup(props){	
 		const store = useStore()
 		const data = reactive({
-			filtersIsOpen: false,
 			filters: props.filters,
 		})
-	
-		const toggleFilters = () => data.filtersIsOpen = !data.filtersIsOpen
-		const closeFilters = () => data.filtersIsOpen = false
+		const isOpen = computed(() => props.isOpen)
 		const clearFilters = () => props.filters.clear()
 
 		const filtersIsChanged = computed(() => {
@@ -103,8 +99,7 @@ export default {
 
 		return {
 			data,
-			toggleFilters,
-			closeFilters,
+			isOpen,
 			clearFilters,
 			filtersIsChanged,
 
@@ -147,14 +142,10 @@ export default {
 }
 
 .filters__content{
-	position: absolute;
-	top: 58px;
-	right: -10px;
-	width: calc(100vw - 20px);
+	width: inherit;
 	height: 382px;
 	background: var(--ion-color-step-100);
 	border-radius: 4px;
-	z-index: 3;
 	padding: 20px;
 	
 	display: flex;
@@ -164,14 +155,12 @@ export default {
 
 @media (min-width:768px) {
 	.filters__content{
-		width: calc(60vw - 20px);
 		max-width: 350px;
 	}
 }
 
 @media (max-width:768px) {
 	.filters__content{
-		width: calc(100vw - 20px);
 		max-width: 640px;
 	}
 }

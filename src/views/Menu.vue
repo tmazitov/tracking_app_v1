@@ -20,10 +20,16 @@
 
 				<ion-toast 
 				:is-open="data.toastInDevIsOpen"
-				color="warning"
+				color="warning" position="top"
 				message="В разработке" 
 				:duration="3000" 
 				:icon="buildOutline"
+				:buttons="[
+					{
+						icon: closeOutline,
+						handler: () => data.toastInDevIsOpen = false
+					}
+				]"
 				@didDismiss="data.toastInDevIsOpen = false">
 				</ion-toast>
 			</div>
@@ -34,7 +40,7 @@
 <script lang="ts">
 import User from '@/assets/user';
 import { IonPage, IonContent, IonItem, IonList, IonIcon, IonLabel, IonToast } from '@ionic/vue';
-import { briefcaseOutline, buildOutline, cashOutline, documentTextOutline, exitOutline, peopleOutline, settingsOutline, statsChartOutline } from 'ionicons/icons';
+import { briefcaseOutline, buildOutline, cashOutline, fileTrayFullOutline, closeOutline, documentTextOutline, exitOutline, peopleOutline, settingsOutline, statsChartOutline } from 'ionicons/icons';
 import { ComputedRef, computed, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { useStore } from 'vuex';
@@ -57,6 +63,7 @@ export default {
 
 		const adminSettings:Array<SettingsItem> = [
 			{title: "Общие настройки",	path: "settings-main",			icon: settingsOutline},
+			{title: "Мои заказы", 		path: "settings-history", 		icon: fileTrayFullOutline},
 			{title: "Настройки цен",	path: "settings-prices",		icon: cashOutline},
 			{title: "Работники",		path: "settings-workers",		icon: peopleOutline},
 			{title: "Документы",		path: "settings-documents",	icon: documentTextOutline},
@@ -65,12 +72,14 @@ export default {
 
 		const defaultSettings:Array<SettingsItem> = [
 			{title: "Общие настройки",	path: "settings-main",			icon: settingsOutline},
+			{title: "Мои заказы", 		path: "settings-history", 		icon: fileTrayFullOutline},
 			{title: "Документы",		path: "settings-documents",		icon: documentTextOutline},
 			{title: "Статистика",		path: "settings-statistics",	icon: statsChartOutline},
 		]	
 
 		const baseSettings:Array<SettingsItem> = [
 			{title: "Общие настройки",	path: "settings-main",			icon: settingsOutline},
+			{title: "Мои заказы", 		path: "settings-history", 		icon: fileTrayFullOutline},
 			{title: "Работа",			path: "settings-job",			icon: briefcaseOutline},
 		]	
 
@@ -86,7 +95,6 @@ export default {
 
 
 		const staticClickHandler = (routeName:string) => {
-			
 			if (router.hasRoute(routeName)) {
 				router.push({name:routeName})
 			} else {
@@ -100,6 +108,7 @@ export default {
 			staticClickHandler,
 			getSettingsList,
 			buildOutline,
+			closeOutline,
 			exitOutline, 
 		}
 	}

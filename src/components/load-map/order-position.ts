@@ -1,12 +1,16 @@
 import Order from "@/assets/order";
 import User from "@/assets/user";
 
-const orderStyles = (order:Order, isValid:Boolean) => {
+interface OrderStyle {
+	'border-color' : string
+}
+
+const orderStyles = (order:Order, isValid:Boolean):OrderStyle => {
 	if (!isValid) return {
 		'border-color' : 'var(--ion-color-danger)'
 	}
 
-	let borderColor
+	let borderColor = ""
 
 	switch (order.getStatusMessage().colorName) {
 		case "primary":

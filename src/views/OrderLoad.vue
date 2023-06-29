@@ -1,7 +1,7 @@
 <template>
 	<ion-page>
 		<ion-content>
-			<div class="order-load">
+			<div class="order-load" v-if="filters.date">
 				<DateViewer v-model:date="filters.date"/>
 				<div class="map">
 					<OrderLoadMap :orders="orders" :date="filters.date" :workersWithHoliday="data.workersWithHoliday"/>
@@ -46,7 +46,7 @@ export default {
 
 		const updateOrders = () => {
 			store.dispatch('setup-order-map', filters)
-
+			if (!filters.date) return
 			TMS.user().holidayList(filters.date).then((response) => {
 
 				if (response.data && response.data.err) throw response.data.err
@@ -89,7 +89,6 @@ export default {
 	padding: 0 10px;
 	display: grid;
 	grid-template-rows: 66px calc(100% - 16px);
-	width: 100vw;
 }
 
 .map {

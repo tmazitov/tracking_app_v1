@@ -1,15 +1,18 @@
 <template>
 	<ion-page class="settings-page">
 		<ion-tabs>
-			<ion-header>
-				<ion-toolbar class="toolbar">
-					<ion-icon @click="goToMenu()" slot="start" :icon="arrowBackOutline"></ion-icon>
-					<div class="toolbar-wrapper">
-						<ion-title>{{pageTitle}}</ion-title>
-					</div>
-				</ion-toolbar>
-			</ion-header>
-	
+
+			<transition name="header">
+				<ion-header v-if="isShowHeader">
+					<ion-toolbar class="toolbar">
+						<ion-icon @click="goToMenu()" slot="start" :icon="arrowBackOutline"></ion-icon>
+						<div class="toolbar-wrapper">
+							<ion-title>{{pageTitle}}</ion-title>
+						</div>
+					</ion-toolbar>
+				</ion-header>
+			</transition>
+
 			<ion-router-outlet class="content"></ion-router-outlet>
 		</ion-tabs>
 	</ion-page>
@@ -20,6 +23,7 @@ import { IonTitle, IonToolbar, IonHeader, IonRouterOutlet, IonPage, IonTabs, Ion
 import { arrowBackOutline } from 'ionicons/icons';
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useStore } from 'vuex';
 
 export default {
 	name: "SettingsPage",
@@ -33,11 +37,14 @@ export default {
 		IonIcon,
 	},
 	setup(){
+		const store = useStore()
 		const router = useRouter()
+		const isShowHeader = computed(() => store.getters.isShowHeader)
 		const pageTitle = computed(() => {
 			let currentRouteName = router.currentRoute.value.name
 			if (currentRouteName == "settings-workers") return "Рабочие"
 			if (currentRouteName == "settings-job") return "Работа"
+			if (currentRouteName == "settings-history") return "Мои заказы"
 			if (currentRouteName == "settings-job-form") return "Заявка на работу"
 		})
 
@@ -46,6 +53,7 @@ export default {
 		}
 
 		return {
+			isShowHeader,
 			pageTitle,
 			arrowBackOutline,
 			goToMenu
@@ -109,5 +117,23 @@ export default {
     .tab-wrapper-smartphone{
         display: none;
     }
+}
+
+.header-enter-active{
+	animation: header .2s ease-in;
+}
+.header-leave-active{
+	animation: header .2s ease-out reverse;
+}
+
+@keyframes header {
+	from{
+		max-height: 0;
+		opacity: 0.4;
+	}
+	to{
+		max-height: 56px;
+		opacity: 1;
+	}
 }
 </style>

@@ -1,6 +1,6 @@
 import { reactive } from "vue"
 import { useRoute, useRouter } from "vue-router"
-import { yyyymmdd } from "./date"
+import { isEqual, yyyymmdd } from "./date"
 import { powerOfTwo, sum } from "./array"
 
 const orderStatuses = [
@@ -17,17 +17,26 @@ const orderTypes = [
 	{title: "Межгород",		value: 4},
 ]
 
+interface OrderListFiltersOptions {
+	nonDate: boolean|undefined
+}
+
 class OrderListFiltersInstance {
-	date: Date
-	page: number = -1
+	date: Date|null = null
+	title: string = ""
+	page: number = 0
 	workerId: number = -1
 	status: Array<number> = []
 	type: Array<number> = []
 	isRegularCustomer: boolean = false
-	constructor() {
+	options: OrderListFiltersOptions|undefined
+	constructor(options:OrderListFiltersOptions|undefined) {
 		const route = useRoute()
-		this.date = new Date()
-		if (route.query["d"]){
+		this.options = options
+		if ((options && !options.nonDate) || !options) {
+			this.date = new Date()
+		}
+		if (((options && !options.nonDate) || !options) && route.query["d"]){
 			this.date = new Date(route.query["d"].toString())
 		}
 
@@ -56,13 +65,14 @@ class OrderListFiltersInstance {
 
 	clear(){
 		this.workerId = -1
+		this.title = ""
 		this.status = []
 		this.type = []
 		this.isRegularCustomer = false
 	}
 	
 	copy():OrderListFiltersInstance{
-		return new OrderListFiltersInstance()
+		return new OrderListFiltersInstance(this.options)
 	}
 
 	isEqual(original:OrderListFiltersInstance):Boolean{
@@ -73,9 +83,9 @@ class OrderListFiltersInstance {
 	}
 
 	toPageUrlQuery(){
-		const query: {[id: string] : string|number} = {
-			"d" : yyyymmdd(this.date),
-		}
+		const query: {[id: string] : string|number} = {}
+		if (this.date)					query["d"] = yyyymmdd(this.date)
+		if (this.title.length > 0)		query["n"] = this.title
 		if (this.workerId != -1) 		query["w"] = this.workerId
 		if (this.status.length != 0) 	query["s"] = sum(this.status)
 		if (this.type.length != 0) 		query["t"] = sum(this.type)
@@ -89,23 +99,13 @@ class OrderListFiltersInstance {
 		let filterString:string = "?"
 		let filterItems:Array<string> = []
 		
-		filterItems.push(`d=${yyyymmdd(this.date)}`)
-	
-		if (this.page != -1){
-			filterItems.push(`p=${this.page}`)
-		}
-		if (this.workerId != -1){
-			filterItems.push(`w=${this.workerId}`)
-		}
-		if (this.status.length != 0){
-			filterItems.push(`s=${sum(this.status)}`)
-		}
-		if (this.type.length != 0){
-			filterItems.push(`t=${sum(this.type)}`)
-		}
-		if (this.isRegularCustomer){
-			filterItems.push(`is_reg=1`)
-		}
+		if (this.date) 					filterItems.push(`d=${yyyymmdd(this.date)}`)
+		if (this.title.length > 0) 		filterItems.push(`n=${this.title}`)
+		if (this.page != -1)			filterItems.push(`p=${this.page}`)
+		if (this.workerId != -1)		filterItems.push(`w=${this.workerId}`)
+		if (this.status.length != 0)	filterItems.push(`s=${sum(this.status)}`)
+		if (this.type.length != 0)		filterItems.push(`t=${sum(this.type)}`)
+		if (this.isRegularCustomer)		filterItems.push(`is_reg=1`)
 	
 		filterString += filterItems.join("&")
 		return filterString
@@ -114,6 +114,7 @@ class OrderListFiltersInstance {
 	toRequestData():{[key:string]: any}{
 		let filterData:{[key:string]: any} = {
 			date: this.date,
+			title: this.title,
 			statuses: this.status,
 			types: this.type,
 			isRegularCustomer: this.isRegularCustomer
@@ -128,11 +129,27 @@ class OrderListFiltersInstance {
 
 		return filterData
 	}
+
+	// difference(anotherFilters:OrderListFiltersInstance){
+	// 	let difference:{[key:string]:boolean} = {}
+	// 	if ((this.date && anotherFilters.date && !isEqual(this.date, anotherFilters.date)) || this.date != anotherFilters.date){
+	// 		difference["date"] = true
+	// 	} 
+	// 	if (this.title != anotherFilters.title) difference["title"] = true
+	// 	if (this.page != anotherFilters.page) difference["page"] = true
+	// 	if (this.workerId != anotherFilters.workerId) difference["workerId"] = true
+	// 	if (this.status != anotherFilters.status) difference["status"] = true
+	// 	if (this.type != anotherFilters.type) difference["type"] = true
+	// 	if (this.isRegularCustomer != anotherFilters.isRegularCustomer) difference["isRegularCustomer"] = true
+	// 	if (this.type != anotherFilters.type) difference["type"] = true
+
+	// 	return difference
+	// }
 }
 
-function newOrderListFilters():OrderListFiltersInstance{
+function newOrderListFilters(options:OrderListFiltersOptions|undefined=undefined):OrderListFiltersInstance{
 
-	const filters = new OrderListFiltersInstance()
+	const filters = new OrderListFiltersInstance(options)
 	
 	return reactive(filters)
 }

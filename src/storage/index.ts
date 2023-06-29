@@ -9,6 +9,7 @@ interface userState{
 	workers: Array<User>
 	managers: Array<User>
 	isShowTabs: boolean
+	isShowHeader: boolean
 	offerId:number|null|undefined
 }
 
@@ -18,6 +19,7 @@ function getDefaultState():userState{
 		workers: [],
 		managers: [],
 		isShowTabs: true,
+		isShowHeader: true,
 		offerId:undefined
 	}
 }
@@ -47,6 +49,9 @@ const store = new Vuex.Store({
 		'add-manager': (state, staff) => {
 			state.managers.push(staff)
 		},
+		'update-show-header': (state, value) => {
+			state.isShowHeader = value
+		} 
 	},
 	getters: {
 		userMainInfo(state){
@@ -60,6 +65,9 @@ const store = new Vuex.Store({
 		},
 		isShowTabs(state){
 			return state.isShowTabs
+		},
+		isShowHeader(state){
+			return state.isShowHeader
 		},
 		userOffer(state){
 			return state.offerId
@@ -119,6 +127,9 @@ const store = new Vuex.Store({
 			else if (staff.roleId == 2){
 				store.commit('add-manager', staff)
 			}
+		},
+		'update-show-header': (store, value) => {
+			store.commit('update-show-header', value)
 		}
 	}
 })
