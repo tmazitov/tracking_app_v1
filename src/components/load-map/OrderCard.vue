@@ -2,11 +2,12 @@
 	<div class="order-card" 
 	ref="orderCard"
 	v-bind:style="{
-		...orderStyles(order, isValid),
-		...position,
+		position : smallSize ? 'static' : 'absolute',
+		...cardStyles(order, isValid),
+		...cardPosition(),
 	}">
 		<div class="order__status-message" v-if="order.worker" v-bind:style="{
-			color: orderStyles(order, isValid)['border-color']
+			color: cardStyles(order, isValid)['border-color']
 		}">
 			{{ order.getStatusMessage().message }}
 		</div>
@@ -24,8 +25,6 @@ import Order from '@/assets/order';
 import { ComputedRef, computed, onMounted, reactive, ref, toRaw, toRef, watch } from 'vue';
 import { orderStyles, orderPosition } from './order-position';
 import { getTimeString } from '@/assets/date';
-import User from '@/assets/user';
-import { useStore } from 'vuex';
 
 export default {
 	name: "OrderCard",
@@ -47,27 +46,28 @@ export default {
 		const isValid = computed(() => props.valid)
 		const order = computed(() => props.order)
 		const smallSize = computed(() => props.smallSize)
-		const position = computed(() => {
-			let data = orderPosition(order.value)
+		const cardPosition = () => {
 			if (smallSize.value == true) {
-				data.height = "48px"
-				data.position = "static"
+				return {
+					top 	: "0",
+					height 	: "48px",
+				}
 			}
-			return data
-		})
+			return orderPosition(order.value)
+		}
 
 		const orderCard = ref<HTMLElement|null>(null)
-
 
 		return {
 			order, 
 			isValid,
 			orderCard,
-			orderStyles,
+			
 			orderPosition,
 			getTimeString,
 			smallSize,
-			position,
+			cardPosition,
+			cardStyles : orderStyles,
 		}
 	}
 }

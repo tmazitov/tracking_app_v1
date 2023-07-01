@@ -55,20 +55,20 @@ export default {
 		const replaceIsValid = computed(() => props.replaceIsValid)
 		const worker = computed(() => props.worker)
 
-		const workerOrders = computed(() => props.orders)
+		const workerOrders = computed(() => props.orders.filter(order => {
+			return order.worker && order.worker.id == worker.value.id}))
 
 		const log = (data:any) => {
 			if (data["removed"]) return 
 			if (!replaceIsValid.value) return
-
 			// Get data about replaced order
-			let order:Order = toRaw(data["added"]["element"])
-			
+			let orderProxy:Order = data["added"]["element"]
+			let order:Order = toRaw(orderProxy)
 			TMS.order().setWorker(order.orderId, worker.value.id).then((response) => {
 				if (response.data.err) throw response.data.err
 
-				order.worker = new User(response.data["worker"])
-				order.statusId = response.data["statusId"]
+				orderProxy.worker = new User(response.data["worker"])
+				orderProxy.statusId = response.data["statusId"]
 			})
 		}
 

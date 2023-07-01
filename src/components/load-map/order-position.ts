@@ -44,7 +44,6 @@ const orderPosition = (order:Order) => {
 	return {
 		top: `${top}px`,
 		height: `${height}px`,
-		position: "absolute",
 	}
 }
 

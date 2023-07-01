@@ -84,7 +84,7 @@
 			<div class="worker-columns-container">
 				<WorkerOrdersColumn 
 				v-for="worker in workers" :key="`worker-${worker.id}`"
-				:worker="worker" :orders="getWorkerOrders(worker)" 
+				:worker="worker" :orders="orders" 
 				:cardStaticClick="openOrderDetails"
 				:replaceIsDisable="!data.editMode"
 				:replaceIsValid="data.replaceIsValid" />
@@ -175,7 +175,7 @@ export default {
 		})
 
 		const createWorkerHolidayHandler = (workerId:number) => {
-			if (user.value["roleId"] != 4)  return
+			if (user.value["roleId"] != 3)  return
 
 			TMS.user().holidayCreate(workerId, props.date).then((response) => {
 				if (response.data && response.data.err) throw response.data.err
@@ -185,7 +185,7 @@ export default {
 		}
 
 		const deleteWorkerHolidayHandler = (workerId:number) => {
-			if (user.value["roleId"] != 4)  return
+			if (user.value["roleId"] != 3)  return
 			
 			TMS.user().holidayDelete(workerId, props.date).then((response) => {
 				if (response.data && response.data.err) throw response.data.err
