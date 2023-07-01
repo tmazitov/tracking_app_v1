@@ -1,10 +1,13 @@
 <template>
 	<ion-page>
 		<ion-content>
-			<div class="order-load" v-if="filters.date">
-				<DateViewer v-model:date="filters.date"/>
+			<div class="order-load" v-if="data.storage.filters.date">
+				<DateViewer v-model:date="data.storage.filters.date"/>
 				<div class="map">
-					<OrderLoadMap :orders="orders" :date="filters.date" :workersWithHoliday="data.workersWithHoliday"/>
+					<OrderLoadMap 
+					:orders="data.storage.orders" 
+					:date="data.storage.filters.date" 
+					:workersWithHoliday="data.workersWithHoliday"/>
 				</div>
 			</div>		
 		</ion-content>
@@ -13,14 +16,13 @@
 
 <script lang="ts">
 import { IonContent, IonPage } from '@ionic/vue';	
-import { computed, reactive, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import OrderLoadMap from '@/components/load-map/OrderLoadMap.vue';
 import DateViewer from '@/components/DateViewer.vue';
-import { useStore } from 'vuex';
-import { newOrderListFilters } from '@/assets/orderListFilters';
 import TMS from '@/api/tms';
-import Order from '@/assets/order';
+import OrderStorage from '@/assets/orderStorage';
+import storage from '@/storage';
+import { reactive, watch } from 'vue';
+import { useRouter } from 'vue-router';
 
 export default {
 	name: "OrderLoad",
@@ -31,53 +33,43 @@ export default {
 		DateViewer,
 	},
 	setup(){
-		const store = useStore()
 		const router = useRouter()
-		const orders = computed(() => store.getters.orderMap)
 
 		const data = reactive<{
+			storage: OrderStorage
 			workersWithHoliday: Array<number>
 		}>({
+			storage: new OrderStorage(),
 			workersWithHoliday: [],
 		})
 
-		const filters = newOrderListFilters()
-		store.dispatch("ws-update-filters", filters)
-
-		const updateOrders = () => {
-			store.dispatch('setup-order-map', filters)
-			if (!filters.date) return
-			TMS.user().holidayList(filters.date).then((response) => {
-
+		data.storage.updateOrders().then(() => {
+			if (!data.storage.filters.date) return
+			TMS.user().holidayList(data.storage.filters.date).then((response) => {
 				if (response.data && response.data.err) throw response.data.err
 
 				data.workersWithHoliday = response.data ?? []
 			})
-		}
+		})
 
-		updateOrders()
-		watch(filters, (() => {
-			const newFiltersQuery = filters.toPageUrlQuery()
-			router.push({
-				name: "load",
-				query: newFiltersQuery,
+		watch(data.storage.filters, () => {
+			data.storage.onFilterUpdate().then((newPageQuery:{[key:string]:any}) => {
+				router.push({
+					name: "load",
+					query: newPageQuery,
+				})
+				if (!data.storage.filters.date) return
+				TMS.user().holidayList(data.storage.filters.date).then((response) => {
+					if (response.data && response.data.err) throw response.data.err
+
+					data.workersWithHoliday = response.data ?? []
+				})
 			})
-
-			store.dispatch("ws-update-filters", filters)
-			updateOrders()
-		}))
-
-		watch(router.currentRoute, (currentRoute, oldRoute) => {
-			if (currentRoute.name == "load" && currentRoute.name != oldRoute.name ) {
-				store.dispatch("ws-update-filters", filters)
-				updateOrders()
-			}
 		})
 
 		return {
-			filters,
 			data,
-			orders
+			storage
 		}
 	}
 }

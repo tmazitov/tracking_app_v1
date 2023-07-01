@@ -19,21 +19,12 @@ const module:Module<IOrderState,any> = {
 		'setup-order-map': (state:IOrderState, list:Array<Order>) => {
 			state.ordersMap = list
 		},
-		'setup-order-websocket': (state:IOrderState) => {
-			let access = AccessTokenPairAPI.getAccess()
-			if (access) {
-				state.ordersWebSocket = new OrderUpdateHub('ws://localhost:5001/tms/ws/order/updates', state)
-			}
-		},
 		'setup-order-price-list': (state:IOrderState, priceList:{[key: string]:number}) => {
 			state.ordersPriseList = priceList
 		},
 		'add-order': (state:IOrderState, order:Order) => {
 			state.orders.push(order)
 		},
-		'ws-update-filters': (state:IOrderState, filters: OrderListFiltersInstance) => {
-			state.ordersWebSocket?.updateFilters(filters)
-		}
 	},
 	getters:{
 		orderList(state:IOrderState){
@@ -66,9 +57,6 @@ const module:Module<IOrderState,any> = {
 	},
 	
 	actions:{
-		'setup-order-websocket': ({commit}) => {
-			commit('setup-order-websocket')
-		},
 		'setup-order-list': ({commit}, filters) => {
 			TMS.order().list(filters).then((response) => {
 				if (response.data && response.data["err"] != null){
@@ -99,7 +87,6 @@ const module:Module<IOrderState,any> = {
 		},
 		'setup-order-price-list': setupOrderPriceList,
 		'add-order': ({commit}, order:Order) => commit('add-order', order),
-		'ws-update-filters': ({commit}, filters:OrderListFiltersInstance) => commit('ws-update-filters', filters)
 	},
 }
 

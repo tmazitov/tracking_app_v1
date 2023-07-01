@@ -6,30 +6,32 @@
 			:closer="closeDetails"
 		/>
 		<OrderCreateForm
-			v-if="filters.date"
-			:date="filters.date"
+			v-if="data.storage.filters.date"
+			:date="data.storage.filters.date"
 			:isOpen="data.createFormIsOpen"
+			:storage="data.storage"
 			:closer="closeCreateForm"
 		/>
 		<ion-content :fullscreen="true">
 			<div class="content__container">
 
-				<DateViewer v-if="filters.date" v-model:date="filters.date" />
+				<DateViewer v-if="data.storage.filters.date" v-model:date="data.storage.filters.date" />
 				<div class="tools__container">
 					<div class="search__container">
-						<ion-searchbar v-model="data.searchField" :debounce="1000"></ion-searchbar>
+						<ion-searchbar 
+						placeholder="Поиск" mode="ios" @ionInput="onSearchHandler" ></ion-searchbar>
 					</div>
 					<div class="filters__button" @click="toggleFilters">
 						<img src="/options-outline.svg" height="24">
 					</div>
 				</div>
 				<div class="filters__container">
-					<OrderListFilters :filters="filters" :isOpen="data.filtersIsOpen"/>
+					<OrderListFilters :filters="data.storage.filters" :isOpen="data.filtersIsOpen"/>
 				</div>
-				<div class="order_card_container" v-if="searchedOrders.length > 0">
+				<div class="order_card_container" v-if="data.storage.orders.length > 0">
 					<transition-group name="order-item">
 						<OrderCardSmall 
-						v-for="order in searchedOrders" 
+						v-for="order in data.storage.orders" 
 						:key="`order__${order.orderId}`" 
 						:order="order"
 						:openDetails="openDetails"
@@ -79,14 +81,8 @@ import OrderListFilters from "@/components/OrderListFilters.vue"
 import { newOrderListFilters} from "@/assets/orderListFilters"
 import DateViewer from "@/components/DateViewer.vue";
 import OrderCreateForm from '@/components/forms/order-create-form/OrderCreateForm.vue';
-
-const searchOrder = (orders: Array<Order>, searchString: string) => {
-	let low = searchString.toLowerCase();
-	return orders.filter((order: Order) => {
-		let littleTitle = order.title.toLowerCase();
-		return littleTitle.includes(low);
-	});
-};
+import OrderUpdateHub from "@/assets/orderUpdateHub";
+import OrderStorage from "@/assets/orderStorage";
 
 export default {
 	name: "HomePage",
@@ -115,15 +111,18 @@ export default {
 		OrderCreateForm,
 	},
 	setup() {
-		const store = useStore();
-		const router = useRouter();
+		const store = useStore()
+		const router = useRouter()
+
 		const data = reactive<{
+			storage: OrderStorage,
 			searchField: string,
 			filtersIsOpen: boolean,
 			detailsIsOpen: boolean,
 			createFormIsOpen: boolean,
 			orderDetails: Order|undefined,
 		}>({
+			storage: new OrderStorage(),
 			searchField: "",
 			filtersIsOpen: false,
 			detailsIsOpen: false,
@@ -131,29 +130,16 @@ export default {
 			orderDetails: undefined,
 		});
 
-		const filters = newOrderListFilters()
-		store.dispatch("ws-update-filters", filters)
-		store.dispatch("setup-order-list", filters)
-		watch(filters, (() => {
-			const newFiltersQuery = filters.toPageUrlQuery()
-			router.push({
-				name: "home",
-				query: newFiltersQuery,
+		data.storage.updateOrders()
+		watch(data.storage.filters, () => {
+			data.storage.onFilterUpdate().then((newPageQuery:{[key:string]:any}) => {
+				router.push({
+					name: "home",
+					query: newPageQuery,
+				})
 			})
-			store.dispatch("setup-order-list", filters)
-			store.dispatch("ws-update-filters", filters)
-		}))
-
+		})
 		const user = computed(() => store.getters.userMainInfo);
-		const orders = computed(() => {
-			return store.getters.orderList.sort((a:Order, b:Order) => {
-				return a.startAt.getTime() - b.startAt.getTime();
-			})
-		})
-
-		const searchedOrders = computed(() => {
-			return searchOrder(orders.value, data.searchField)
-		})
 
 		const openDetails = (order:Order) => {
 			data.orderDetails = order
@@ -167,37 +153,26 @@ export default {
 			store.dispatch('toggle-tabs')
 		}
 
-		const openCreateForm = () => {
-			data.createFormIsOpen = true
-		}
-
-		const closeCreateForm = () => {
-			data.createFormIsOpen = false
-		}
-
+		const openCreateForm = () => data.createFormIsOpen = true
+		const closeCreateForm = () => data.createFormIsOpen = false
 		const toggleFilters = () => data.filtersIsOpen = !data.filtersIsOpen
 
-		watch(router.currentRoute, (currentRoute) => {
-			if (currentRoute.name == "home") {
-				store.dispatch("setup-order-list", filters)
-				store.dispatch("ws-update-filters", filters)
-			}
-		})
+		let onSearchHandler = (ev:CustomEvent) => {
+			data.storage.filters.title = ev.detail.value
+		}
 
 		return {
 			user,
 			data,
-			filters,
 			openCreateForm,
 			closeCreateForm,
 			optionsOutline,
-			searchedOrders,
-			orders,
 			openDetails,
 			closeDetails,
 			addOutline,
 			podiumOutline,
-			toggleFilters
+			toggleFilters,
+			onSearchHandler
 		};
 	},
 };

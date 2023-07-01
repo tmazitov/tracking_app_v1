@@ -8,6 +8,7 @@
 						<div class="toolbar">
 							<div class="searchbar">
 								<ion-searchbar
+								:debounce="200" 
 								placeholder="Поиск" mode="ios" @ionInput="onSearchHandler"></ion-searchbar>
 							</div>
 							<div class="calendar-button" @click="toggleDatepicker">
@@ -32,7 +33,7 @@
 			/>	
 
 			<div class="filters-container">
-				<OrderListFilters :filters="orderFilters" :isOpen="data.moreFiltersIsOpen"/>
+				<OrderListFilters :filters="data.storage.filters" :isOpen="data.moreFiltersIsOpen"/>
 			</div>
 
 			<transition name="datetime">
@@ -81,12 +82,13 @@ import { checkDate, getDateString, isEqual, yyyymmdd } from '@/assets/date';
 import Order from '@/assets/order';
 import { newOrderListFilters } from '@/assets/orderListFilters';
 import { IonPage, IonContent, IonInfiniteScroll, IonInfiniteScrollContent, IonItem, IonLabel, IonList, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonSearchbar, IonHeader, IonToolbar, IonDatetime } from '@ionic/vue';
-import { ComputedRef, computed, reactive, watch } from 'vue';
+import { ComputedRef, computed, onMounted, reactive, watch } from 'vue';
 import OrderCardSmall from '@/components/OrderCardSmall.vue';
 import OrderDetails from '@/components/OrderDetails.vue';
 import { calendarOutline, optionsOutline, remove } from 'ionicons/icons';
 import OrderListFilters from '@/components/OrderListFilters.vue';
 import { useStore } from 'vuex';
+import OrderStorage from '@/assets/orderStorage';
 
 function getUniqueDates(dates:Array<Date>) {
 	const uniqueDates:Array<Date> = [];
@@ -132,7 +134,7 @@ export default {
 	setup(props, ctx) {
 		let store = useStore()
 		let data = reactive<{
-			orders: Array<Order>
+			storage: OrderStorage,
 			ordersDates: Array<Date>
 			orderDetails: Order|undefined,
 			orderDetailsIsOpen: boolean,
@@ -141,7 +143,11 @@ export default {
 			datePickerIsOpen: boolean,
 			lastPageHasData: boolean,
 		}>({
-			orders: [],
+			storage: new OrderStorage({
+				filtersOptions: {
+					nonDate: true,
+				}
+			}),
 			ordersDates: [],
 			orderDetails: undefined,
 			orderDetailsIsOpen: false,
@@ -151,57 +157,40 @@ export default {
 			lastPageHasData: true,
 		})
 
-		let orderFilters = newOrderListFilters({nonDate:true})
-		let updateOrders = (isAddToList:boolean=true) => {
-			return TMS.order().list(orderFilters).then((response) => {
-				if (!response.data) return
-				if (response.data.err) throw response.data.err
-
-				let orders:Array<Order> = []
-				let ordersData:Array<any> = response.data
-				if (ordersData.length == 0){
-					if (!isAddToList) {
-						data.orders = []
-						data.ordersDates = []
-					}
-					data.lastPageHasData = false
-					return
-				}
-
-				ordersData.forEach(orderData => {
-					orders.push(new Order(orderData))
-				});
-
-				let ordersDates:Array<Date> = getUniqueDates(orders
-				.map((order:Order) => order.startAt)).reverse()
-
-				if (isAddToList) {
-					data.orders.push(...orders)
+		let updateOrders = (saveOldOrders:boolean=true) => {
+			return data.storage.updateOrders({saveOldOrders:saveOldOrders}).then((newOrders:Array<Order>) => {
+				let ordersDates:Array<Date> = getUniqueDates(newOrders
+				.map((order:Order) => order.startAt))
+					
+				if (saveOldOrders) {
 					data.ordersDates.push(...ordersDates)
-				} else {
-					data.orders = orders
+					data.ordersDates = getUniqueDates(data.ordersDates)
+				}
+				else {
 					data.ordersDates = ordersDates
 				}
+				data.ordersDates.sort((a:Date,b:Date)=>b.getTime()-a.getTime()) 
 			})
 		}
+
 		updateOrders()
 
 		let saveOldOrders:boolean = true
 		let removeOldOrders:boolean = false
 
 		const updateOrdersWithoutSave = () => {
-			orderFilters.page = 0
+			data.storage.filters.page = 0
 			updateOrders(removeOldOrders)
 		}
-		watch(() => orderFilters.title, 			updateOrdersWithoutSave)
-		watch(() => orderFilters.date,				updateOrdersWithoutSave)
-		watch(() => orderFilters.workerId,			updateOrdersWithoutSave)
-		watch(() => orderFilters.status,			updateOrdersWithoutSave)
-		watch(() => orderFilters.type,				updateOrdersWithoutSave)
-		watch(() => orderFilters.isRegularCustomer,	updateOrdersWithoutSave)
+		watch(() => data.storage.filters.title, 			updateOrdersWithoutSave)
+		watch(() => data.storage.filters.date,				updateOrdersWithoutSave)
+		watch(() => data.storage.filters.workerId,			updateOrdersWithoutSave)
+		watch(() => data.storage.filters.status,			updateOrdersWithoutSave)
+		watch(() => data.storage.filters.type,				updateOrdersWithoutSave)
+		watch(() => data.storage.filters.isRegularCustomer,	updateOrdersWithoutSave)
 
 		let getDateOrders = (date:Date):Array<Order> => {
-			return data.orders.filter((order:Order) => isEqual(order.startAt, date))
+			return data.storage.orders.filter((order:Order) => isEqual(order.startAt, date))
 		}
 		
 		let openOrderDetails = (order:Order) => {
@@ -223,11 +212,11 @@ export default {
 		}
 
 		let onSearchHandler = (ev:CustomEvent) => {
-			orderFilters.title = ev.detail.value
+			data.storage.filters.title = ev.detail.value
 		}
  
 		const dateFormatString = computed(() => {
-			let date = orderFilters.date
+			let date = data.storage.filters.date
 			return date ? yyyymmdd(date) : null 
 		})
 		const toggleDatepicker = () => {
@@ -235,17 +224,17 @@ export default {
 			data.moreFiltersIsOpen = false
 		}
 		const selectDate = (ev:CustomEvent) => {
+			let oldDate:Date|null = data.storage.filters.date
 			let newDate:Date = new Date(ev.detail.value)
-			if (orderFilters.date && isEqual(newDate, orderFilters.date)) {
-				orderFilters.date = null
-			} else {
-				orderFilters.date = newDate
-			}
+
+			let isClearDate:boolean = oldDate != null && isEqual(newDate, oldDate) 
+			data.storage.filters.date = isClearDate? null : newDate
+
 			toggleDatepicker()	
 		}
 
 		const infinityScrollHandler = (ev:any) => {
-			orderFilters.page += 1
+			data.storage.filters.page += 1
 			
 			updateOrders(saveOldOrders).then(() => {
 				if (!ev.target) return
@@ -271,7 +260,6 @@ export default {
 			dateFormatString,
 			toggleDatepicker,
 			selectDate,
-			orderFilters,
 			infinityScrollHandler,
 			toggleMoreFilters,
 		}

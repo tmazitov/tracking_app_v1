@@ -1,5 +1,4 @@
 import AuthAPI, { AccessTokenPairAPI } from "@/api/auth/auth"
-import { IOrderState } from "@/storage/order-store";
 import Order from "./order";
 import { failedQueue, isRefreshing, updateRefreshing } from "@/api/failedQueue";
 import User from "./user";
@@ -17,24 +16,23 @@ const UpdateWorker:number = 3
 
 const ClientMessageUpdateFilters:number = 1
 
-interface IOnMessageFunction {
-	(message:IOrderUpdateMessage):void;
+interface IOrderStorage {
+	orders: Array<Order>
 }
-
 
 class OrderUpdateHub {
 	ws: WebSocket
-	state: IOrderState
+	storage: IOrderStorage
 	isAuthorized:boolean = false
 	isRefreshAttempt:boolean = false
 	onAuthWaitList:Array<{reject:Function, resolve:Function}> = []
-	constructor(path:string, state:IOrderState) {
-		this.ws = new WebSocket(path)
+	constructor(storage:IOrderStorage) {
+		this.ws = new WebSocket('ws://localhost:5001/tms/ws/order/updates')
 		this.ws.onmessage = (e)=>this.onmessage(e)
 		this.ws.onopen    = (e)=>this.onopen(e)
 		this.ws.onclose = this.onclose
 		this.ws.onerror = this.onerror
-		this.state = state
+		this.storage = storage
 		console.log("ws created")
 	}
 
@@ -60,10 +58,8 @@ class OrderUpdateHub {
 	}
 
 	private router(message:IOrderUpdateMessage){
-		let order:Order|undefined = this.state.orders.find(order => order.orderId == message.orderId)
-		this.routerUpdater(order, this.state.orders, message)
-		order = this.state.ordersMap.find(order => order.orderId == message.orderId)
-		this.routerUpdater(order, this.state.ordersMap, message)
+		let order:Order|undefined = this.storage.orders.find(order => order.orderId == message.orderId)
+		this.routerUpdater(order, this.storage.orders, message)
 	}	
 
 	private routerUpdater(order:Order|undefined, orders:Array<Order>, message:IOrderUpdateMessage){

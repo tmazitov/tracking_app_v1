@@ -121,6 +121,8 @@
 	</transition>
 </template>
 
+
+
 <script lang="ts">
 import OrderPointsMap from "../../map/OrderPointsMap.vue";
 import CreateOrderBillModal from "../../modal/CreateOrderBillModal.vue"
@@ -138,10 +140,15 @@ import { useStore } from "vuex";
 import { isEqual, isToday, yyyymmdd } from "@/assets/date";
 import { IOrderCreateForm, getDefaultForm } from "./instanse";
 import Order from "@/assets/order";
+import OrderStorage from "@/assets/orderStorage";
 
 interface SelectorsData {
 	workers: ComputedRef<Array<User>>
 	orderTypes: Array<SelectableItem>
+}
+
+interface IOrderStorage {
+	orders: Array<Order>
 }
 
 export default {
@@ -172,6 +179,10 @@ export default {
 		},
 		date: {
 			type: Date,
+		},
+		storage: {
+			type: Object as () => IOrderStorage,
+			required: true,
 		}
 	},
 
@@ -180,11 +191,9 @@ export default {
 		const data = reactive<{
 			billIsOpen: boolean,
 			orderCreatedIsOpen: boolean,
-			createdOrder: Order|undefined,
 		}>({
 			billIsOpen: false,
 			orderCreatedIsOpen: false,
-			createdOrder: undefined,
 		})
 
 
@@ -214,7 +223,6 @@ export default {
 			{value: 4, title: "Меж. город"},
 		]
 
-		
 
 		const selectTab = (index: number) => (form.selectedTab = index);
 
@@ -244,20 +252,16 @@ export default {
 				isRegularCustomer: form.isRegularCustomer,
 				price: form.price,
 			}).then(response => {
-				console.log('response :>> ', response);
-				if (response.data["err"]){
-					throw response.data["err"]
-				}
+					
+				if (response.data && response.data["err"]) throw response.data["err"]
 				Object.assign(form, getDefaultForm())
 
 				let order:Order = new Order(response.data)
 				let date:Date|undefined = props.date
 				if (date && isEqual(order.startAt, date)){
-					store.dispatch('add-order', order)
+					props.storage.orders.push(order)
 				}
-				
-				data.createdOrder = order
-
+			
 				closeBill()
 				props.closer()
 				setTimeout(() => {

@@ -18,7 +18,6 @@ export default {
         const store = useStore()
         const route = useRoute()
         store.dispatch('setup-user', route)
-        store.dispatch('setup-order-websocket')
         store.dispatch('setup-order-price-list')
 
 

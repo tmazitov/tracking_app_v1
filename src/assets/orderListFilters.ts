@@ -154,8 +154,9 @@ function newOrderListFilters(options:OrderListFiltersOptions|undefined=undefined
 	return reactive(filters)
 }
 
-
+export type {OrderListFiltersOptions}
 export {
+	
 	OrderListFiltersInstance,
 	newOrderListFilters,
 	orderStatuses,
