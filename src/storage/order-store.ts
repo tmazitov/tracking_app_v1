@@ -6,7 +6,6 @@ interface IOrderState {
 	ordersWebSocket: OrderUpdateHub|null
 	orders:Array<Order>
 	ordersMap:Array<Order>
-	ordersPriseList: {[key:string]:number}
 }
 
 function getDefaultState():IOrderState{
@@ -14,7 +13,6 @@ function getDefaultState():IOrderState{
 		orders: [],
 		ordersMap: [],
 		ordersWebSocket: null,
-		ordersPriseList: {},
 	}
 }
 

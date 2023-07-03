@@ -22,7 +22,8 @@ interface CreatableOrder {
 		helperPrice:	number,
 		helperCount:	number,
 		helperHours:	number,
-		km: 			number,
+		kmCount: 		number,
+		kmPrice: 		number,
 		isFragileCargo:	boolean|undefined
 	}
 }

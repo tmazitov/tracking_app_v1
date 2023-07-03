@@ -17,7 +17,6 @@ function setupOrderPriceList(store:any) {
 			priceList[item.name] = item.val
 		})
 
-		store.commit('setup-order-price-list', priceList)
 	})
 }
 

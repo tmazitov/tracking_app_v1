@@ -19,9 +19,6 @@ const module:Module<IOrderState,any> = {
 		'setup-order-map': (state:IOrderState, list:Array<Order>) => {
 			state.ordersMap = list
 		},
-		'setup-order-price-list': (state:IOrderState, priceList:{[key: string]:number}) => {
-			state.ordersPriseList = priceList
-		},
 		'add-order': (state:IOrderState, order:Order) => {
 			state.orders.push(order)
 		},
@@ -45,15 +42,6 @@ const module:Module<IOrderState,any> = {
 					order.startAt.getFullYear() == date.getFullYear() 
 			})
 		},
-		orderDefaultCarPrice: (state: IOrderState) => {
-			return state.ordersPriseList["big_car_price"]
-		},
-		orderDefaultHelperPrice: (state: IOrderState) => {
-			return state.ordersPriseList["helper_price"]
-		},
-		defaultFragilePrice: (state: IOrderState) => {
-			return state.ordersPriseList["fragile_price"]
-		}
 	},
 	
 	actions:{
@@ -85,7 +73,6 @@ const module:Module<IOrderState,any> = {
 				commit('setup-order-map', orderList)
 			})
 		},
-		'setup-order-price-list': setupOrderPriceList,
 		'add-order': ({commit}, order:Order) => commit('add-order', order),
 	},
 }

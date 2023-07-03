@@ -1,3 +1,4 @@
+import OrderPriceList from "@/assets/orderPriceList"
 import admClient from "./client"
 
 class AdminAPI {
@@ -17,6 +18,10 @@ class AdminAPI {
 		return admClient.post("/staff/remove", {
 			userId: userId
 		})
+	}
+
+	static updatePriceList(priceList:OrderPriceList){
+		return admClient.put("/order/price-list", priceList)
 	}
 }
 

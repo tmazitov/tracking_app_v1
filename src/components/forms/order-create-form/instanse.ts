@@ -8,7 +8,8 @@ interface IOrderBill {
 	helperPrice:number,
 	helperCount:number,
 	helperHours:number,
-	km: number,
+	kmCount: number,
+	kmPrice: number,
 	isFragileCargo:boolean,
 }
 
@@ -34,7 +35,7 @@ function getDefaultForm():IOrderCreateForm{
 		title: "",
 		date: "",
 		start: "",
-		duration: 2,
+		duration: 0,
 		comment: "",
 		points: [],
 		selectedTab: 0,
@@ -49,7 +50,8 @@ function getDefaultForm():IOrderCreateForm{
 			helperPrice:0,
 			helperCount:0,
 			helperHours:0,
-			km: 0,
+			kmCount: 0,
+			kmPrice: 0,
 			isFragileCargo: false,
 		}
 	}

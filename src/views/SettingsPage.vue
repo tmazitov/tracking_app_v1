@@ -45,6 +45,7 @@ export default {
 			if (currentRouteName == "settings-workers") return "Рабочие"
 			if (currentRouteName == "settings-job") return "Работа"
 			if (currentRouteName == "settings-history") return "Мои заказы"
+			if (currentRouteName == "settings-prices") return "Настройки цен"
 			if (currentRouteName == "settings-job-form") return "Заявка на работу"
 		})
 

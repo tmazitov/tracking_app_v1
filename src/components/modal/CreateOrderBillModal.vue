@@ -169,12 +169,24 @@
 					<transition name="fade">
 						<div class="price" v-if="bill.isFragile">
 							<div class="price__title">Защитная плёнка</div>
-							<div class="price__calc-value">{{defaultFragilePrice}} ₽</div>
+							<div class="price__calc-value">{{priceList?.fragilePrice}} ₽</div>
 							<div class="price__icon-button" @click="() => bill.isFragile = false">
 								<ion-icon :icon="closeOutline" color="danger"></ion-icon>
 							</div>
 						</div>
 					</transition>
+
+
+					<div class="price" v-if="form.currentOrderType.includes(4)">
+						<div class="price__title">Км. межгород</div>
+						<div class="price__calc">
+							<div class="price__hour-price">{{form.price.kmCount}} км.</div>
+							<div>x</div>
+							<div class="price__hour-value">{{priceList.kmPrice}} ₽</div>
+							<div>=</div>
+						</div>
+						<div class="price__calc-value">{{form.price.kmCount*priceList.kmPrice}} ₽</div>
+					</div>
 
 					<transition name="fade__button">
 						<div class="add__button" 
@@ -191,6 +203,7 @@
 							</ion-button>
 						</div>
 					</transition>
+
 				</div>
 			</div>
 
@@ -206,11 +219,13 @@
 </template>
 
 <script lang="ts">
-import { IonButton, IonIcon, IonInput } from '@ionic/vue';
+import { IonButton, IonIcon, IonInput, onIonViewDidEnter } from '@ionic/vue';
 import { addOutline, arrowBackOutline, closeOutline, createOutline, helpCircleOutline, removeOutline } from 'ionicons/icons';
 import { computed, reactive, watch } from 'vue';
 import { useStore } from 'vuex';
 import { IOrderCreateForm } from '../forms/order-create-form/instanse';
+import TMS from '@/api/tms';
+import OrderPriceList from '@/assets/orderPriceList';
 
 
 export default {
@@ -236,7 +251,11 @@ export default {
 		closer: {
 			type: Function,
 			required: true,
-		}
+		},
+		priceList: {
+			type: OrderPriceList,
+			required: true,
+		},
 	},
 	setup(props){
 		const store = useStore()
@@ -244,19 +263,16 @@ export default {
 		const isOpen = computed(() => props.isOpen)
 		const closer = props.closer
 
-		const defaultCarPrice = computed(() => store.getters.orderDefaultCarPrice)
-		const defaultHelperPrice = computed(() => store.getters.orderDefaultHelperPrice)
-		const defaultFragilePrice = computed(() => store.getters.defaultFragilePrice)
-
+		const priceList = computed(() => props.priceList)
 		const orderHours = computed(() => props.form.duration)
 
 		const bill = reactive({
-			carPrice: defaultCarPrice.value,
+			carPrice: priceList.value.bigCarPrice,
 			carHours: orderHours.value,
 			isFragile: false,
-			helpersPrice: defaultHelperPrice.value, 
+			helpersPrice: priceList.value.helperPrice, 
 			helpersHours: orderHours.value,
-			helpersCount: 0
+			helpersCount: 0,
 		})
 
 		watch(() => props.form.duration, (newValue) => {
@@ -264,17 +280,20 @@ export default {
 			bill.carHours = newValue
 		})
 
-		const totalCarPrice = computed(() => bill.carHours * bill.carPrice)
-		const totalHelperPrice = computed(() => bill.helpersHours * bill.helpersPrice * bill.helpersCount)
-		const totalPrice = computed(() => {
-			let price = totalCarPrice.value
-			if (totalHelperPrice) price += totalHelperPrice.value
-			if (bill.isFragile) price += defaultFragilePrice.value
-			
-			return price
-		})
 
-		const data = reactive({
+
+		const data = reactive<{
+			editHelpersIsOpen: boolean,
+			newHelpersCount: number,	
+			newHelpersPrice: number,
+			newHelpersHours: number,
+			helpersIsVisible: boolean,
+
+			editCarIsOpen: boolean,
+			newCarPrice: number,
+			newCarHours: number,
+			carIsVisible: boolean,
+		}>({
 			editHelpersIsOpen: false,
 			newHelpersCount: 0,
 			newHelpersPrice: 0,
@@ -286,8 +305,18 @@ export default {
 			newCarHours: 0,
 			carIsVisible: true,
 		})
-		
 
+		const totalCarPrice = computed(() => bill.carHours * bill.carPrice)
+		const totalHelperPrice = computed(() => bill.helpersHours * bill.helpersPrice * bill.helpersCount)
+		const totalPrice = computed(() => {
+			if (!priceList.value) return 0
+			let price = totalCarPrice.value
+			if (totalHelperPrice) price += totalHelperPrice.value
+			if (props.form.currentOrderType.includes(4)) price += props.form.price.kmCount*priceList.value.kmPrice
+			if (bill.isFragile) price += priceList.value.fragilePrice
+			
+			return price
+		})
 
 		const editHelpersOpen = () => {
 			data.newHelpersCount = bill.helpersCount
@@ -328,7 +357,8 @@ export default {
 				helperCount: Number(bill.helpersCount),
 				helperPrice: Number(bill.helpersPrice),
 				helperHours: Number(bill.helpersHours),
-				km: 0,
+				kmCount: props.form.price.kmCount,
+				kmPrice: priceList.value.kmPrice,
 				total: totalPrice.value,
 				isFragileCargo: bill.isFragile,
 			}
@@ -344,9 +374,8 @@ export default {
 			bill,
 			data,
 			form: props.form,
-			defaultCarPrice, 
-			defaultHelperPrice,
-			defaultFragilePrice,
+			priceList,
+
 			arrowBackOutline,
 			createOutline,
 			helpCircleOutline,

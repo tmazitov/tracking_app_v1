@@ -12,10 +12,12 @@
 		<div class="order_create_form" v-if="isOpen">
 
 			<CreateOrderBillModal
+				v-if="data.priceList"
 				:isOpen="data.billIsOpen"
 				:closer="closeBill"
 				:form="form"
 				:submit="orderSubmit"
+				:priceList="data.priceList"
 			/>
 
 			<div class="form">	
@@ -60,7 +62,7 @@
 								<div class="datetime__duration">
 	
 									<ion-input 
-									type="number" v-model="form.duration" min="2"
+									type="number" v-model="form.duration" :min="data.priceList?.bigCarTime"
 									label="Часы работы" label-placement="floating" fill="solid">
 									</ion-input>
 
@@ -108,7 +110,7 @@
 
 					</div>
 					<div class="form__page-2" v-if="form.selectedTab == 1">
-						<OrderPointsMap v-model:points="form.points" v-model:wayHours="form.duration"/>
+						<OrderPointsMap v-model:points="form.points" v-model:wayHours="form.duration" v-model:km-count="form.price.kmCount"/>
 					</div> 
 
 				</div>
@@ -127,20 +129,19 @@
 import OrderPointsMap from "../../map/OrderPointsMap.vue";
 import CreateOrderBillModal from "../../modal/CreateOrderBillModal.vue"
 import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect, IonToast } from "@ionic/vue";
-import { add, arrowBackOutline, checkmarkCircleOutline, open, remove } from "ionicons/icons";
-import { ComputedRef, computed, reactive, toRaw, toRef, watch } from "vue";
+import { add, arrowBackOutline, checkmarkCircleOutline, remove } from "ionicons/icons";
+import { ComputedRef, computed, reactive, watch } from "vue";
 import User from "@/assets/user";
 import RSelector from '../../inputs/RSelector.vue'
-import Point from "@/assets/point";
 import SelectableItem from "@/assets/selectableItem";
 import TMS from "@/api/tms";
 import { UTCString } from "@/assets/data";
 import "./tabs.css"
 import { useStore } from "vuex";
-import { isEqual, isToday, yyyymmdd } from "@/assets/date";
+import { isEqual, yyyymmdd } from "@/assets/date";
 import { IOrderCreateForm, getDefaultForm } from "./instanse";
 import Order from "@/assets/order";
-import OrderStorage from "@/assets/orderStorage";
+import OrderPriceList from "@/assets/orderPriceList";
 
 interface SelectorsData {
 	workers: ComputedRef<Array<User>>
@@ -190,9 +191,11 @@ export default {
 		const store = useStore()
 		const data = reactive<{
 			billIsOpen: boolean,
+			priceList: OrderPriceList|null,
 			orderCreatedIsOpen: boolean,
 		}>({
 			billIsOpen: false,
+			priceList: null,
 			orderCreatedIsOpen: false,
 		})
 
@@ -207,7 +210,20 @@ export default {
 		}
 
 
-		const isOpen = computed(() => props.isOpen)
+		const isOpen = computed(() => {
+			let isOpen = props.isOpen
+			if (isOpen) 
+			{
+				TMS.order().priceList().then(response => {
+					if (!response.data) return
+					if (response.data.err) throw response.data.err
+
+					data.priceList = new OrderPriceList(response.data)
+					form.duration = data.priceList.bigCarTime
+				})
+			}
+			return isOpen
+		})
 		const workers = computed(() => store.getters.staffWorkers)
 		const selectWorker = (workerId:number) => {
 			form.currentWorkerId = workerId == -1 ? 0 : workerId

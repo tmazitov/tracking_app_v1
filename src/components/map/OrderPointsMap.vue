@@ -79,13 +79,16 @@ export default {
 	components: {
 		IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, IonIcon, Transition, SearchSelector, IonPopover, IonContent, IonList,
 	},
-	emits:['update:wayHours'],
+	emits:['update:wayHours', 'update:kmCount'],
 	props: {
 		points: {
 			type: Array<Point>,
 			required: true,
 		},
 		wayHours: {
+			type: Number,
+		},
+		kmCount: {
 			type: Number,
 		},
 		readonly: {
@@ -191,6 +194,11 @@ export default {
 			} 
 			console.log('newTotalTime :>> ', newValue);
 			ctx.emit('update:wayHours', totalHours)
+		})
+
+		watch(() => map.totalDistance.value, (newValue) => {
+			let kmCount = Math.round(newValue / 1000)
+			ctx.emit('update:kmCount', kmCount)
 		})
 
 		return {
