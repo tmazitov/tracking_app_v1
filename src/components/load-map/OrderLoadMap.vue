@@ -52,7 +52,7 @@
 
 		<!-- Map -->
 		<div class="load-map__columns">
-			<ion-grid>
+			<ion-grid v-if="staffWorkTime">
 				<ion-row class="row__content header">
 					<ion-col size="auto">
 						<div class="hour"></div> 
@@ -66,9 +66,9 @@
 						</div>
 					</ion-col>
 				</ion-row>
-				<ion-row class="row__content" v-for="hour in range(5,24)" :key="`hour__${hour}`">
+				<ion-row class="row__content" v-for="time in staffWorkTime.range()" :key="`hour__${time}`">
 					<ion-col size="auto">
-						<div class="hour">{{ `${hour}:00` }}</div> 
+						<div class="hour">{{ time }}</div> 
 					</ion-col>
 					<ion-col class="ceil" v-for="worker in workers" :key="`worker_slot_${worker.id}`" size="auto"
 						v-bind:class="{
@@ -85,6 +85,7 @@
 				<WorkerOrdersColumn 
 				v-for="worker in workers" :key="`worker-${worker.id}`"
 				:worker="worker" :orders="orders" 
+				:workerWorkTime="staffWorkTime"
 				:cardStaticClick="openOrderDetails"
 				:replaceIsDisable="!data.editMode"
 				:replaceIsValid="data.replaceIsValid" />
@@ -106,6 +107,7 @@ import draggable from 'vuedraggable'
 import WorkerOrdersColumn from './WorkerOrdersColumn.vue';
 import TMS from '@/api/tms';
 import OrderDetails from '../OrderDetails.vue'
+import StaffWorkTime from '@/assets/staffWorkTime';
 export default {
 	name: "OrderLoadMap",
 	components: {
@@ -125,6 +127,10 @@ export default {
 			type: Array<Order>,
 			required: true,
 		},
+		staffWorkTime: {
+			type: StaffWorkTime,
+			default: null,
+		},
 		date: {
 			type: Date,
 			required: true,
@@ -139,6 +145,7 @@ export default {
 		const orders:ComputedRef<Array<Order>> = computed(() => props.orders)
 		const workersWithHoliday:ComputedRef<Array<Number>> = computed(() => props.workersWithHoliday)
 		const user = computed(() => store.getters.userMainInfo)
+		const staffWorkTime = computed(() => props.staffWorkTime)
 		const data = reactive<{
 			editMode: boolean,
 			replaceOrder: string|null,
@@ -274,6 +281,7 @@ export default {
 			user,
 			orders,
 			workers,
+			staffWorkTime,
 			toggleEditMode,
 			getTimeString,
 			ordersWithoutWorker,
@@ -483,6 +491,5 @@ ion-row:last-child > ion-col:last-child {
 	display: flex;
 	flex-direction: row;
 	z-index: 1;
-	height: 798px;
 }
 </style>

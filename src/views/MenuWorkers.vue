@@ -53,6 +53,23 @@
 						</ion-list>
 					</ion-card-content>
 				</ion-card>
+
+				<ion-card>
+					<ion-card-header>
+						<ion-card-title>Время работы</ion-card-title>
+					</ion-card-header>
+					<ion-card-content class="work-time-container" v-if="data.staffWorkTime && data.originStaffWorkTime" >
+						<div class="work-time">
+							<ion-input 
+							label="Начало" type="time" fill="outline" :value="data.staffWorkTime.startAt" @ionInput="updateStartWorkTime"></ion-input>
+							<ion-input 
+							label="Конец" type="time" fill="outline" :value="data.staffWorkTime.endAt" @ionInput="updateEndWorkTime"></ion-input>
+						</div>
+						<ion-button v-if="!data.staffWorkTime.isEqual(data.originStaffWorkTime)" @click="updateWorkTime">
+							Сохранить
+						</ion-button>
+					</ion-card-content>
+				</ion-card>
 			</div>
 
 			<div class="content" v-if="data.segment == 'new'">
@@ -114,9 +131,11 @@
 
 <script lang="ts">
 import { AdminAPI } from '@/api/admin';
+import TMS from '@/api/tms';
+import StaffWorkTime from '@/assets/staffWorkTime';
 import User from '@/assets/user';
 import UserOffer from '@/assets/userOffer';
-import { IonPage, IonContent, IonCard, IonCardSubtitle, IonCardTitle, IonButton, IonIcon, IonItem, IonList, IonLabel, IonInput, IonText, IonCardContent, IonCardHeader, IonSegment, IonSegmentButton, IonToast } from '@ionic/vue';
+import { IonPage, IonContent, IonCard, IonCardSubtitle, IonCardTitle, IonButton, IonIcon, IonItem, IonList, IonLabel, IonInput, IonText, IonCardContent, IonCardHeader, IonSegment, IonSegmentButton, IonToast, onIonViewWillEnter } from '@ionic/vue';
 import { checkmarkCircleOutline, chevronDownOutline, closeOutline, documentTextOutline, ellipsisHorizontalOutline, personCircleOutline } from 'ionicons/icons';
 import { ComputedRef, computed, onMounted, reactive, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -153,11 +172,15 @@ export default {
 			offers: Array<UserOffer>,
 			offerDetailsId: number,
 			toastSuccess:boolean,
+			originStaffWorkTime: StaffWorkTime|null,
+			staffWorkTime: StaffWorkTime|null,
 		}>({
 			segment: "current",
 			offers: [],
 			offerDetailsId: -1,
 			toastSuccess:false,
+			originStaffWorkTime: null,
+			staffWorkTime: null,
 		})
 		
 		const onChangeSegment = (ev:CustomEvent) => data.segment = ev.detail.value
@@ -180,7 +203,7 @@ export default {
 		const currentManagers:ComputedRef<Array<User>> = computed(() => store.getters.staffManagers)
 
 
-		onMounted(() => {
+		onIonViewWillEnter(() => {
 			if (user.value.roleId && user.value.roleId != 3) router.push({name:"home"})
 			
 			AdminAPI.offerList().then(response => {
@@ -194,6 +217,13 @@ export default {
 				})
 				data.offers = offers
 			})	
+			TMS.user().getStaffWorkTime().then(response => {
+				if (!response.data) return
+				if (response.data.err) throw response.data.err
+
+				data.staffWorkTime = new StaffWorkTime(response.data)
+				data.originStaffWorkTime = new StaffWorkTime(response.data)
+			})
 		})
 
 		const offerAccept = (offerId:number) => {
@@ -223,6 +253,28 @@ export default {
 			})
 		}
 
+		const updateStartWorkTime = (ev:CustomEvent) => {
+			if (!data.staffWorkTime) return
+
+			data.staffWorkTime.startAt = ev.detail.value
+		}
+
+
+		const updateEndWorkTime = (ev:CustomEvent) => {
+			if (!data.staffWorkTime) return
+
+			data.staffWorkTime.endAt = ev.detail.value
+		}
+
+		const updateWorkTime = () => {
+			if (!data.staffWorkTime) return
+			AdminAPI.staffUpdateWorkTime(data.staffWorkTime).then(() => {
+				if (!data.staffWorkTime || !data.originStaffWorkTime) return
+				data.originStaffWorkTime.startAt = data.staffWorkTime.startAt
+				data.originStaffWorkTime.endAt = data.staffWorkTime.endAt
+			})
+		}
+
 		return {
 			data,
 			currentWorkers,
@@ -236,7 +288,10 @@ export default {
 			onChangeSegment,
 			offerAccept,
 			offerReject,
-			checkmarkCircleOutline
+			checkmarkCircleOutline,
+			updateStartWorkTime,
+			updateEndWorkTime,
+			updateWorkTime,
 		}
 	},
 }
@@ -292,5 +347,17 @@ ion-label.empty {
 		max-height: 240px;
 		opacity: 1;
 	}
+}
+
+.work-time{
+	display: flex;
+	flex-direction: row;
+	gap: 16px;
+}
+
+.work-time-container{
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
 }
 </style>

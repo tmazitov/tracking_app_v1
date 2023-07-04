@@ -87,6 +87,25 @@ function isEqual(date1:Date, date2:Date) {
 	  date1.getMonth() === date2.getMonth() &&
 	  date1.getFullYear() === date2.getFullYear()
 	);
+}
+
+function convertMinutesToHHMM(minutes:number) {
+	var hours = Math.floor(minutes / 60);
+	var remainingMinutes = minutes % 60;
+  
+	var hoursString = hours < 10 ? "0" + hours : hours.toString();
+	var minutesString = remainingMinutes < 10 ? "0" + remainingMinutes : remainingMinutes.toString();
+  
+	return hoursString + ":" + minutesString;
+}
+
+function convertHHMMToMinutes(timeString:string) {
+	var timeParts = timeString.split(":");
+	var hours = parseInt(timeParts[0]);
+	var minutes = parseInt(timeParts[1]);
+  
+	var totalMinutes = hours * 60 + minutes;
+	return totalMinutes;
   }
 
 export {
@@ -98,4 +117,6 @@ export {
 	checkDate,
 	getDateString,
 	getTimeString,
+	convertMinutesToHHMM,
+	convertHHMMToMinutes,
 }

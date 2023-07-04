@@ -1,5 +1,6 @@
 import OrderPriceList from "@/assets/orderPriceList"
 import admClient from "./client"
+import StaffWorkTime from "@/assets/staffWorkTime"
 
 class AdminAPI {
 	static offerList(){
@@ -22,6 +23,10 @@ class AdminAPI {
 
 	static updatePriceList(priceList:OrderPriceList){
 		return admClient.put("/order/price-list", priceList)
+	}
+
+	static staffUpdateWorkTime(workTime:StaffWorkTime){
+		return admClient.put("/staff/work-time", workTime.toSubmit())
 	}
 }
 

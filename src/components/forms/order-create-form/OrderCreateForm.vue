@@ -49,12 +49,13 @@
 							<div class="form__datetime">
 								<div class="datetime__date">
 									<ion-input 
-									type="date" v-model="form.date" 
+									type="date" v-model="form.date"
 									label="Дата" label-placement="floating" fill="solid">
 									</ion-input>
 			
 									<ion-input 
-									type="time" v-model="form.start"
+									type="time" v-model="form.start" ref="inputTimeRef"
+									@ionInput="onTimeInput"
 									label="Начало" label-placement="floating" fill="solid">
 									</ion-input>
 								</div>
@@ -130,7 +131,7 @@ import OrderPointsMap from "../../map/OrderPointsMap.vue";
 import CreateOrderBillModal from "../../modal/CreateOrderBillModal.vue"
 import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect, IonToast } from "@ionic/vue";
 import { add, arrowBackOutline, checkmarkCircleOutline, remove } from "ionicons/icons";
-import { ComputedRef, computed, reactive, watch } from "vue";
+import { ComputedRef, computed, reactive, ref, watch } from "vue";
 import User from "@/assets/user";
 import RSelector from '../../inputs/RSelector.vue'
 import SelectableItem from "@/assets/selectableItem";
@@ -142,6 +143,7 @@ import { isEqual, yyyymmdd } from "@/assets/date";
 import { IOrderCreateForm, getDefaultForm } from "./instanse";
 import Order from "@/assets/order";
 import OrderPriceList from "@/assets/orderPriceList";
+import StaffWorkTime from "@/assets/staffWorkTime";
 
 interface SelectorsData {
 	workers: ComputedRef<Array<User>>
@@ -189,13 +191,16 @@ export default {
 
 	setup(props) {
 		const store = useStore()
+		const inputTimeRef = ref()
 		const data = reactive<{
-			billIsOpen: boolean,
-			priceList: OrderPriceList|null,
+			billIsOpen: boolean,			
 			orderCreatedIsOpen: boolean,
+			priceList: OrderPriceList|null,
+			staffWorkTime: StaffWorkTime|null,
 		}>({
-			billIsOpen: false,
 			priceList: null,
+			billIsOpen: false,
+			staffWorkTime: null,
 			orderCreatedIsOpen: false,
 		})
 
@@ -220,6 +225,12 @@ export default {
 
 					data.priceList = new OrderPriceList(response.data)
 					form.duration = data.priceList.bigCarTime
+				})
+				TMS.user().getStaffWorkTime().then(response => {
+					if (!response.data) return
+					if (response.data.err) throw response.data.err
+
+					data.staffWorkTime = new StaffWorkTime(response.data)
 				})
 			}
 			return isOpen
@@ -248,6 +259,22 @@ export default {
 		const openCreatedOrder = () => data.orderCreatedIsOpen = true
 		const closeCreatedOrder = () => {
 			data.orderCreatedIsOpen = false
+		}
+
+		const onTimeInput = (ev:CustomEvent) => {
+			if (!data.staffWorkTime) return
+			let value:string = ev.detail.value
+			console.log('value :>> ', value);
+
+			let isIncluded = data.staffWorkTime.includes(value)
+			console.log('isIncluded :>> ', isIncluded);
+			if (isIncluded == -1) {
+				inputTimeRef.value.$el.value = data.staffWorkTime.startAt
+				form.start = data.staffWorkTime.startAt
+			} else if (isIncluded == 1) {
+				inputTimeRef.value.$el.value = data.staffWorkTime.endAt
+				form.start = data.staffWorkTime.endAt
+			} 
 		}
 
 		const orderSubmit = () => {
@@ -300,11 +327,13 @@ export default {
 			form,
 			workers,
 			orderTypes,
+			inputTimeRef,
 			selectTab,
 			orderSubmit,
 			selectWorker,
 			selectOrderType,
 			arrowBackOutline,
+			onTimeInput,
 
 			openBill,
 			closeBill,

@@ -8,7 +8,7 @@
 	itemKey="orderId"
 	group="orders"> 
 		<template #item="{element}" >
-			<OrderCard :order="element" @click="cardStaticClick(element)" :smallSize="false"/>
+			<OrderCard :order="element" @click="cardStaticClick(element)" :smallSize="false" :workerWorkTime="workerWorkTime"/>
 		</template>
 	</draggable>
 </template>
@@ -20,6 +20,7 @@ import { computed, toRaw } from 'vue';
 import OrderCard from './OrderCard.vue';
 import draggable from 'vuedraggable'
 import TMS from '@/api/tms';
+import StaffWorkTime from '@/assets/staffWorkTime';
 
 export default {
 	name: "WorkerOrdersColumn",
@@ -27,6 +28,10 @@ export default {
 		worker: {
 			type: User,
 			required: true,
+		},
+		workerWorkTime: {
+			type: StaffWorkTime,
+			default: null,
 		},
 		orders: {
 			type: Array<Order>,
@@ -51,6 +56,7 @@ export default {
 	},
 	setup(props){
 		const cardStaticClick = computed(() => props.cardStaticClick)
+		const workerWorkTime = computed(() => props.workerWorkTime)
 		const replaceIsDisable = computed(() => props.replaceIsDisable)
 		const replaceIsValid = computed(() => props.replaceIsValid)
 		const worker = computed(() => props.worker)
@@ -77,6 +83,7 @@ export default {
 			log,
 			replaceIsDisable,
 			cardStaticClick,
+			workerWorkTime,
 		}
 	}
 }

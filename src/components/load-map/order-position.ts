@@ -1,4 +1,5 @@
 import Order from "@/assets/order";
+import StaffWorkTime from "@/assets/staffWorkTime";
 import User from "@/assets/user";
 
 interface OrderStyle {
@@ -35,10 +36,12 @@ const orderStyles = (order:Order, isValid:Boolean):OrderStyle => {
 	}
 }
 
-const orderPosition = (order:Order) => {
+const orderPosition = (order:Order, workTime:StaffWorkTime) => {
+	
+	let workTimeStartHour:number = workTime.startHour()
 
-	let top:number = (order.startAt.getHours() - 5 + order.startAt.getMinutes() / 60) * 42
-	let bot:number = (order.endAt.getHours() - 5 + order.endAt.getMinutes() / 60) * 42 
+	let top:number = (order.startAt.getHours() - workTimeStartHour + order.startAt.getMinutes() / 60) * 42
+	let bot:number = (order.endAt.getHours() - workTimeStartHour + order.endAt.getMinutes() / 60) * 42 
 	let height:number = bot - top
 
 	return {

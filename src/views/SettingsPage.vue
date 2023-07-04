@@ -42,7 +42,7 @@ export default {
 		const isShowHeader = computed(() => store.getters.isShowHeader)
 		const pageTitle = computed(() => {
 			let currentRouteName = router.currentRoute.value.name
-			if (currentRouteName == "settings-workers") return "Рабочие"
+			if (currentRouteName == "settings-workers") return "Работники"
 			if (currentRouteName == "settings-job") return "Работа"
 			if (currentRouteName == "settings-history") return "Мои заказы"
 			if (currentRouteName == "settings-prices") return "Настройки цен"

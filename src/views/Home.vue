@@ -68,6 +68,7 @@ import {
 IonFab,
 IonFabButton,
 IonIcon,
+onIonViewDidEnter,
 } from "@ionic/vue";
 import { addOutline, optionsOutline, podiumOutline } from "ionicons/icons";
 import { reactive, computed, watch } from "vue";
@@ -130,7 +131,11 @@ export default {
 			orderDetails: undefined,
 		});
 
-		data.storage.updateOrders()
+		onIonViewDidEnter(()=>{
+			data.storage.updateOrders()
+		})
+
+		
 		watch(data.storage.filters, () => {
 			data.storage.onFilterUpdate().then((newPageQuery:{[key:string]:any}) => {
 				router.push({

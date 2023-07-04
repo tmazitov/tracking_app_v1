@@ -7,6 +7,10 @@ class User {
 		return tmsClient.get('/staff')
 	}
 
+	static getStaffWorkTime(){
+		return tmsClient.get('/staff/work-time')
+	}
+
 	static holidayCreate(workerId:number, date:Date){
 		return tmsClient.get(`/user/${workerId}/holiday?d=${yyyymmdd(date)}`)	
 	}

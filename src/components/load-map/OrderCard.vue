@@ -25,6 +25,7 @@ import Order from '@/assets/order';
 import { ComputedRef, computed, onMounted, reactive, ref, toRaw, toRef, watch } from 'vue';
 import { orderStyles, orderPosition } from './order-position';
 import { getTimeString } from '@/assets/date';
+import StaffWorkTime from '@/assets/staffWorkTime';
 
 export default {
 	name: "OrderCard",
@@ -32,6 +33,10 @@ export default {
 		order: {
 			type: Order,
 			required:true,
+		},
+		workerWorkTime:{
+			type: StaffWorkTime,
+			default: false,
 		},
 		smallSize: {
 			type: Boolean,
@@ -53,7 +58,8 @@ export default {
 					height 	: "48px",
 				}
 			}
-			return orderPosition(order.value)
+			if (!props.workerWorkTime) return
+			return orderPosition(order.value, props.workerWorkTime)
 		}
 
 		const orderCard = ref<HTMLElement|null>(null)
