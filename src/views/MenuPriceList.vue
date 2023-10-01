@@ -10,9 +10,9 @@
 						</ion-card-subtitle>
 					</ion-card-header>
 					<ion-card-content class="card-content">
-						<RNumberInput inputType="hour"
+						<RNumberInput inputType="hour" fill="outline" label-placement="floating" 
 						label="Часы по умолчанию" v-model:value="data.priceList.bigCarTime"  :step="1" :min="0" :max="24"/>
-						<RNumberInput inputType="price"
+						<RNumberInput inputType="price" fill="outline" label-placement="floating" 
 						label="Стоимость за час" v-model:value="data.priceList.bigCarPrice"  :step="50" :min="0" :max="10000"/>
 					</ion-card-content>
 				</ion-card>
@@ -24,9 +24,9 @@
 						</ion-card-subtitle>
 					</ion-card-header>
 					<ion-card-content class="card-content">
-						<RNumberInput inputType="hour"
+						<RNumberInput inputType="hour" fill="outline" label-placement="floating" 
 						label="Часы по умолчанию" v-model:value="data.priceList.helperTime"  :step="1" :min="0" :max="24"/>
-						<RNumberInput inputType="price"
+						<RNumberInput inputType="price" fill="outline" label-placement="floating" 
 						label="Стоимость за час" v-model:value="data.priceList.helperPrice"  :step="50" :min="0" :max="10000"/>
 					</ion-card-content>
 				</ion-card>
@@ -35,9 +35,9 @@
 						<ion-card-title>Прочее</ion-card-title>
 					</ion-card-header>
 					<ion-card-content class="card-content">
-						<RNumberInput inputType="price"
+						<RNumberInput inputType="price" fill="outline" label-placement="floating" 
 						label="Стоимость упаковки" v-model:value="data.priceList.fragilePrice"  :step="50" :min="0" :max="10000"/>
-						<RNumberInput inputType="price"
+						<RNumberInput inputType="price" fill="outline" label-placement="floating" 
 						label="Стоимость 1 км" v-model:value="data.priceList.kmPrice"  :step="1" :min="0" :max="10000"/>
 					</ion-card-content>
 				</ion-card>

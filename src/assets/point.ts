@@ -1,4 +1,5 @@
 import L from 'leaflet'
+import * as yup from "yup"
 
 class Point {
 	id:bigint|undefined
@@ -46,6 +47,14 @@ class Point {
 
 	toWaypoint(){
 		return new L.Routing.Waypoint(this.toLatLng(), this.title, {})
+	}
+
+	static toYup(){
+		return yup.object({
+			title: yup.string().required(),
+			lat: yup.number().required(),
+			lon: yup.number().required(),
+		})
 	}
 }
 

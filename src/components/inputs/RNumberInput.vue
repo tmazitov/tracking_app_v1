@@ -5,9 +5,9 @@
 		<ion-input 
 		ref="inputRef"
 		type="number"
-		:class="inputType"
+		:class="inputType" 
 		:value="value" :max="max" :min="min" autocorrect="on"
-		:label="label" label-placement="floating" fill="outline"
+		:label="label" :label-placement="labelPlacement" :fill="fill"
 		@ionInput="onInputHandler">
 		</ion-input>
 
@@ -31,6 +31,9 @@ import { IonInput, IonIcon, IonRippleEffect } from '@ionic/vue';
 import { add, remove } from 'ionicons/icons';
 import { ComponentPublicInstance, computed, reactive, ref } from 'vue';
 
+type InputFill = "outline" | "solid" | undefined
+type InputLabelPlacement = 'start' | 'end' | 'floating' | 'stacked' | 'fixed' | undefined
+
 export default {
 	name: "RNumberInput",
 	components:{
@@ -50,6 +53,13 @@ export default {
 		step: Number,
 		min: Number,
 		max: Number,
+		fill: {
+			type: String as () => InputFill,
+		},
+		labelPlacement: {
+			type: String as () => InputLabelPlacement,
+			default: 'start',
+		}
 	},
 	setup(props,ctx){
 
@@ -59,7 +69,9 @@ export default {
 			set: (newValue:number) => ctx.emit("update:value", newValue)
 		})
 		const label = computed(() => props.label)
+		const labelPlacement = computed(() => props.labelPlacement)
 		const step = computed(() => props.step)
+		const fill = computed(() => props.fill)
 		const max = computed(() => props.max)
 		const min = computed(() => props.min)
 		const inputType = computed(() => props.inputType)
@@ -96,6 +108,7 @@ export default {
 
 		return {
 			data,
+			fill,
 			value,
 			label,
 			inputRef,
@@ -106,6 +119,7 @@ export default {
 			add,
 			remove,
 			plusHandler,
+			labelPlacement,
 			minusHandler,
 			onInputHandler,
 		}

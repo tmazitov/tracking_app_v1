@@ -15,12 +15,13 @@
 				v-if="data.priceList"
 				:isOpen="data.billIsOpen"
 				:closer="closeBill"
-				:form="form"
+				:form="form.values"
 				:submit="orderSubmit"
 				:priceList="data.priceList"
 			/>
 
 			<div class="form">	
+
 				<div class="form__header">
 					<div class="header__go-back" @click="close()">
 						<ion-icon :icon="arrowBackOutline"></ion-icon>
@@ -32,16 +33,16 @@
 
 				<div class="form__tabs">
 					<div class="form__tab" @click="() => selectTab(0)" v-bind:class="{
-						selected: form.selectedTab == 0,
+						selected: data.selectedTab == 0,
 					}">Инфо</div>
 					<div class="form__tab" @click="() => selectTab(1)" v-bind:class="{
-						selected: form.selectedTab == 1,
-					}">Точки - {{form.points.length}}</div>
+						selected: data.selectedTab == 1,
+					}">Точки - {{form.values.points.length}}</div>
+					
 				</div>
-				
 	
 				<div class="form__tabs-content">
-					<div class="form__page-1" v-if="form.selectedTab == 0">
+					<div class="form__page-1" v-if="data.selectedTab == 0">
 						
 						<div class="form__datetime-title">
 							<!-- Datetime -->
@@ -49,74 +50,98 @@
 							<div class="form__datetime">
 								<div class="datetime__date">
 									<ion-input 
-									type="date" v-model="form.date"
+									v-model="fields.date.value"
+									type="date" 
+									name="date"
+									id="date"
+									:color="form.errors.value['title']?'danger':'primary'"
 									label="Дата" label-placement="floating" fill="solid">
 									</ion-input>
 			
 									<ion-input 
-									type="time" v-model="form.start" ref="inputTimeRef"
-									@ionInput="onTimeInput"
+									type="time" v-model="fields.start.value" name="start" 
+									@ionInput="onTimeInput" ref="inputTimeRef"
+									:color="form.errors.value['title']?'danger':'primary'"
 									label="Начало" label-placement="floating" fill="solid">
 									</ion-input>
 								</div>
 
-								<div class="datetime__duration">
-	
-									<ion-input 
-									type="number" v-model="form.duration" :min="data.priceList?.bigCarTime"
-									label="Часы работы" label-placement="floating" fill="solid">
-									</ion-input>
+								<ion-text 
+								v-if="form.errors.value.date" color="danger">
+									{{form.errors.value.date}}
+								</ion-text>
+								<ion-text 
+								v-if="form.errors.value.start" color="danger">
+									{{form.errors.value.start}}
+								</ion-text>
 
-									<div class="ion-activatable ripple-parent form__helpers-button"  
-									@click="() => form.duration += 1">
-										<ion-icon :icon="add"></ion-icon>
-										<ion-ripple-effect></ion-ripple-effect>
-									</div>
-									<div class="ion-activatable ripple-parent form__helpers-button" 
-									@click="() => {if (form.duration > 2) form.duration -= 1}">
-										<ion-icon :icon="remove" ></ion-icon>
-										<ion-ripple-effect></ion-ripple-effect>
-									</div>
-								</div>
+								<RNumberInput inputType="hour" label-placement="floating" fill="solid"
+								label="Часы работы" v-model:value="fields.duration.value"  :step="1" :min="2" :max="1000"/>
 							</div>
 	
+							<ion-text 
+							v-if="form.errors.value.duration" color="danger">
+								{{form.errors.value.duration}}
+							</ion-text>
+
 							<!-- Title -->
 			
 							<div class="form__title-container">
-								<ion-input type="text" v-model="form.title" label="Название заказа" fill="solid" label-placement="floating" placeholder="По умолчанию адрес первой точки">
+								<ion-input 
+								type="text" v-model="fields.title.value" name="title"
+								:color="form.errors.value['title']?'danger':'primary'"
+								label="Название заказа" fill="solid" label-placement="floating" 
+								placeholder="По умолчанию адрес первой точки">
 								</ion-input>
 							</div>
-	
+
+							<ion-text 
+							v-if="form.errors.value.title" color="danger">
+								{{form.errors.value.title}}
+							</ion-text>
 						</div>
 	
 						<!-- Comment -->
 		
 						<div class="form__comment-container">
-							<ion-textarea label="Комментарий заказа" labelPlacement="floating" fill="solid" v-model="form.comment">
+							<ion-textarea name="comment"
+							label="Комментарий заказа" labelPlacement="floating" fill="solid" v-model="fields.comment.value">
 							</ion-textarea>
 						</div>
 		
 						<RSelector
-							v-model:current-item="form.currentOrderType"
+							v-model:current-item="fields.currentOrderType.value"
 							:items="orderTypes" 
 							:selector="selectOrderType"
 							:label="'Тип заказа'"
 							:multiple="true"
 						/>
+
+						<ion-text 
+						v-if="form.errors.value.currentOrderType" color="danger">
+							{{form.errors.value.currentOrderType}}
+						</ion-text>
 	
 						<!-- Is Regular customer -->
-						<ion-checkbox labelPlacement="end" v-model="form.isRegularCustomer">Постоянный клиент</ion-checkbox>
+						<ion-checkbox labelPlacement="end" v-model="fields.isRegularCustomer.value">Постоянный клиент</ion-checkbox>
 	
 						<!-- Make the table of worker business -->
 
 					</div>
-					<div class="form__page-2" v-if="form.selectedTab == 1">
-						<OrderPointsMap v-model:points="form.points" v-model:wayHours="form.duration" v-model:km-count="form.price.kmCount"/>
+					<div class="form__page-2" v-if="data.selectedTab == 1">
+						<OrderPointsMap 
+							v-model:points="form.values.points" 
+							v-model:wayHours="fields.duration.value"
+							v-model:km-count="form.values.price.kmCount"/>
 					</div> 
 
 				</div>
 				
-				<div class="form__submit-container" v-if="form.selectedTab == 0">
+				<div class="form__submit-container" v-if="data.selectedTab == 0">
+					<ion-text 
+					v-if="form.errors.value.points && data.submitIsTouched" color="danger">
+						{{form.errors.value.points}}
+					</ion-text>
 					<ion-button @click="openBill">Создать</ion-button>
 				</div>
 			</div>
@@ -129,29 +154,36 @@
 <script lang="ts">
 import OrderPointsMap from "../../map/OrderPointsMap.vue";
 import CreateOrderBillModal from "../../modal/CreateOrderBillModal.vue"
-import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect, IonToast } from "@ionic/vue";
-import { add, arrowBackOutline, checkmarkCircleOutline, remove } from "ionicons/icons";
+import { IonTitle, IonIcon, IonInput, IonSelect, IonSelectOption, IonTextarea, IonCheckbox, IonButton, IonRippleEffect, IonToast, IonText } from "@ionic/vue";
+import { add, arrowBackOutline, checkmarkCircleOutline, key, remove } from "ionicons/icons";
 import { ComputedRef, computed, reactive, ref, watch } from "vue";
-import User from "@/assets/user";
 import RSelector from '../../inputs/RSelector.vue'
-import SelectableItem from "@/assets/selectableItem";
 import TMS from "@/api/tms";
 import { UTCString } from "@/assets/data";
 import "./tabs.css"
 import { useStore } from "vuex";
 import { isEqual, yyyymmdd } from "@/assets/date";
-import { IOrderCreateForm, getDefaultForm } from "./instanse";
+import OrderCreateForm from "./instanse";
 import Order from "@/assets/order";
 import OrderPriceList from "@/assets/orderPriceList";
+import RNumberInput from "@/components/inputs/RNumberInput.vue"
 import StaffWorkTime from "@/assets/staffWorkTime";
+import * as yup from "yup"
 
-interface SelectorsData {
-	workers: ComputedRef<Array<User>>
-	orderTypes: Array<SelectableItem>
-}
+import {  FieldContext, FormValidationResult, ValidationResult, useField, useForm } from "vee-validate";
 
 interface IOrderStorage {
 	orders: Array<Order>
+}
+
+interface IOrderCreateFields {
+	title: FieldContext<string>,
+	date: FieldContext<string>,
+	start: FieldContext<string>,
+	duration: FieldContext<number>,
+	comment: FieldContext<string>,
+	currentOrderType: FieldContext<Array<number>>,
+	isRegularCustomer: FieldContext<boolean>
 }
 
 export default {
@@ -161,6 +193,7 @@ export default {
 		IonTitle,
 		IonInput,
 		IonToast,
+		IonText,
 		IonTextarea,
 		IonIcon,
 		IonCheckbox,
@@ -168,6 +201,7 @@ export default {
 		IonButton,
 		IonSelect, IonSelectOption,
 		IonRippleEffect,
+		RNumberInput,
 		CreateOrderBillModal,
 	},
 
@@ -193,26 +227,49 @@ export default {
 		const store = useStore()
 		const inputTimeRef = ref()
 		const data = reactive<{
-			billIsOpen: boolean,			
+			billIsOpen: boolean,
+			submitIsTouched: boolean,			
+			selectedTab: number,
 			orderCreatedIsOpen: boolean,
 			priceList: OrderPriceList|null,
 			staffWorkTime: StaffWorkTime|null,
+			defaultDuration: number,
 		}>({
 			priceList: null,
+			selectedTab: 0,
 			billIsOpen: false,
+			submitIsTouched: false,
 			staffWorkTime: null,
 			orderCreatedIsOpen: false,
+			defaultDuration: 2,
 		})
 
+		let form = useForm<OrderCreateForm>({
+			validationSchema: OrderCreateForm.schema(),
+			initialValues: new OrderCreateForm(),
+		})
+		form.handleSubmit((data) => {
+			console.log('data :>> ', data);
+		})
+	
 
-		const form = reactive<IOrderCreateForm>(getDefaultForm());
+		let fields:IOrderCreateFields = {
+			title: useField('title'),
+			date: useField('date'),
+			start: useField('start'),
+			duration: useField('duration'),
+			comment: useField('comment'),
+			currentOrderType: useField('currentOrderType'),
+			isRegularCustomer: useField('isRegularCustomer'),
+		}
 		if (props.date){
-			form.date = yyyymmdd(props.date)
+			fields.date.setValue(yyyymmdd(props.date))
 			watch(() => props.date, () => {
 				if (!props.date) return
-				form.date = yyyymmdd(props.date)
+				fields.date.setValue(yyyymmdd(props.date))
 			})
 		}
+
 
 
 		const isOpen = computed(() => {
@@ -224,25 +281,20 @@ export default {
 					if (response.data.err) throw response.data.err
 
 					data.priceList = new OrderPriceList(response.data)
-					form.duration = data.priceList.bigCarTime
+					fields.duration.setValue(data.priceList.bigCarTime)
 				})
 				TMS.user().getStaffWorkTime().then(response => {
 					if (!response.data) return
 					if (response.data.err) throw response.data.err
 
 					data.staffWorkTime = new StaffWorkTime(response.data)
+					fields.start.setValue(data.staffWorkTime.startAt)
 				})
 			}
 			return isOpen
 		})
 		const workers = computed(() => store.getters.staffWorkers)
-		const selectWorker = (workerId:number) => {
-			form.currentWorkerId = workerId == -1 ? 0 : workerId
-		}
-
-		const selectOrderType = (orderType:Array<number>) => {
-			form.currentOrderType = orderType
-		}
+		const selectOrderType = (orderType:Array<number>) => fields.currentOrderType.setValue(orderType)
 
 		const orderTypes =  [
 			{value: 1, title: "Город"},
@@ -251,53 +303,57 @@ export default {
 		]
 
 
-		const selectTab = (index: number) => (form.selectedTab = index);
+		const selectTab = (index: number) => (data.selectedTab = index);
 
-		const openBill = () => data.billIsOpen = true
-		const closeBill = () => data.billIsOpen = false
-
-		const openCreatedOrder = () => data.orderCreatedIsOpen = true
-		const closeCreatedOrder = () => {
-			data.orderCreatedIsOpen = false
+		const openBill = () => {
+			data.submitIsTouched = true
+			form.validate().then((result: FormValidationResult<OrderCreateForm>) => {
+				if (result.valid){
+					data.billIsOpen = true
+				}
+			})
 		}
+		const closeBill = () => data.billIsOpen = false
+		
+		const openCreatedOrder = () => data.orderCreatedIsOpen = true
+		const closeCreatedOrder = () => data.orderCreatedIsOpen = false
 
 		const onTimeInput = (ev:CustomEvent) => {
 			if (!data.staffWorkTime) return
 			let value:string = ev.detail.value
-			console.log('value :>> ', value);
 
 			let isIncluded = data.staffWorkTime.includes(value)
-			console.log('isIncluded :>> ', isIncluded);
 			if (isIncluded == -1) {
 				inputTimeRef.value.$el.value = data.staffWorkTime.startAt
-				form.start = data.staffWorkTime.startAt
+				fields.start.setValue(data.staffWorkTime.startAt)
 			} else if (isIncluded == 1) {
 				inputTimeRef.value.$el.value = data.staffWorkTime.endAt
-				form.start = data.staffWorkTime.endAt
+				fields.start.setValue(data.staffWorkTime.endAt)
 			} 
 		}
 
 		const orderSubmit = () => {
+			let values = form.values
 
-			let startDate = new Date(form.date + " " + form.start)
+			let startDate = new Date(values.date + " " + values.start)
 
 			let endDate = new Date(startDate.getTime())
-			endDate.setHours(startDate.getHours() + form.duration)
+			endDate.setHours(startDate.getHours() + values.duration)
 
 			TMS.order().create({
-				title: form.title,
+				title: values.title,
 				startAt: UTCString(startDate),
 				endAt:   UTCString(endDate),
-				points: form.points,
-				workerId: form.currentWorkerId,
-				orderType: form.currentOrderType.reduce((a, b) => a + b),
-				comment: form.comment,
-				isRegularCustomer: form.isRegularCustomer,
-				price: form.price,
+				points: values.points,
+				workerId: values.currentWorkerId,
+				orderType: values.currentOrderType.reduce((a, b) => a + b),
+				comment: values.comment,
+				isRegularCustomer: values.isRegularCustomer,
+				price: values.price,
 			}).then(response => {
 					
 				if (response.data && response.data["err"]) throw response.data["err"]
-				Object.assign(form, getDefaultForm())
+				
 
 				let order:Order = new Order(response.data)
 				let date:Date|undefined = props.date
@@ -317,7 +373,6 @@ export default {
 		}
 
 
-
 		return {
 			remove,
 			isOpen,
@@ -330,11 +385,18 @@ export default {
 			inputTimeRef,
 			selectTab,
 			orderSubmit,
-			selectWorker,
 			selectOrderType,
 			arrowBackOutline,
 			onTimeInput,
-
+			fields: {
+				title: fields.title.value,
+				date: fields.date.value,
+				start: fields.start.value,
+				duration: fields.duration.value,
+				comment: fields.comment.value,
+				currentOrderType: fields.currentOrderType.value,
+				isRegularCustomer: fields.isRegularCustomer.value,
+			},
 			openBill,
 			closeBill,
 			closeCreatedOrder,
@@ -346,6 +408,7 @@ export default {
 
 <style lang="css" scoped>
 @import url(../../../theme/variables.css);
+
 
 .form__header{
 	font-size: 20px;
@@ -491,6 +554,7 @@ ion-checkbox{
 
 .form__submit-container{
 	display: flex;
+	flex-direction: column;
 	justify-content: center;
 }
 
