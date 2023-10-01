@@ -43,7 +43,7 @@ class OrderCreateForm {
 		this.price = {
 			total: 0,
 			carPrice: 0,
-			carHours: 0,
+			carHours: 2,
 			carTypeId: 0,
 			helperPrice:0,
 			helperCount:0,
@@ -78,10 +78,10 @@ class OrderCreateForm {
 			points: yup
 				.array(Point.toYup())
 				.required('Укажите точки заказа')
-				.min(2, "Нужно минимум 2 точки"),
+				.min(2, "Нужно как минимум 2 точки"),
 			currentOrderType: yup
 				.array(yup.number())
-				.default([1]).max(3).min(1, "У заказа должен быть минимум 1 тип"),
+				.default([1]).max(3).min(1, "Нужно укакать как минимум 1 тип заказа"),
 			isRegularCustomer: yup.
 				bool().default(false),
 			price: yup.object({

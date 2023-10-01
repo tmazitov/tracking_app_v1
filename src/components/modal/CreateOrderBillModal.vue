@@ -42,7 +42,7 @@
 								<div class="field">
 	
 									<ion-input 
-									label="Цена за час :" labelPlacement="fixed"
+									label="Цена за час" labelPlacement="fixed"
 									v-model="data.newCarPrice" type="number">
 									</ion-input>
 	
@@ -111,7 +111,7 @@
 								<div class="field">
 	
 									<ion-input 
-									type="number" label="Цена за час :" labelPlacement="fixed"
+									type="number" label="Цена за час" labelPlacement="fixed"
 									v-model="data.newHelpersPrice" >
 									</ion-input>
 	

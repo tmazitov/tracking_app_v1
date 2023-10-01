@@ -15,7 +15,7 @@
 				<ion-card>
 					<ion-card-header>
 						<ion-card-title>Менеджеры</ion-card-title>
-						<ion-card-subtitle>Обрабатывают заявки и договариваются с заказчиками</ion-card-subtitle>
+						<ion-card-subtitle>Принимают заявки и договариваются с заказчиками</ion-card-subtitle>
 					</ion-card-header>
 					<ion-card-content>
 						<ion-list v-if="currentManagers.length > 0">

@@ -79,7 +79,11 @@ export default {
 	components: {
 		IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, IonIcon, Transition, SearchSelector, IonPopover, IonContent, IonList,
 	},
-	emits:['update:wayHours', 'update:kmCount'],
+	emits:[
+		'update:wayHours', 
+		'update:kmCount',
+		'update:points',
+	],
 	props: {
 		points: {
 			type: Array<Point>,
@@ -183,6 +187,12 @@ export default {
 			data.pointToUpdate = undefined
 			data.searchField = ""
 		}
+
+		watch(() => map.points.value , (newValue) => {
+			if (props.readonly)
+				return
+			ctx.emit('update:points', newValue)
+		})
 
 		watch(() => map.totalTime.value, (newValue) => {
 			let time = convertSeconds(newValue)

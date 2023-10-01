@@ -48,7 +48,11 @@
 				</div>
 			</div>
 
-			<div class="order-details__properties description">
+			<div class="order-details__properties description"
+			v-if="order?.bill.helperCount || 
+					order?.bill.isFragileCargo ||
+					order?.comment
+					">
 				<div class="title">Описание</div>
 				<div v-if="order?.bill.helperCount">
 					Грузчики: {{order?.bill.helperCount}} чел. x {{order.bill.helperHours}} ч.
