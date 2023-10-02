@@ -80,7 +80,6 @@
 import TMS from '@/api/tms';
 import { checkDate, getDateString, isEqual, yyyymmdd } from '@/assets/date';
 import Order from '@/assets/order';
-import { newOrderListFilters } from '@/assets/orderListFilters';
 import { IonPage, IonContent, IonInfiniteScroll, IonInfiniteScrollContent, IonItem, IonLabel, IonList, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonSearchbar, IonHeader, IonToolbar, IonDatetime } from '@ionic/vue';
 import { ComputedRef, computed, onMounted, reactive, watch } from 'vue';
 import OrderCardSmall from '@/components/OrderCardSmall.vue';

@@ -19,7 +19,21 @@ function sum(array:Array<number>):number {
 	return totalCount
 }
 
+function compare(arr1:Array<any>, arr2:Array<any>, equalCheck:Function|null=null){
+	return arr1.find((item1, index1) => {
+		if (!arr2[index1])
+			return true
+		else if (equalCheck && equalCheck(item1, arr2[index1]))
+			return false
+		else if (item1 == arr2[index1])
+			return false
+		else 
+			return true
+	})
+}
+
 export {
 	powerOfTwo,
+	compare,
 	sum
 }

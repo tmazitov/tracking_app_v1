@@ -6,16 +6,16 @@
 			:closer="closeDetails"
 		/>
 		<OrderCreateForm
-			v-if="data.storage.filters.date"
-			:date="data.storage.filters.date"
+			v-if="storage.filters.date"
+			:date="storage.filters.date"
 			:isOpen="data.createFormIsOpen"
-			:storage="data.storage"
+			:storage="storage"
 			:closer="closeCreateForm"
 		/>
 		<ion-content :fullscreen="true">
 			<div class="content__container">
 
-				<DateViewer v-if="data.storage.filters.date" v-model:date="data.storage.filters.date" />
+				<DateViewer v-if="storage.filters.date" v-model:date="storage.filters.date" />
 				<div class="tools__container">
 					<div class="search__container">
 						<ion-searchbar 
@@ -26,12 +26,12 @@
 					</div>
 				</div>
 				<div class="filters__container">
-					<OrderListFilters :filters="data.storage.filters" :isOpen="data.filtersIsOpen"/>
+					<OrderListFilters :filters="storage.filters" :isOpen="data.filtersIsOpen"/>
 				</div>
-				<div class="order_card_container" v-if="data.storage.orders.length > 0">
+				<div class="order_card_container" v-if="storage.orders.length > 0">
 					<transition-group name="order-item">
 						<OrderCardSmall 
-						v-for="order in data.storage.orders" 
+						v-for="order in storage.orders" 
 						:key="`order__${order.orderId}`" 
 						:order="order"
 						:openDetails="openDetails"
@@ -71,7 +71,7 @@ IonIcon,
 onIonViewDidEnter,
 } from "@ionic/vue";
 import { addOutline, optionsOutline, podiumOutline } from "ionicons/icons";
-import { reactive, computed, watch } from "vue";
+import { reactive, computed, watch, ref } from 'vue';
 import { useStore } from "vuex";
 import {  useRouter } from "vue-router";
 import Order from "@/assets/order";
@@ -79,7 +79,6 @@ import OrderDetails from "@/components/OrderDetails.vue";
 import OrderCard from "@/components/OrderCard.vue";
 import OrderCardSmall from "@/components/OrderCardSmall.vue";
 import OrderListFilters from "@/components/OrderListFilters.vue"
-import { newOrderListFilters} from "@/assets/orderListFilters"
 import DateViewer from "@/components/DateViewer.vue";
 import OrderCreateForm from '@/components/forms/order-create-form/OrderCreateForm.vue';
 import OrderUpdateHub from "@/assets/orderUpdateHub";
@@ -114,16 +113,17 @@ export default {
 	setup() {
 		const store = useStore()
 		const router = useRouter()
+		const storage = ref(new OrderStorage())
 
 		const data = reactive<{
-			storage: OrderStorage,
+			// storage: OrderStorage,
 			searchField: string,
 			filtersIsOpen: boolean,
 			detailsIsOpen: boolean,
 			createFormIsOpen: boolean,
 			orderDetails: Order|undefined,
 		}>({
-			storage: new OrderStorage(),
+			// storage: new OrderStorage(),
 			searchField: "",
 			filtersIsOpen: false,
 			detailsIsOpen: false,
@@ -132,12 +132,12 @@ export default {
 		});
 
 		onIonViewDidEnter(()=>{
-			data.storage.updateOrders()
+			storage.value.updateOrders()
 		})
 
 		
-		watch(data.storage.filters, () => {
-			data.storage.onFilterUpdate().then((newPageQuery:{[key:string]:any}) => {
+		watch(storage.value.filters, () => {
+			storage.value.onFilterUpdate().then((newPageQuery:{[key:string]:any}) => {
 				router.push({
 					name: "home",
 					query: newPageQuery,
@@ -163,12 +163,13 @@ export default {
 		const toggleFilters = () => data.filtersIsOpen = !data.filtersIsOpen
 
 		let onSearchHandler = (ev:CustomEvent) => {
-			data.storage.filters.title = ev.detail.value
+			storage.value.filters.title = ev.detail.value
 		}
 
 		return {
 			user,
 			data,
+			storage,
 			openCreateForm,
 			closeCreateForm,
 			optionsOutline,

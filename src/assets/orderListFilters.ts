@@ -147,18 +147,10 @@ class OrderListFiltersInstance {
 	// }
 }
 
-function newOrderListFilters(options:OrderListFiltersOptions|undefined=undefined):OrderListFiltersInstance{
-
-	const filters = new OrderListFiltersInstance(options)
-	
-	return reactive(filters)
-}
-
 export type {OrderListFiltersOptions}
 export {
 	
 	OrderListFiltersInstance,
-	newOrderListFilters,
 	orderStatuses,
 	orderTypes,
 }

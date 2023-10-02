@@ -109,7 +109,7 @@ const store = new Vuex.Store({
 				
 				store.commit('save-user', new User(userInfo.data))
 				let roleId:number = userInfo.data["roleId"]
-				if (roleId == 1 || roleId == 2 || roleId == 3){
+				if (roleId == 2 || roleId == 3){
 					store.dispatch('setup-staff')		
 				}
 				if (roleId == 0) {

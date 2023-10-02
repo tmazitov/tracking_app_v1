@@ -1,9 +1,12 @@
-import { reactive, watch } from "vue";
+import { Ref, reactive, ref, watch } from "vue";
 import Order from "./order";
 import { OrderListFiltersInstance, OrderListFiltersOptions } from "./orderListFilters";
 import OrderUpdateHub from "./orderUpdateHub";
 import TMS from "@/api/tms";
 import { useRouter } from "vue-router";
+import { isEqual } from "./date";
+import { filter } from "ionicons/icons";
+import { compare, powerOfTwo, sum } from "./array";
 
 interface IOrderStorageOptions {
 	filtersOptions: OrderListFiltersOptions | undefined
@@ -15,7 +18,7 @@ interface IOrdersUpdateOptions {
 
 class OrderStorage {
 
-	orders: Array<Order> = []
+	orders: Ref<Array<Order>> = ref([])
 	name:string = "default"
 
 	filters:OrderListFiltersInstance
@@ -24,6 +27,7 @@ class OrderStorage {
 	constructor(options:IOrderStorageOptions|undefined=undefined) {
 		this.filters = new OrderListFiltersInstance(options?.filtersOptions)
 		this.updateHub = new OrderUpdateHub(this)
+		this.updateFilter()
 	}
 
 	updateOrders(options:IOrdersUpdateOptions|undefined = undefined){
@@ -39,11 +43,11 @@ class OrderStorage {
 			})
 
 
-			if (options && options.saveOldOrders){
-				this.orders.push(...orderList)
+			if (options && options.saveOldOrders && this.orders.value){
+				this.orders.value.push(...orderList)
 			}
 			else {
-				this.orders = orderList
+				this.orders = ref(orderList)
 			}
 
 			return orderList
@@ -54,6 +58,56 @@ class OrderStorage {
 		this.updateHub.updateFilters(this.filters)
 	}
 	
+	respondByFilters(order:Order){
+		let filters = this.filters
+		let isRespond = true
+
+		// Date
+		if (filters.date)
+			isRespond = isRespond && isEqual(filters.date, order.startAt)
+		if (!isRespond)
+			return false
+
+		// Title
+		if (filters.title.length)
+			isRespond = isRespond && order.title
+				.toLowerCase()
+				.includes(filters.title.toLowerCase())
+		if (!isRespond)
+			return false
+		
+		// Worker
+		if (filters.workerId != -1 && order.worker)
+			isRespond = isRespond && filters.workerId == order.worker?.id
+		if (!isRespond)
+			return false
+		
+		// Status
+		if (filters.status.length)
+			isRespond = isRespond && filters.status
+				.includes(order.statusId)
+		if (!isRespond)
+			return false
+
+		// Type
+		if (filters.type.length)
+			isRespond = isRespond && (compare(
+				filters.type,
+				powerOfTwo(order.orderType)
+			) == undefined)
+		if (!isRespond)
+			return false
+
+		// Regular customer
+		if (filters.isRegularCustomer)
+			isRespond = isRespond && 
+				order.isRegularCustomer == filters.isRegularCustomer
+		if (!isRespond)
+			return false
+
+		return true
+	}
+
 	onFilterUpdate():Promise<{[key:string]:any}>{
 		return new Promise<{[key:string]:any}>((resolve) => {
 			this.updateOrders()

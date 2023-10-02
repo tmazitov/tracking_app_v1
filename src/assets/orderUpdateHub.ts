@@ -3,12 +3,18 @@ import Order from "./order";
 import { failedQueue, isRefreshing, updateRefreshing } from "@/api/failedQueue";
 import User from "./user";
 import { OrderListFiltersInstance } from "./orderListFilters";
+import { isEqual } from "./date";
+import OrderStorage from "./orderStorage";
 
-interface IOrderUpdateMessage {
-	orderId:number       
-	type:number 
-	data:any 
+interface IUpdateMessage {
+	orderId:number     
+	type:number
+	status?: number  
+	data?:any
 }
+
+type UpdateAction = (order:Order, message:IUpdateMessage) => void
+type RejectAction = (message:IUpdateMessage) => void
 
 const UpdateStartAtFact:number = 1
 const UpdateEndAtFact:number = 2
@@ -16,17 +22,14 @@ const UpdateWorker:number = 3
 
 const ClientMessageUpdateFilters:number = 1
 
-interface IOrderStorage {
-	orders: Array<Order>
-}
 
 class OrderUpdateHub {
 	ws: WebSocket
-	storage: IOrderStorage
+	storage: OrderStorage
 	isAuthorized:boolean = false
 	isRefreshAttempt:boolean = false
 	onAuthWaitList:Array<{reject:Function, resolve:Function}> = []
-	constructor(storage:IOrderStorage) {
+	constructor(storage:OrderStorage) {
 		this.ws = new WebSocket('ws://localhost:5001/tms/ws/order/updates')
 		this.ws.onmessage = (e)=>this.onmessage(e)
 		this.ws.onopen    = (e)=>this.onopen(e)
@@ -57,49 +60,50 @@ class OrderUpdateHub {
 		this.ws.send(JSON.stringify(message))
 	}
 
-	private router(message:IOrderUpdateMessage){
-		let order:Order|undefined = this.storage.orders.find(order => order.orderId == message.orderId)
-		this.routerUpdater(order, this.storage.orders, message)
-	}	
-
-	private routerUpdater(order:Order|undefined, orders:Array<Order>, message:IOrderUpdateMessage){
+	private router(message:IUpdateMessage){
 		switch (message.type){
 			case UpdateStartAtFact:
-				if (!order) return
-				this.updateStartAtFact(order, message.data)
+				this.updateStartAtFact(message)
 				break
 			case UpdateEndAtFact:
-				if (!order) return
-				this.updateEndAtFact(order, message.data)	
+				this.updateEndAtFact(message)	
 				break
-			case UpdateWorker: 
-				if (order) {
-					this.updateWorker(order, message.data)
-				} else if (message.data["startAt"]) {
-					orders.push(new Order(message.data))
-				}
+			case UpdateWorker:
+				this.updateWorker(message)
 				break
 		}
 	}
 
-	private updateStartAtFact(order:Order, data:any){
-		if (data["startAtFact"]){
-			order.statusId = Number(data["statusId"])
-			order.startAtFact = new Date(data["startAtFact"])
-		}
+	private updateStartAtFact(message:IUpdateMessage){
+		if (!message.data["startAtFact"])
+			return
+		this.updateOrder(message, (order:Order, message:IUpdateMessage) => {
+			order.statusId = Number(message.data["statusId"])
+			order.startAtFact = new Date(message.data["startAtFact"])
+		})
 	}
-	private updateEndAtFact(order:Order, data:any){
-		if (data["endAtFact"]){
-			order.statusId = Number(data["statusId"])
-			order.startAtFact = new Date(data["endAtFact"])
-		}
+	private updateEndAtFact(message:IUpdateMessage){
+		if (!message.data["endAtFact"])
+			return
+		this.updateOrder(message, (order:Order, message:IUpdateMessage) => {
+			order.statusId = Number(message.data["statusId"])
+			order.startAtFact = new Date(message.data["endAtFact"])	
+		})
 	}
-
-	private updateWorker(order:Order, data:any){
-		if (data["worker"]){
-			order.statusId = Number(data["statusId"])
-			order.worker = new User(data["worker"])
-		}
+	private updateWorker(message:IUpdateMessage){
+		if (!message.data["worker"]) 
+			return
+		this.updateOrder(message, 
+			(order:Order, message:IUpdateMessage) => {
+				order.statusId = Number(message.data["statusId"])
+				order.worker = new User(message.data["worker"])
+			}, 
+			(message:IUpdateMessage) => {
+				let order:Order = new Order(message.data)
+				if (this.storage.respondByFilters(order))
+					this.storage.orders.value.push(order)
+			} 
+		)
 	}
 
 
@@ -110,7 +114,7 @@ class OrderUpdateHub {
 	private onmessage(event:MessageEvent<any>) {
 		this.printLog(event.data)
 
-		let message = JSON.parse(event.data)
+		let message:IUpdateMessage = JSON.parse(event.data)
 		if (message["status"] == 200){
 			this.isAuthorized = true
 			if (this.onAuthWaitList.length > 0){
@@ -179,10 +183,24 @@ class OrderUpdateHub {
 	private onclose(event:Event){
 		console.log("ws closed");
 	}
+
+	private updateOrder(message:IUpdateMessage, updateAction:UpdateAction, notFoundAction:RejectAction|null = null)
+	{
+		let order:Order|undefined = this.storage.orders.value.find((o:Order) => {
+			return o.orderId == message.orderId
+		})
+
+		if (!order && notFoundAction)
+			return notFoundAction(message)
+		if (!order) 
+			return
+
+		updateAction(order, message)
+	}
 } 
 
 export type {
-	IOrderUpdateMessage
+	IUpdateMessage
 }
 
 export default OrderUpdateHub 
