@@ -65,7 +65,7 @@ export default {
 			{title: "Общие настройки",	path: "settings-main",			icon: settingsOutline},
 			{title: "Мои заказы", 		path: "settings-history", 		icon: fileTrayFullOutline},
 			{title: "Настройки цен",	path: "settings-prices",		icon: cashOutline},
-			{title: "Работники",		path: "settings-workers",		icon: peopleOutline},
+			{title: "Персонал",		path: "settings-workers",		icon: peopleOutline},
 			{title: "Документы",		path: "settings-documents",	icon: documentTextOutline},
 			{title: "Статистика",		path: "settings-statistics",	icon: statsChartOutline},
 		]		

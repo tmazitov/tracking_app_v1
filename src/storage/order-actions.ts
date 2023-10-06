@@ -1,5 +1,3 @@
-import { IOrderUpdateMessage } from "@/assets/orderUpdateHub";
-
 import TMS from "@/api/tms";
 
 function setupOrderPriceList(store:any) {

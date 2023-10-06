@@ -22,7 +22,25 @@
 							<ion-item v-for="manager in currentManagers" :key="`manager-${manager.id}`">
 								<ion-icon :icon="personCircleOutline" slot="start"></ion-icon>
 								<ion-label>{{manager.shortName}}</ion-label>
-								<ion-icon :icon="ellipsisHorizontalOutline" slot="end"></ion-icon>
+								<ion-icon 
+								:id="`click-trigger-manager-${manager.id}`" 
+								:icon="ellipsisHorizontalOutline" slot="end">
+								</ion-icon>
+								<ion-popover 
+								:trigger="`click-trigger-manager-${manager.id}`" 
+								trigger-action="click"
+								:dismiss-on-select="true">
+									<ion-content class="ion-padding">
+										<ion-list>
+											<ion-item class="delete-button"
+											:button="true" 
+											:detail="false" 
+											@click="attemptToRemoveStaff(manager.id, 2)">
+												Удалить
+											</ion-item>
+										</ion-list>
+									</ion-content>
+								</ion-popover>
 							</ion-item>
 						</ion-list>
 						<ion-list v-else>
@@ -43,7 +61,25 @@
 							<ion-item v-for="worker in currentWorkers" :key="`worker-${worker.id}`">
 								<ion-icon :icon="personCircleOutline" slot="start"></ion-icon>
 								<ion-label>{{worker.shortName}}</ion-label>
-								<ion-icon :icon="ellipsisHorizontalOutline" slot="end"></ion-icon>
+								<ion-icon 
+								:id="`click-trigger-worker-${worker.id}`" 
+								:icon="ellipsisHorizontalOutline" slot="end">
+								</ion-icon>
+								<ion-popover 
+								:trigger="`click-trigger-worker-${worker.id}`" 
+								trigger-action="click"
+								:dismiss-on-select="true">
+									<ion-content class="ion-padding">
+										<ion-list>
+											<ion-item class="delete-button"
+											:button="true" 
+											:detail="false" 
+											@click="attemptToRemoveStaff(worker.id, 1)">
+												Удалить
+											</ion-item>
+										</ion-list>
+									</ion-content>
+								</ion-popover>
 							</ion-item>
 						</ion-list>
 						<ion-list v-else>
@@ -135,7 +171,7 @@ import TMS from '@/api/tms';
 import StaffWorkTime from '@/assets/staffWorkTime';
 import User from '@/assets/user';
 import UserOffer from '@/assets/userOffer';
-import { IonPage, IonContent, IonCard, IonCardSubtitle, IonCardTitle, IonButton, IonIcon, IonItem, IonList, IonLabel, IonInput, IonText, IonCardContent, IonCardHeader, IonSegment, IonSegmentButton, IonToast, onIonViewWillEnter } from '@ionic/vue';
+import { IonPage, IonContent, IonCard, IonCardSubtitle, IonCardTitle, IonButton, IonIcon, IonItem, IonList, IonLabel, IonInput, IonText, IonCardContent, IonCardHeader, IonSegment, IonSegmentButton, IonToast, onIonViewWillEnter, IonPopover, actionSheetController } from '@ionic/vue';
 import { checkmarkCircleOutline, chevronDownOutline, closeOutline, documentTextOutline, ellipsisHorizontalOutline, personCircleOutline } from 'ionicons/icons';
 import { ComputedRef, computed, onMounted, reactive, watch } from 'vue';
 import { useRouter } from 'vue-router';
@@ -153,6 +189,7 @@ export default {
 		IonCardHeader,
 		IonCardTitle,
 		IonCardSubtitle,
+		IonPopover,
 		IonList,
 		IonItem,
 		IonIcon,
@@ -275,8 +312,41 @@ export default {
 			})
 		}
 
+		const attemptToRemoveStaff = async (userId: number, roleId: number) => {
+
+			let staffListName = ""
+			if (roleId == 1)
+				staffListName = "водителей"
+			else if (roleId == 2)
+				staffListName = "менеджеров"
+
+			const actionSheet = await actionSheetController.create({
+			header: `Вы уверены, что хотите удалить пользователя из числа ${staffListName} ?`,
+			buttons: [
+				{
+				text: 'Да',
+				role: 'confirm',
+				},
+				{
+				text: 'Нет',
+				role: 'cancel',
+				},
+			],
+			});
+			actionSheet.present();
+			const { role } = await actionSheet.onWillDismiss();
+			if (role === 'confirm')
+				AdminAPI.workerDel(userId).then((response) => {
+					if (response.data && response.data.err)
+						throw response.data.err
+
+					store.dispatch('setup-staff')	
+				})
+		}
+
 		return {
 			data,
+			attemptToRemoveStaff,
 			currentWorkers,
 			currentManagers,
 			personCircleOutline,
@@ -302,6 +372,10 @@ export default {
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+}
+
+ion-item.delete-button::part(native) {
+	color: red;
 }
 
 ion-list.no-overflow {

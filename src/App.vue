@@ -36,7 +36,7 @@ export default {
 ion-backdrop {
     opacity: 0.7;
     background: #242424;
-    z-index: 11;
+    z-index: 10;
     display: flex;
     justify-content: center;
     align-items: center;
