@@ -97,9 +97,11 @@
 					<ion-card-content class="work-time-container" v-if="data.staffWorkTime && data.originStaffWorkTime" >
 						<div class="work-time">
 							<ion-input 
-							label="Начало" type="time" fill="outline" :value="data.staffWorkTime.startAt" @ionInput="updateStartWorkTime"></ion-input>
+							label="Начало" type="time" fill="solid" 
+							:value="data.staffWorkTime.startAt" @ionInput="updateStartWorkTime"></ion-input>
 							<ion-input 
-							label="Конец" type="time" fill="outline" :value="data.staffWorkTime.endAt" @ionInput="updateEndWorkTime"></ion-input>
+							label="Конец" type="time" fill="solid" 
+							:value="data.staffWorkTime.endAt" @ionInput="updateEndWorkTime"></ion-input>
 						</div>
 						<ion-button v-if="!data.staffWorkTime.isEqual(data.originStaffWorkTime)" @click="updateWorkTime">
 							Сохранить
@@ -374,6 +376,12 @@ export default {
 	gap: 16px;
 }
 
+ion-segment{
+	margin: 10px;
+	box-sizing: border-box;
+	width: calc(100% - 20px);
+}
+
 ion-item.delete-button::part(native) {
 	color: red;
 }
@@ -425,7 +433,7 @@ ion-label.empty {
 
 .work-time{
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	gap: 16px;
 }
 

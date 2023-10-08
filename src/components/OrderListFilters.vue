@@ -144,14 +144,22 @@ export default {
 .filters__content{
 	width: inherit;
 	height: 382px;
-	background: var(--ion-color-step-100);
 	border-radius: 4px;
 	padding: 20px;
 	
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+	background: white;
+	box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }
+
+@media (prefers-color-scheme: dark) {
+	.filters__content{
+		background: var(--ion-color-step-100);
+		box-shadow: none;
+	}
+}	
 
 @media (min-width:768px) {
 	.filters__content{
@@ -184,9 +192,9 @@ export default {
 }
 
 .filters-content__header{
-	display: grid;
-	grid-template-columns: auto 70px;
-	column-gap: 15px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
 }
 
 .filters-content-header__title{

@@ -207,11 +207,13 @@
 				</div>
 			</div>
 
-			<div class="total__price">
-				Итого: {{ totalPrice }} ₽
-			</div>
+
 
 			<div class="submit">
+				<div class="total__price">
+					Итого: {{ totalPrice }} ₽
+				</div>
+
 				<ion-button @click="submitHandler">Подтвердить</ion-button>
 			</div>
 		</div>
@@ -410,13 +412,27 @@ export default {
 	width: 100vw;
 
 	border-radius: 4px;
-	background: var( --ion-background-color);
 	
 	padding: 16px;
-
+	
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
+	background: white;
+}
+
+ion-icon{
+	color: black;
+}
+
+@media (prefers-color-scheme: dark) {
+	.bill {
+		background: var( --ion-background-color);
+	}
+
+	ion-icon{
+		color: white;
+	}
 }
 
 .bill-enter-active{ 
@@ -438,6 +454,10 @@ export default {
 
 .content{ 
 	height: 100%;
+}
+
+.total__price{
+
 }
 
 .bill__header {
@@ -492,8 +512,23 @@ export default {
 	white-space: nowrap;
 }
 
+.submit{
+	position: fixed;
+	bottom: 16px;
+	right: 16px;
+	left: 16px;
+
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.total__price{
+	padding: 0 2px;
+}
+
 .submit > ion-button{
-	width: calc(100% - 4px);
+	width: 100%;
 }
 
 .add__button > ion-button{

@@ -88,12 +88,8 @@ export default {
 @media (max-width: 768px){
     .toolbar-wrapper{
         width: 100vw;
-    }
-	.content {
-		width: calc(100% - 20px);
-		margin: 10px;
-		height: calc(100% - 20px);
 	}
+
     .tab-bar-wrapper{
         display: none;
     }

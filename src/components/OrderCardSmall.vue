@@ -163,6 +163,7 @@ export default {
 	background: var(--ion-card-background);
 	color: var(--ion-color-step-800);
 	font-size: 14px;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 
 /*var(--ion-card-background)*/
@@ -222,6 +223,7 @@ export default {
 	display: flex;
 	flex-direction: row;
 	justify-content: space-between;
+	align-items: center;
 	gap:7px;
 	max-width: 100%;
 	margin-bottom: 3px;
@@ -237,6 +239,7 @@ export default {
 .title__worker{
 	color: var(--ion-color-step-550);
 	white-space: nowrap;
+	font-size: 12px;
 }
 
 .order-card-small__details{

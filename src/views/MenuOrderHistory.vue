@@ -1,30 +1,10 @@
 <template>
 
 	<ion-page>
-		<transition name="filter">
-			<ion-header v-if="data.filtersIsVisible">
-				<ion-card>
-					<ion-toolbar >
-						<div class="toolbar">
-							<div class="searchbar">
-								<ion-searchbar
-								:debounce="200" 
-								placeholder="Поиск" mode="ios" @ionInput="onSearchHandler"></ion-searchbar>
-							</div>
-							<div class="calendar-button" @click="toggleDatepicker">
-								<div v-if="!data.datePickerIsOpen"><img src="/calendar-outline.svg" height="24"></div>
-								<div v-if="data.datePickerIsOpen"><img src="/close-blue-outline.svg" height="24"></div>
-							</div>
-							<div class="calendar-button" @click="toggleMoreFilters">
-								<div v-if="!data.moreFiltersIsOpen"><img src="/options-outline.svg" height="24"></div>
-								<div v-if="data.moreFiltersIsOpen"><img src="/close-blue-outline.svg" height="24"></div>
-							</div>
-						</div>
-					</ion-toolbar>
-				</ion-card>
-			</ion-header>
-		</transition>
+
 		<ion-content  :fullscreen="true">
+
+
 
 			<OrderDetails
 				:order="data.orderDetails"
@@ -47,23 +27,44 @@
 				</div>
 			</transition>
 			
-			<ion-list v-if="data.ordersDates.length > 0">
-				<ion-card v-for="date in data.ordersDates" :key="`order-date-${date.toLocaleDateString()}`">
-					<ion-card-header>
-						<ion-card-title>
-							{{ checkDate(date) == -1? getDateString(date) : `${checkDate(date)} ${getDateString(date)}` }}
-						</ion-card-title>
-					</ion-card-header>
-					<ion-list>
-						<OrderCardSmall 
-						v-for="order in getDateOrders(date)" :key="`order-${order.orderId}`"
-						:order="order" :openDetails="openOrderDetails"/>
-					</ion-list>
-				</ion-card>
+			<ion-list class="card-list">
+				<transition name="filter">
+					<ion-card v-if="data.filtersIsVisible" class="tools-container">
+						<ion-toolbar >
+							<div class="toolbar">
+								<div class="searchbar">
+									<ion-searchbar
+									:debounce="200" 
+									placeholder="Поиск" mode="ios" @ionInput="onSearchHandler"></ion-searchbar>
+								</div>
+								<div class="calendar-button" @click="toggleDatepicker">
+									<div v-if="!data.datePickerIsOpen"><img src="/calendar-outline.svg" height="24"></div>
+									<div v-if="data.datePickerIsOpen"><img src="/close-blue-outline.svg" height="24"></div>
+								</div>
+								<div class="calendar-button" @click="toggleMoreFilters">
+									<div v-if="!data.moreFiltersIsOpen"><img src="/options-outline.svg" height="24"></div>
+									<div v-if="data.moreFiltersIsOpen"><img src="/close-blue-outline.svg" height="24"></div>
+								</div>
+							</div>
+						</ion-toolbar>
+					</ion-card>
+				</transition>
+				<div class="orders-date" 
+				v-if="data.ordersDates.length > 0"
+				v-for="date in data.ordersDates" 
+				:key="`order-date-${date.toLocaleDateString()}`">
+					<ion-title>
+						{{ checkDate(date) == -1? getDateString(date) : `${checkDate(date)} ${getDateString(date)}` }}
+					</ion-title>
+					<OrderCardSmall 
+					v-for="order in getDateOrders(date)" :key="`order-${order.orderId}`"
+					:order="order" :openDetails="openOrderDetails"/>
+				</div>
+				<div v-else class="empty">
+					Заказы не найдены
+				</div>
 			</ion-list>
-			<div v-else class="empty">
-				Заказы не найдены
-			</div>
+			
 			<ion-infinite-scroll v-if="data.ordersDates.length > 0 && data.lastPageHasData" 
 			@ionInfinite="infinityScrollHandler">
 				<ion-infinite-scroll-content
@@ -80,7 +81,7 @@
 import TMS from '@/api/tms';
 import { checkDate, getDateString, isEqual, yyyymmdd } from '@/assets/date';
 import Order from '@/assets/order';
-import { IonPage, IonContent, IonInfiniteScroll, IonInfiniteScrollContent, IonItem, IonLabel, IonList, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonSearchbar, IonHeader, IonToolbar, IonDatetime } from '@ionic/vue';
+import { IonPage, IonContent, IonInfiniteScroll, IonInfiniteScrollContent, IonItem, IonLabel, IonList, IonCard, IonCardContent, IonCardHeader, IonCardSubtitle, IonCardTitle, IonSearchbar, IonHeader, IonToolbar, IonDatetime, IonTitle } from '@ionic/vue';
 import { ComputedRef, computed, onMounted, reactive, watch } from 'vue';
 import OrderCardSmall from '@/components/OrderCardSmall.vue';
 import OrderDetails from '@/components/OrderDetails.vue';
@@ -115,6 +116,7 @@ export default {
 		IonSearchbar,
 		IonContent,
 		IonHeader,
+		IonTitle,
 		IonToolbar,
 		IonItem,
 		IonCard,
@@ -158,6 +160,8 @@ export default {
 
 		let updateOrders = (saveOldOrders:boolean=true) => {
 			return data.storage.updateOrders({saveOldOrders:saveOldOrders}).then((newOrders:Array<Order>) => {
+				console.log('newOrders :>> ', newOrders);
+
 				let ordersDates:Array<Date> = getUniqueDates(newOrders
 				.map((order:Order) => order.startAt))
 					
@@ -267,6 +271,7 @@ export default {
 </script>
 
 <style scoped>
+
 ion-list{
 	background: none;
 }
@@ -276,8 +281,17 @@ ion-searchbar{
 }
 
 ion-header {
-	margin: 0 14px;
-	width: calc(100% - 28px);
+	width: 100%;
+	padding: 8px 4px;
+	box-shadow: none;
+}
+
+ion-content{
+	margin-top: 16px;
+}
+
+.header__container::after{
+	background-image: none;
 }
 
 ion-header > ion-card{
@@ -285,17 +299,26 @@ ion-header > ion-card{
 	position: relative;
 }
 
+ion-card {
+	margin: 0;
+}
+
 ion-list {
 	padding: 0 4px;
+	padding-bottom: 10px;
+
+}
+
+ion-list.card-list{
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	padding: 16px;
 }
 
 
-.filters-container{
-	top: 59px;
-	position: fixed;
-	z-index: 2;
-	right: 14px;
-
+.order-details__header {
+	padding: 0;
 }
 
 .toolbar{
@@ -332,10 +355,25 @@ ion-list {
 
 .datetime-container{
 	position: fixed;
-	top: 60px;
+	top: 70px;
+	left: 0;
 	height: 344px;
 	width: 100%;
 	z-index: 1;
+	box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+	border-radius: 8px;
+	overflow: hidden;	
+}
+
+.filters-container{
+	top: 70px;
+	position: fixed;
+	z-index: 2;
+	right: 4px;
+}
+
+.filters-container > * {
+	width: 100%;
 }
 
 @media (min-width: 768px) {
@@ -352,18 +390,34 @@ ion-list {
 @media (max-width: 768px) {
 
 	.datetime-container{
-		width: fit-content;
-		left: 14px;	
+		left: 4px;
+		width: calc(100% - 8px);
 	}
 	.datetime-container > ion-datetime{
 		max-width: 400px;
-		width: calc(100% - 24px);
+		width: 100%;
 	}
 
 	.filters-container{
 		max-width: 400px;
-		left: 14px;
+		width: calc(100% - 8px);
 	}
+}
+
+.orders-date{
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.orders-date > ion-title{
+	padding: 0;
+}
+
+.tools-container{
+	position: sticky;
+	top: 0;
+	z-index: 1;
 }
 
 .datetime-enter-active{

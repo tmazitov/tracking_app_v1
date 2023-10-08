@@ -466,6 +466,8 @@ export default {
 <style lang="css" scoped>
 @import url(../../../theme/variables.css);
 
+
+
 .form__header {
   font-size: 20px;
   display: flex;
@@ -489,7 +491,13 @@ export default {
   top: 0;
   right: 0;
   left: 0;
-  background: var(--ion-background-color);
+  background: white;
+}
+
+@media (prefers-color-scheme: dark) {
+  .order_create_form{
+    background: var(--ion-background-color);
+  }
 }
 .form {
   height: 100%;

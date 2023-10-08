@@ -1,4 +1,4 @@
-import { Ref, reactive, ref, watch } from "vue";
+import { Ref, reactive, ref, toRaw, watch } from "vue";
 import Order from "./order";
 import { OrderListFiltersInstance, OrderListFiltersOptions } from "./orderListFilters";
 import OrderUpdateHub from "./orderUpdateHub";
@@ -18,13 +18,14 @@ interface IOrdersUpdateOptions {
 
 class OrderStorage {
 
-	orders: Ref<Array<Order>> = ref([])
+	orders: Ref<Array<Order>>
 	name:string = "default"
 
 	filters:OrderListFiltersInstance
 	private updateHub:OrderUpdateHub
 	
 	constructor(options:IOrderStorageOptions|undefined=undefined) {
+		this.orders = ref([])
 		this.filters = new OrderListFiltersInstance(options?.filtersOptions)
 		this.updateHub = new OrderUpdateHub(this)
 		this.updateFilter()
@@ -41,9 +42,12 @@ class OrderStorage {
 			ordersInfo.forEach((orderInfo) => {
 				orderList.push(new Order(orderInfo))
 			})
+			if (options?.saveOldOrders && orderList.length == 0)
+				return []
 
-
-			if (options && options.saveOldOrders && this.orders.value){
+			// console.log('options && options.saveOldOrders && this.orders.value :>> ', );
+			if (options && options.saveOldOrders && 
+				this.orders.value && this.orders.value.length){
 				this.orders.value.push(...orderList)
 			}
 			else {

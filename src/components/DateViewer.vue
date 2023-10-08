@@ -121,9 +121,10 @@ export default {
 
 .date__datetime > ion-datetime {
 	position: absolute;
-	top: 40px;
+	top: 78px;
 	left: 10px;
 	z-index: 3;
+	box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
 }
 
 @media (min-width: 768px) {
@@ -132,7 +133,6 @@ export default {
 	}
 
 	.date__datetime > ion-datetime{
-		top: 80px;
 		left: calc(50% - 175px);
 	}
 }
@@ -142,7 +142,6 @@ export default {
 		padding-top: 24px;
 	}
 	.date__datetime > ion-datetime{
-		top: 80px;
 		left: 10px;
 		max-width: 400px;
 		width: calc(100% - 20px);
@@ -172,4 +171,6 @@ ion-icon{
 		opacity: 1;
 	}
 }
+
+
 </style>

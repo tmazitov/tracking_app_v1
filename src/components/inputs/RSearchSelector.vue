@@ -111,7 +111,15 @@ export default {
 		overflow-y: auto;
 		border-top: none;
 		border-radius: 0 0 4px 4px;
-		background: var(--ion-color-step-150);
+		background: white;
+		box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+
+	}
+	
+	@media (prefers-color-scheme: dark){
+		.search-selector__items{
+			background: var(--ion-color-step-150);
+		}
 	}
 
 	.search-selector__item{

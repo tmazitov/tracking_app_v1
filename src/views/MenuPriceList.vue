@@ -1,5 +1,5 @@
 <template>
-	<ion-page>
+	<ion-page class="menu-price-list">
 		<ion-content>
 			<div class="menu-default-prices" v-if="data.priceList">
 				<ion-card>

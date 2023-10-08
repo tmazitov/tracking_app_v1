@@ -3,93 +3,98 @@
 		<div class="order-details" v-if="isOpen" v-bind:class="{
 			'include-button': Boolean(submit),
 		}">
-			<div class="order-details__chips">
-				<ion-chip :color="status?.colorName">{{status?.message}}</ion-chip>
-				<ion-chip v-if="order?.isRegularCustomer" color="success">Постоянный клиент</ion-chip>
-			</div>
-			<div class="order-details__title-container">
-				<div class="title-container__arrow" @click="() => close()">
-					<ion-icon :icon="arrowBackOutline"></ion-icon>
+			<div class="order-details__header">
+				<div class="order-details__chips">
+					<ion-chip :color="status?.colorName">{{status?.message}}</ion-chip>
+					<ion-chip v-if="order?.isRegularCustomer" color="success">Постоянный клиент</ion-chip>
 				</div>
-				<div class="title-container__title" v-if="order">
-					{{ order.title }}
-				</div>
-			</div>
-
-			<div class="order-details__peoples">
-				<div class="label">Дата и время:</div> 
-				<div class="value">
-					{{getDateString(order?.startAt)}}
-					{{getTimeString(order?.startAt)}} 
-					-
-					{{getTimeString(order?.endAt)}}
-				</div>
-			</div>
-
-			<div class="order-details__peoples" v-if="order?.owner && user.id != order?.owner.id && order?.owner.id != order?.manager?.id">
-				<div class="label">Заказчик:</div> 
-				<div class="value">{{order?.owner.shortName}}</div>
-			</div>
-			<div class="order-details__peoples" v-if="order?.worker && user.id != order?.worker.id">
-				<div class="label">Водитель:</div>
-				<div class="value">{{order?.worker.shortName}}</div>
-			</div>
-			<div class="order-details__peoples" v-if="order?.manager && user.id != order?.manager.id">
-				<div class="label">Оператор:</div>
-				<div class="value">{{order?.manager.shortName}}</div>
-			</div>
-
-			<div class="order-details__properties">
-				<div class="order-details__map" v-if="order">
-					<OrderPointsMap
-						:points="order.points"
-						readonly
-					/>
-				</div>
-			</div>
-
-			<div class="order-details__properties description"
-			v-if="order?.bill.helperCount || 
-					order?.bill.isFragileCargo ||
-					order?.comment
-					">
-				<div class="title">Описание</div>
-				<div v-if="order?.bill.helperCount">
-					Грузчики: {{order?.bill.helperCount}} чел. x {{order.bill.helperHours}} ч.
-				</div>
-				<div v-if="order?.bill.isFragileCargo">
-					Необходима упаковка защитной плёнкой
-				</div>
-				<div class="order-details__description" v-if="order?.comment">
-					{{ order?.comment }}
-				</div>
-			</div>
-
-			<div class="order-details__action">
-				<div class="order-details__time-fact" v-if="order?.statusId == 1 || order?.statusId == 5">
-					<div class="time-fact__timer">
-						<div class="time-fact__title" v-if="order?.statusId == 1">
-							Заказ выполнен за 
-						</div>
-						<div class="time-fact__icon" v-if="order?.statusId == 5">
-							<ion-icon :icon="timeOutline"></ion-icon>
-						</div>
-						<div class="time-fact__time">
-							{{ orderTimeFact }}
-						</div>
+				<div class="order-details__title-container">
+					<div class="title-container__arrow" @click="() => close()">
+						<ion-icon :icon="arrowBackOutline"></ion-icon>
+					</div>
+					<div class="title-container__title" v-if="order">
+						{{ order.title }}
 					</div>
 				</div>
-				<div class="order-details__action-button" v-if="submit">
-					<ion-button id="submit" class="submit" @click="submit.action">
-						{{ submit.title }}
-					</ion-button>
-					<SelectWorkerModal
-						v-if="submit.id==3 && order"
-						:isOpen="data.selectWorkerIsOpen"
-						:selector="chooseWorker"
-						:closer="closeChooseWorker"
-						:order="order"
-					/>
+			</div>
+
+
+			<div class="order-details__content">
+				<div class="order-details__peoples">
+					<div class="label">Дата и время:</div> 
+					<div class="value">
+						{{getDateString(order?.startAt)}}
+						{{getTimeString(order?.startAt)}} 
+						-
+						{{getTimeString(order?.endAt)}}
+					</div>
+				</div>
+
+				<div class="order-details__peoples" v-if="order?.owner && user.id != order?.owner.id && order?.owner.id != order?.manager?.id">
+					<div class="label">Заказчик:</div> 
+					<div class="value">{{order?.owner.shortName}}</div>
+				</div>
+				<div class="order-details__peoples" v-if="order?.worker && user.id != order?.worker.id">
+					<div class="label">Водитель:</div>
+					<div class="value">{{order?.worker.shortName}}</div>
+				</div>
+				<div class="order-details__peoples" v-if="order?.manager && user.id != order?.manager.id">
+					<div class="label">Оператор:</div>
+					<div class="value">{{order?.manager.shortName}}</div>
+				</div>
+
+				<div class="order-details__properties">
+					<div class="order-details__map" v-if="order">
+						<OrderPointsMap
+							:points="order.points"
+							readonly
+						/>
+					</div>
+				</div>
+
+				<div class="order-details__properties description"
+				v-if="order?.bill.helperCount || 
+						order?.bill.isFragileCargo ||
+						order?.comment
+						">
+					<div class="title">Описание</div>
+					<div v-if="order?.bill.helperCount">
+						Грузчики: {{order?.bill.helperCount}} чел. x {{order.bill.helperHours}} ч.
+					</div>
+					<div v-if="order?.bill.isFragileCargo">
+						Необходима упаковка защитной плёнкой
+					</div>
+					<div class="order-details__description" v-if="order?.comment">
+						{{ order?.comment }}
+					</div>
+				</div>
+
+				<div class="order-details__action">
+					<div class="order-details__time-fact" v-if="order?.statusId == 1 || order?.statusId == 5">
+						<div class="time-fact__timer">
+							<div class="time-fact__title" v-if="order?.statusId == 1">
+								Заказ выполнен за 
+							</div>
+							<div class="time-fact__icon" v-if="order?.statusId == 5">
+								<ion-icon :icon="timeOutline"></ion-icon>
+							</div>
+							<div class="time-fact__time">
+								{{ orderTimeFact }}
+							</div>
+						</div>
+					</div>
+					<div class="order-details__action-button" v-if="submit && isOpen">
+						<ion-button id="submit" class="submit" @click="submit.action">
+							{{ submit.title }}
+						</ion-button>
+						<SelectWorkerModal
+							v-if="submit.id==3 && order"
+							:isOpen="data.selectWorkerIsOpen"
+							:selector="chooseWorker"
+							:closer="closeChooseWorker"
+							:order="order"
+						/>
+					</div>
 				</div>
 			</div>
 		</div>
@@ -241,23 +246,46 @@ export default {
 	width: 100%;
 	height: 100%;
 }
-
 .order-details{
-	background: var(--ion-background-color);
-	padding: 16px;
-	
-	color: white;
-
 	position: fixed;
 	top: 0;
 	z-index: 14;
 
 	width: 100%;
 
+	background: white;
+	color: black;
+	gap: 16px;
+	overflow-y: auto;
+}
+
+.order-details__header{
+	position: sticky;
+	top: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
+	gap: 10px;
+	background: white;
+	z-index: 1001;
+	padding: 10px 16px;
 }
+
+.order-details__content{
+	display: flex;
+	flex-direction: column;
+	padding: 16px;
+	gap: 16px;
+	margin-bottom: 52px;
+}
+
+.order-details__title-container{
+	display: flex;
+	flex-direction: row;
+	gap: 16px;
+	width: 100%;
+}
+
+
 
 .order-details.include-button{
 	padding-bottom: 60px;
@@ -285,11 +313,7 @@ export default {
 	}
 }
 
-.order-details__title-container{
-	display: flex;
-	flex-direction: row;
-	gap: 16px;
-}
+
 
 .title-container__title{
 	font-size: 22px;
@@ -314,13 +338,13 @@ ion-icon{
 }
 
 .order-details__peoples{
-	display: grid;
-	grid-template-columns: 105px calc(100% - 105px - 16px);
-	grid-column-gap: 16px;
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
 }
 
 .order-details__properties{
-	overflow: auto;
+	/* overflow: auto; */
 	display: flex;
 	flex-direction: column;
 	gap: 16px;
@@ -337,10 +361,11 @@ ion-icon{
 }
 
 .order-details__action{
-	position: absolute;
+	position: fixed;
 	bottom: 10px;
 	left: 10px;
 	right: 10px;
+	z-index: 1;
 }
 
 .order-details__time-fact{
@@ -349,6 +374,7 @@ ion-icon{
 	margin-bottom: 10px;
 	border: 1px solid var(--ion-color-primary);
 	border-radius: 4px;
+	overflow: hidden;
 }
 
 .time-fact__timer{
@@ -357,6 +383,23 @@ ion-icon{
 	justify-content: center;
 	align-items: center;
 	height: 36px;
+	background: white;
+	overflow: hidden;
+}
+
+@media (prefers-color-scheme: dark) {
+	.order-details{
+		background: var(--ion-background-color);
+		color: white;
+	}
+
+	.order-details__header{
+		background: var(--ion-background-color);
+	}
+
+	.time-fact__timer{
+		background: var(--ion-background-color);
+	}
 }
 
 ion-button.submit{
