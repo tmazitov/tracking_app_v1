@@ -8,14 +8,10 @@
 			<div v-if="map.totalTime">{{ toTimeString(map.totalTime.value) }}</div>
 		</div>
 		<div class="order-map__search-field" v-if="!readonly">
-			<SearchSelector label="Введите адресс" 
-				v-model:searchString="data.searchField" 
-				:items="data.searchResults" 
-				:selector="data.pointToUpdate? updatePoint : createPoint"
-				:searchFunction=" searchLocation" />
-			<div class="order-map__revert-point-changes" v-if="data.pointToUpdate && pointTitleIsChanged">
-				<div @click="disableUpdatePointMode">Отменить изменения</div>
-			</div>
+			<RAddressInput 
+				:addPointFunc="data.pointToUpdate? updatePoint : createPoint"
+				:closeFunc="data.pointToUpdate? disableUpdatePointMode : undefined"
+				:pointToUpdate="data.pointToUpdate"/>
 		</div>
 
 		<div class="order-map__points">
@@ -73,10 +69,12 @@ import "leaflet/dist/leaflet.css";
 import * as GeoSearch from 'leaflet-geosearch';
 import { LatLngTuple } from 'leaflet'
 import PointsManager from '@/assets/map/pointsManager'
+import RAddressInput from '../inputs/RAddressInput.vue'
 
 export default {
 	name: 'OrderPointsMap',
 	components: {
+		RAddressInput,
 		IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, IonIcon, Transition, SearchSelector, IonPopover, IonContent, IonList,
 	},
 	emits:[
@@ -106,15 +104,8 @@ export default {
 		const data = reactive<{
 			pointToUpdate: Point|undefined,
 
-			searchField: string,
-			searchLastDate: Date | null,
-			searchResults: Point[],
 		}>({
 			pointToUpdate: undefined,
-
-			searchField: "",
-			searchLastDate: null,
-			searchResults: [],
 		})
 
 		onMounted(() => {
@@ -125,68 +116,33 @@ export default {
 			}, 100)
 		})
 
-		const provider = new GeoSearch.OpenStreetMapProvider();
-		const searchLocationHandler = async (ev: CustomEvent) => {
-			data.searchField = ev.detail.value
-			if (ev.detail["value"] == "") {
-				data.searchResults = []
-				return
-			}
-
-			data.searchLastDate = new Date()
-			setTimeout(async () => {
-				if (!data.searchLastDate) return
-				// Delay before sending request 
-				if ((new Date()).getTime() - data.searchLastDate.getTime() < 500) return
-
-				const results = await provider.search({ query: data.searchField });
-				data.searchResults = []
-				results.forEach(point => {
-					let x: number = point.x
-					let y: number = point.y
-					let label: string = point.label
-					data.searchResults.push(new Point({ x, y, label }))
-				})
-			}, 1000)
-		}
 
 		const createPointHandler = (point: Point) => {
 			if (point.title == "") return
 
-			point.searchQuery = data.searchField
 			map.addPoint(point)
-			data.searchField = ""
 		}
 
-		const pointTitleIsChanged = computed(() => {
-			if (!data.pointToUpdate) return false
-
-			if (data.pointToUpdate.searchQuery){
-				return data.pointToUpdate.searchQuery !== data.searchField
-			}
-
-			return data.pointToUpdate.title !== data.searchField
-		})
+		const disableUpdatePointMode = () => {
+			data.pointToUpdate = undefined
+		}
 
 		const updatePointHandler = (payload: Point) => {
 			let point:Point|undefined = data.pointToUpdate
 			if (!point) return
 
 			map.updatePoint(point, payload)
-			point.searchQuery = data.searchField
+			// point.searchQuery = .searchField
 			disableUpdatePointMode()
 		}
 
 		const enableUpdatePointMode = (point: Point) => {
 			data.pointToUpdate = point
-			data.searchField = point.searchQuery ?? point.title	
+			// data.searchField = point.searchQuery ?? point.title	
 			pointsManager.closePopover(point)
 		}
 
-		const disableUpdatePointMode = () => {
-			data.pointToUpdate = undefined
-			data.searchField = ""
-		}
+
 
 		watch(() => map.points.value , (newValue) => {
 			if (props.readonly)
@@ -215,13 +171,12 @@ export default {
 			toKM, toTimeString,
 			createPoint: createPointHandler,
 			pointsManager,
-			searchLocation: searchLocationHandler,
+			// searchLocation: searchLocationHandler,
 			ellipsisHorizontal,
 			map,
 			data,
 			open,
 			updatePoint: updatePointHandler,
-			pointTitleIsChanged,
 			enableUpdatePointMode,
 			disableUpdatePointMode,
 			readonly: props.readonly,
@@ -271,10 +226,6 @@ div.leaflet-top.leaflet-right {
 #map {
 	height: 100%;
 	width: 100%;
-}
-
-.order-map__search-field {
-	position: relative;
 }
 
 .order-map__points {
