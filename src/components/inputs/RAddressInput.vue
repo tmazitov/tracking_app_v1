@@ -49,7 +49,7 @@ export default {
 		const pointToUpdate = computed(() => props.pointToUpdate)
 		const store = useStore()
 		const openModal = () => {
-			store.dispatch('toggle-tabs')
+			store.dispatch('toggle-tabs', false)
 			setTimeout(() => {
 				data.modalIsOpen = true
 			}, 350)

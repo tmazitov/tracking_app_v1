@@ -136,7 +136,7 @@ export default {
 			if (closeFunc.value)
 				closeFunc.value()
 			setTimeout(() => {
-				store.dispatch('toggle-tabs')
+				store.dispatch('toggle-tabs', true)
 				ctx.emit("update:isOpen", false)
 				data.localeIsOpen = true
 				data.searchResults = []

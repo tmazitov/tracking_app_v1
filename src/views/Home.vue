@@ -149,13 +149,13 @@ export default {
 		const openDetails = (order:Order) => {
 			data.orderDetails = order
 			data.detailsIsOpen = true
-			store.dispatch('toggle-tabs')
+			store.dispatch('toggle-tabs', false)
 		}
 
 		const closeDetails = () => {
 			data.orderDetails = undefined
 			data.detailsIsOpen = false
-			store.dispatch('toggle-tabs')
+			store.dispatch('toggle-tabs', true)
 		}
 
 		const openCreateForm = () => data.createFormIsOpen = true

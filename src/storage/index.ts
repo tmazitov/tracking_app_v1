@@ -37,8 +37,8 @@ const store = new Vuex.Store({
 			state.workers = staff.filter((user:User) => user.roleId == 1)
 			state.managers = staff.filter((user:User) => user.roleId == 2)
 		},
-		'toggle-tabs': (state) => {
-			state.isShowTabs = !state.isShowTabs
+		'toggle-tabs': (state, value) => {
+			state.isShowTabs = value
 		},
 		'update-offer': (state, value) => {
 			state.offerId = value
@@ -117,8 +117,8 @@ const store = new Vuex.Store({
 				}
 			})
 		},
-		'toggle-tabs': (store) => {
-			store.commit('toggle-tabs')
+		'toggle-tabs': (store, value) => {
+			store.commit('toggle-tabs', value)
 		},
 		'add-staff' : (store, staff:User) => {
 			if (staff.roleId == 1) {
