@@ -1,14 +1,14 @@
 <template>
 	<div class="order-map">
 		<div class="order-map__map-container">
-			<div id="map"></div>
+			<div :id="`map-${data.uid}`" class="lmap"></div>
 		</div>
 		<div class="order-map__way-values">
 			<div v-if="map.totalDistance">{{ toKM(map.totalDistance.value) }}</div>
 			<div v-if="map.totalTime">{{ toTimeString(map.totalTime.value) }}</div>
 		</div>
 		<div class="order-map__search-field" v-if="!readonly">
-			<RAddressInput 
+			<RAddressInput
 				:addPointFunc="data.pointToUpdate? updatePoint : createPoint"
 				:closeFunc="data.pointToUpdate? disableUpdatePointMode : undefined"
 				:pointToUpdate="data.pointToUpdate"/>
@@ -58,7 +58,7 @@
 <script lang="ts">
 import OrderPointsMap from '@/assets/map'
 import { IonReorderGroup, IonItem, IonLabel, IonReorder, IonInput, IonIcon, IonContent, IonPopover, IonList } from '@ionic/vue'
-import { Transition, computed } from 'vue'
+import { Transition, computed, getCurrentInstance, onBeforeMount } from 'vue';
 import { toKM, toTimeString, convertSeconds } from '@/assets/standardDimensions'
 import SearchSelector from '../inputs/RSearchSelector.vue'
 import { reactive, onMounted, watch } from 'vue'
@@ -103,16 +103,23 @@ export default {
 		let pointsManager = new PointsManager(map)
 		const data = reactive<{
 			pointToUpdate: Point|undefined,
-
+			uid: number|undefined|null,
 		}>({
 			pointToUpdate: undefined,
+			uid: null,
+		})
+
+		onBeforeMount(() => {
+			const internalInstance = getCurrentInstance();
+			data.uid = internalInstance?.uid;
+			console.log('data.uid :>> ', data.uid);
 		})
 
 		onMounted(() => {
 			setTimeout(() => {
 				let initZoom: number = 11
 				let initCenter: LatLngTuple = [55.7887, 49.1221]
-				map.setup(initCenter, initZoom, props.points)
+				map.setup(data.uid ?? 0, initCenter, initZoom, props.points)
 			}, 100)
 		})
 
@@ -223,7 +230,7 @@ div.leaflet-top.leaflet-right {
 	}
 }
 
-#map {
+.lmap {
 	height: 100%;
 	width: 100%;
 }

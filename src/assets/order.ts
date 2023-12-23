@@ -1,6 +1,8 @@
 import TMS from "@/api/tms"
 import Point from "./point"
 import User from "./user"
+import { yyyymmdd } from "./date"
+import { pricetag } from "ionicons/icons"
 
 interface StatusMessage {
 	icon:string
@@ -57,6 +59,39 @@ class Order {
 
 	bill:OrderPublicBill
 	constructor(details:any) {
+		this.details = details
+		this.orderId = details["orderId"]
+		this.title = details["title"]
+		this.orderType = details["orderType"]
+
+		this.startAt = new Date(details["startAt"])
+		if (details["startAtFact"]){
+			this.startAtFact = new Date(details["startAtFact"])
+		}
+		this.endAt = new Date(details["endAt"])
+		if (details["endAtFact"]){
+			this.endAtFact = new Date(details["endAtFact"])
+		}
+		this.statusId = details["statusId"]
+		this.owner = new User(details["owner"])
+		if (details["worker"]){
+			this.worker = new User(details["worker"])
+		}
+		if (details["manager"]){
+			this.manager = new User(details["manager"])
+		}
+		this.comment = details["comment"]
+		this.isRegularCustomer = details["isRegularCustomer"]
+		
+		this.points = []
+		let pointsData:Array<any> = details["points"]
+		pointsData.forEach((pointInfo) => {
+			this.points.push(new Point(pointInfo))
+		}) 
+		this.bill = new OrderPublicBill(details["price"])
+	}
+
+	update(details:any){
 		this.details = details
 		this.orderId = details["orderId"]
 		this.title = details["title"]
@@ -207,7 +242,43 @@ class Order {
 	isNotAccepted(){
 		return this.statusId == OrderStatusCreated
 	}
+	toCreateFormData(){
+		let start = this.startAt
+		let end = this.endAt
+		return {
+			title : this.title,
+			date : yyyymmdd(start),
+			start : `${start.getHours()}:${start.getMinutes()}`,
+			duration : Math.floor((end.getTime() - start.getTime())/(60*60*1000)),
+			comment : this.comment ?? "",
+			points : this.points,
+			currentOrderType : convertToBitmapArray(this.orderType),
+			isRegularCustomer: this.isRegularCustomer,
+			price : {
+				total: 0,
+				carPrice: 0,
+				carHours: 2,
+				carTypeId: 0,
+				helperPrice:0,
+				helperCount:0,
+				helperHours:0,
+				kmCount: 0,
+				kmPrice: 0,
+				isFragileCargo: false,
+			},
+		}
+	}
 }
+
+function convertToBitmapArray(number: number): number[] {
+	const binaryString = number.toString(2);
+	const bitmapArray = binaryString.split('').map(Number);
+	const poweredArray = bitmapArray.reverse().map((value, index) => {
+		return value * Math.pow(2, index);
+	})
+	return poweredArray.filter((value) => (value != 0));
+}
+
 
 interface OrderDetailAction {
 	id:number

@@ -2,6 +2,7 @@
 	<ion-page>
 		<OrderDetails
 			:order="data.orderDetails"
+			:orderOpenEdit="openCreateForm"
 			:isOpen="data.detailsIsOpen"
 			:closer="closeDetails"
 		/>

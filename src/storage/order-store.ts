@@ -3,6 +3,7 @@ import OrderUpdateHub from "@/assets/orderUpdateHub"
 import { key } from "ionicons/icons"
 
 interface IOrderState {
+	orderToUpdate:Order|null,
 	ordersWebSocket: OrderUpdateHub|null
 	orders:Array<Order>
 	ordersMap:Array<Order>
@@ -13,6 +14,7 @@ function getDefaultState():IOrderState{
 		orders: [],
 		ordersMap: [],
 		ordersWebSocket: null,
+		orderToUpdate: null,
 	}
 }
 

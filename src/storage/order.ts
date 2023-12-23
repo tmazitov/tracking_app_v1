@@ -22,6 +22,9 @@ const module:Module<IOrderState,any> = {
 		'add-order': (state:IOrderState, order:Order) => {
 			state.orders.push(order)
 		},
+		'setup-order-to-update': (state:IOrderState, order:Order|null) => {
+			state.orderToUpdate = order
+		}
 	},
 	getters:{
 		orderList(state:IOrderState){
@@ -42,6 +45,14 @@ const module:Module<IOrderState,any> = {
 					order.startAt.getFullYear() == date.getFullYear() 
 			})
 		},
+		orderById: (state:IOrderState) => (id:number) => {
+			return state.orders.find((order:Order) => {
+				return order.orderId == id
+			})
+		},
+		orderToUpdate(state:IOrderState){
+			return state.orderToUpdate
+		}
 	},
 	
 	actions:{
@@ -72,6 +83,9 @@ const module:Module<IOrderState,any> = {
 				})
 				commit('setup-order-map', orderList)
 			})
+		},
+		'setup-order-to-update': ({commit}, order:Order|null=null) => {
+			commit('setup-order-to-update', order)
 		},
 		'add-order': ({commit}, order:Order) => commit('add-order', order),
 	},

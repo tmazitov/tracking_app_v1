@@ -9,11 +9,22 @@
 					<ion-chip v-if="order?.isRegularCustomer" color="success">Постоянный клиент</ion-chip>
 				</div>
 				<div class="order-details__title-container">
-					<div class="title-container__arrow" @click="() => close()">
-						<ion-icon :icon="arrowBackOutline"></ion-icon>
+					<div class="title_main-part">
+						<div class="title-container__arrow" @click="() => close()">
+							<ion-icon :icon="arrowBackOutline"></ion-icon>
+						</div>
+						<div class="title-container__title" v-if="order">
+							{{ order.title }}
+						</div>
 					</div>
-					<div class="title-container__title" v-if="order">
-						{{ order.title }}
+					<div class="title_tools-part" 
+					v-if="order && order.owner.id == user.id">
+						<div class="title-container__arrow" @click="openEditForm">
+							<ion-icon :icon="createOutline" color="primary"></ion-icon>
+						</div>
+						<div class="title-container__arrow">
+							<ion-icon :icon="trashOutline" color="danger"></ion-icon>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -23,10 +34,7 @@
 				<div class="order-details__peoples">
 					<div class="label">Дата и время:</div> 
 					<div class="value">
-						{{getDateString(order?.startAt)}}
-						{{getTimeString(order?.startAt)}} 
-						-
-						{{getTimeString(order?.endAt)}}
+						{{ getOrderDateString() }}
 					</div>
 				</div>
 
@@ -102,11 +110,11 @@
 </template>
 
 <script lang="ts">
-import { getDateString, getTimeString } from '@/assets/date';
+import { getDateString, getTimeString, isEqual } from '@/assets/date';
 import Order from '@/assets/order';
 import { limitedString } from '@/assets/string';
 import { IonButton, IonChip, IonIcon } from '@ionic/vue';
-import { arrowBackOutline, timeOutline } from 'ionicons/icons';
+import { arrowBackOutline, timeOutline, createOutline, trashOutline } from 'ionicons/icons';
 import { ComputedRef, Transition, computed, onMounted, reactive, ref } from 'vue';
 import { useStore } from 'vuex';
 import OrderPointsMap from '@/components/map/OrderPointsMap.vue';
@@ -144,7 +152,11 @@ export default {
 		closer: {
 			type: Function,
 			required: true,
-		}
+		},
+		orderOpenEdit: {
+			type: Function,
+			required: false,
+		},
 	},
 	setup(props){
 		const store = useStore()
@@ -217,6 +229,30 @@ export default {
 			return handler
 		})
 
+		const getOrderDateString = () => {
+			let order = orderData.value
+			if (!order)
+				return ""
+			
+			let startAtTime = getTimeString(order.startAt)
+			let startAtDate = getDateString(order.startAt)
+			let endAtTime = getTimeString(order.endAt)
+			if (isEqual(order.startAt, order.endAt))
+				return `${startAtDate} ${startAtTime} - ${endAtTime}`
+			else {
+				let endAtDate = getDateString(order.endAt)
+				return `${startAtDate} ${startAtTime} - ${endAtDate} ${endAtTime}`
+			}
+		}
+
+		const openEditForm = () => {
+			if (!props.orderOpenEdit || !props.order) 
+				return
+			store.dispatch('setup-order-to-update', props.order)
+			props.orderOpenEdit()
+		}
+
+
 		return {
 			data,
 			status,
@@ -231,10 +267,13 @@ export default {
 			limitedString,
 			timeOutline,
 			submit,
-
+			getOrderDateString,
+			openEditForm,
 			closeChooseWorker,
 			chooseWorker,
 			openChooseWorker,
+			createOutline,
+			trashOutline,
 		}
 	}
 }
@@ -242,6 +281,10 @@ export default {
 
 <style scoped>
 @import url(../theme/variables.css);
+
+.title-container__arrow{
+	height: 20px;
+}
 .order-details-container{
 	width: 100%;
 	height: 100%;
@@ -283,8 +326,24 @@ export default {
 	flex-direction: row;
 	gap: 16px;
 	width: 100%;
+	justify-content: space-between;
 }
 
+.order-details__title-container > * {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+
+	gap: 16px;
+}
+
+.title_main-part{
+	width: calc(100% - 72px);
+}
+
+.title_tools-part{
+	gap: 20px;
+}
 
 
 .order-details.include-button{

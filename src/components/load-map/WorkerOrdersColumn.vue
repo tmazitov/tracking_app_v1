@@ -8,7 +8,10 @@
 	itemKey="orderId"
 	group="orders"> 
 		<template #item="{element}" >
-			<OrderCard :order="element" @click="cardStaticClick(element)" :smallSize="false" :workerWorkTime="workerWorkTime"/>
+			<OrderCard :order="element" 
+				@click="cardStaticClick(element)" 
+				:smallSize="false" 
+				:workerWorkTime="workerWorkTime"/>
 		</template>
 	</draggable>
 </template>

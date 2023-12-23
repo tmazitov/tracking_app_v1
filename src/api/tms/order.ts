@@ -28,6 +28,10 @@ class Order {
 	static priceList() {
 		return tmsClient.get(`/order/price-list`)
 	}
+
+	static edit(orderId:number, orderData:CreatableOrder){
+		return tmsClient.put(`/order/${orderId}`, orderData)
+	}
 }
 
 export default Order

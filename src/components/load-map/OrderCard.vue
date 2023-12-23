@@ -36,11 +36,13 @@ export default {
 		},
 		workerWorkTime:{
 			type: StaffWorkTime,
-			default: false,
 		},
 		smallSize: {
 			type: Boolean,
 			default:false,
+		},
+		columnDate: {
+			type: Date,
 		},
 		valid: {
 			type: Boolean,
@@ -51,6 +53,8 @@ export default {
 		const isValid = computed(() => props.valid)
 		const order = computed(() => props.order)
 		const smallSize = computed(() => props.smallSize)
+		const columnDate = computed(() => props.columnDate)
+
 		const cardPosition = () => {
 			if (smallSize.value == true) {
 				return {
@@ -68,7 +72,7 @@ export default {
 			order, 
 			isValid,
 			orderCard,
-			
+			columnDate,
 			orderPosition,
 			getTimeString,
 			smallSize,

@@ -24,9 +24,10 @@ class OrderPointsMap {
 		this.totalTime = ref(0)
 		this.totalDistance = ref(0)
 	}
-	setup(center:L.LatLngExpression, zoom:number, points:Array<Point>=[]){
+	setup(uid:number, center:L.LatLngExpression, zoom:number, points:Array<Point>=[]){
 		this.points.value = points
-		this.instance = L.map("map").setView(center, zoom);
+		console.log('uid :>> ', uid);
+		this.instance = L.map(`map-${uid}`).setView(center, zoom);
 		L.tileLayer("http://{s}.tile.osm.org/{z}/{x}/{y}.png", {
 			attribution:
 				'&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
