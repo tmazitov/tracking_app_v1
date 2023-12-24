@@ -120,6 +120,10 @@ class OrderStorage {
 			resolve(this.filters.toPageUrlQuery())
 		})
 	}
+
+	getOrderById(id:number):Order|undefined{
+		return this.orders.value.find((order) => order.orderId == id)
+	}
 }
 
 export default OrderStorage
