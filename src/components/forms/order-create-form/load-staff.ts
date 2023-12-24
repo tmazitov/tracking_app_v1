@@ -14,7 +14,6 @@ function loadPriceList(data: { priceList: OrderPriceList|null }, fields: IOrderC
 				throw response.data.err
 
 			data.priceList = new OrderPriceList(response.data);
-			fields.duration.setValue(data.priceList.bigCarTime);
 		});
 }
 
@@ -28,7 +27,6 @@ function loadWorkTime(data: { staffWorkTime: StaffWorkTime|null }, fields: IOrde
 				throw response.data.err;
 
 			data.staffWorkTime = new StaffWorkTime(response.data);
-			fields.start.setValue(data.staffWorkTime.startAt);
 		});
 }
 

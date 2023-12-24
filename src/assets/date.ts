@@ -61,13 +61,17 @@ const getDateString: Function = (date: Date) => {
 
 const getTimeString: Function = (date: Date) => {
 	let minuteString: string = ""
+	let hourString: string = ""
 	let minute: number = date.getMinutes()
-	let hours: number = date.getHours()
+	let hour: number = date.getHours()
 
 	if (minute < 10) minuteString = "0" + minute
 	else minuteString = "" + minute
 
-	return `${hours}:${minuteString}`
+	if (hour < 10) hourString = "0" + hour
+	else hourString = "" + hour
+
+	return `${hourString}:${minuteString}`
 }
 
 function isToday(date:Date) {

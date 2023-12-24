@@ -1,7 +1,7 @@
 import TMS from "@/api/tms"
 import Point from "./point"
 import User from "./user"
-import { yyyymmdd } from "./date"
+import { getTimeString, yyyymmdd } from "./date"
 import { pricetag } from "ionicons/icons"
 
 interface StatusMessage {
@@ -248,7 +248,7 @@ class Order {
 		return {
 			title : this.title,
 			date : yyyymmdd(start),
-			start : `${start.getHours()}:${start.getMinutes()}`,
+			start : getTimeString(start),
 			duration : Math.floor((end.getTime() - start.getTime())/(60*60*1000)),
 			comment : this.comment ?? "",
 			points : this.points,

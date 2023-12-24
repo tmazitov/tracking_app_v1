@@ -269,10 +269,19 @@ export default {
 				if (!newValue)
 					return
 				loadPriceList(data, fields)
+				.then(() => {
+					if (data.priceList && !updateOrder.value)
+						fields.duration.setValue(data.priceList.bigCarTime);
+				})
 				loadWorkTime(data, fields)
+				.then(() => {
+					if (data.staffWorkTime && !updateOrder.value)
+						fields.start.setValue(data.staffWorkTime.startAt);
+				})
 				if (updateOrder.value) {
 					let orderData = updateOrder.value.toCreateFormData()
 					form.setValues(orderData)
+					console.log('orderData :>> ', orderData);
 				} else {
 					form.resetForm({ values: new OrderCreateForm() })
 					form.setErrors({})
