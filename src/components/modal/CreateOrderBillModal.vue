@@ -268,21 +268,22 @@ export default {
 		const priceList = computed(() => props.priceList)
 		const orderHours = computed(() => props.form.duration)
 
+
 		const bill = reactive({
 			carPrice: priceList.value.bigCarPrice,
 			carHours: orderHours.value,
-			isFragile: false,
-			helpersPrice: priceList.value.helperPrice, 
-			helpersHours: orderHours.value,
-			helpersCount: 0,
+			isFragile: props.form.price.isFragileCargo ?? false,
+			helpersPrice: props.form.price.helperPrice || priceList.value.helperPrice, 
+			helpersHours: props.form.price.helperHours || orderHours.value,
+			helpersCount: props.form.price.helperCount || 0,
 		})
 
 		watch(() => props.form.duration, (newValue) => {
-			bill.helpersHours = newValue
+			let oldIsEqual = bill.helpersHours == bill.carHours
 			bill.carHours = newValue
+			if (oldIsEqual)
+				bill.helpersHours = newValue
 		})
-
-
 
 		const data = reactive<{
 			editHelpersIsOpen: boolean,

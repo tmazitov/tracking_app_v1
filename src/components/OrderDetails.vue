@@ -55,6 +55,7 @@
 					<div class="order-details__map" v-if="order">
 						<OrderPointsMap
 							:points="order.points"
+							v-model:km-count="order.bill.kmCount"
 							readonly
 						/>
 					</div>

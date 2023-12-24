@@ -102,7 +102,9 @@
 						<!-- Make the table of worker business -->
 					</div>
 					<div class="form__page-2" v-if="data.selectedTab == 1">
-						<OrderPointsMap v-model:points="form.values.points" v-model:wayHours="fields.duration.value"
+						<OrderPointsMap 
+							v-model:points="form.values.points" 
+							v-model:wayHours="fields.duration.value"
 							v-model:km-count="form.values.price.kmCount" />
 					</div>
 				</div>

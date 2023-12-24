@@ -30,7 +30,9 @@ class OrderPublicBill {
 	helperCount:number
 	helperHours:number
 	isFragileCargo:	boolean
+	kmCount:number
 	constructor(details:any) {
+		this.kmCount = 0
 		this.carTypeId = details["carTypeId"]
 		this.helperCount = details["helperCount"]
 		this.helperHours = details["helperHours"]
@@ -258,13 +260,13 @@ class Order {
 				total: 0,
 				carPrice: 0,
 				carHours: 2,
-				carTypeId: 0,
+				carTypeId: this.bill.carTypeId,
 				helperPrice:0,
-				helperCount:0,
-				helperHours:0,
-				kmCount: 0,
+				helperCount: this.bill.helperCount,
+				helperHours: this.bill.helperHours,
+				kmCount: this.bill.kmCount,
 				kmPrice: 0,
-				isFragileCargo: false,
+				isFragileCargo: this.bill.isFragileCargo,
 			},
 		}
 	}
